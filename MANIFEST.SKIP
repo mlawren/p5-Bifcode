@@ -1,0 +1,7 @@
+\.git
+\.perltidyrc
+\.podtidy-opts
+Makefile$
+MANIFEST.SKIP
+\.bak$
+MYMETA
