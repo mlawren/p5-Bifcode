@@ -1,9 +1,16 @@
 use strict;
 use warnings;
+use utf8;
 
 use Test::More 0.88;    # for done_testing
 use Test::Differences;
 use Cencode 'cdecode';
+use Unicode::UTF8 'encode_utf8';
+
+my $utf8   = 'ß';
+my $bytes  = encode_utf8($utf8);
+my $length = length($bytes);
+my $cstr   = $length . ':' . $bytes;
 
 sub un {
     my ($frozen) = @_;
@@ -57,7 +64,11 @@ error_ok
 error_ok
   '2:abfdjslhfld' => qr/\Atrailing garbage at 4\b/,
   'string with trailing garbage';
+error_ok '2:' . $utf8 => qr/\Acdecode: only accepts bytes\b/,
+  'check for utf8 flag';
 decod_ok '0:'            => '';
+decod_ok $cstr           => $utf8;
+decod_ok '3:abc'         => 'abc';
 decod_ok '3:abc'         => 'abc';
 decod_ok '10:1234567890' => '1234567890';
 error_ok
@@ -71,8 +82,8 @@ error_ok
 decod_ok 'l~~~,'    => [ undef, undef, undef ];
 decod_ok 'l0:0:0:,' => [ '',    '',    '' ];
 error_ok 'relwjhrlewjh' => qr/\Agarbage at 0/, 'complete garbage';
-decod_ok 'li1,i2,i3,,' => [ 1, 2, 3 ];
-decod_ok 'l3:asd2:xy,' => [ 'asd', 'xy' ];
+decod_ok 'li1,i2,i3,,'              => [ 1,     2,    3 ];
+decod_ok 'l3:asd2:xy' . $cstr . ',' => [ 'asd', 'xy', $utf8 ];
 decod_ok 'll5:Alice3:Bob,li2,i3,~,~,' =>
   [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
 error_ok 'd' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
@@ -80,6 +91,7 @@ error_ok
   'd,foobar' => qr/\Atrailing garbage at 2\b/,
   'empty dict with trailing garbage';
 decod_ok 'd,' => {};
+decod_ok 'd' . $cstr . $cstr . ',' => { $utf8 => $utf8 };
 decod_ok 'd3:agei25,4:eyes4:blue5:undef~,' =>
   { 'age' => 25, 'eyes' => 'blue', 'undef' => undef };
 decod_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000,5:undef~,,' =>

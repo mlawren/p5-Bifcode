@@ -1,9 +1,10 @@
 package Cencode;
-use 5.006;
+use 5.008001;
 use strict;
 use warnings;
 use Carp;
 use Exporter::Tidy all => [qw( cencode cdecode )];
+use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
@@ -21,7 +22,7 @@ sub _cdecode_string {
         croak _msg 'unexpected end of string data starting at %s'
           if $len > length() - pos();
 
-        my $str = substr $_, pos(), $len;
+        my $str = decode_utf8( substr $_, pos(), $len );
         pos() = pos() + $len;
 
         warn _msg
@@ -118,6 +119,7 @@ sub cdecode {
     local $_         = shift;
     local $max_depth = shift;
     croak 'cdecode: too many arguments: ' . "@_" if @_;
+    croak 'cdecode: only accepts bytes' if utf8::is_utf8($_);
 
     my $deserialised_data = _cdecode_chunk();
     croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
@@ -132,12 +134,15 @@ sub _cencode {
     if ( not ref $data ) {
         return sprintf 'i%s' . $EOC, $data
           if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
-        return length($data) . ':' . $data;
+
+        my $str = encode_utf8($data);
+        return length($str) . ':' . $str;
     }
     elsif ( ref $data eq 'SCALAR' ) {
 
         # escape hatch -- use this to avoid num/str heuristics
-        return length($$data) . ':' . $$data;
+        my $str = encode_utf8($$data);
+        return length($str) . ':' . $str;
     }
     elsif ( ref $data eq 'ARRAY' ) {
         return 'l' . join( '', map _cencode($_), @$data ) . $EOC;
