@@ -37,6 +37,7 @@ error_ok 'i,' => qr/\Amalformed integer data at 1\b/, 'empty integer';
 error_ok
   'i341foo382,' => qr/\Amalformed integer data at 1\b/,
   'malformed integer';
+decod_ok '~'           => undef;
 decod_ok 'i4,'         => 4;
 decod_ok 'i0,'         => 0;
 decod_ok 'i123456789,' => 123456789;
@@ -67,19 +68,26 @@ decod_ok 'l,' => [];
 error_ok
   'l,anfdldjfh' => qr/\Atrailing garbage at 2\b/,
   'empty list with trailing garbage';
-decod_ok 'l0:0:0:,' => [ '', '', '' ];
+decod_ok 'l~~~,'    => [ undef, undef, undef ];
+decod_ok 'l0:0:0:,' => [ '',    '',    '' ];
 error_ok 'relwjhrlewjh' => qr/\Agarbage at 0/, 'complete garbage';
 decod_ok 'li1,i2,i3,,' => [ 1, 2, 3 ];
 decod_ok 'l3:asd2:xy,' => [ 'asd', 'xy' ];
-decod_ok 'll5:Alice3:Bob,li2,i3,,,' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
+decod_ok 'll5:Alice3:Bob,li2,i3,~,~,' =>
+  [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
 error_ok 'd' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
 error_ok
   'd,foobar' => qr/\Atrailing garbage at 2\b/,
   'empty dict with trailing garbage';
 decod_ok 'd,' => {};
-decod_ok 'd3:agei25,4:eyes4:blue,' => { 'age' => 25, 'eyes' => 'blue' };
-decod_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000,,,' =>
-  { 'spam.mp3' => { 'author' => 'Alice', 'length' => '100000' } };
+decod_ok 'd3:agei25,4:eyes4:blue5:undef~,' =>
+  { 'age' => 25, 'eyes' => 'blue', 'undef' => undef };
+decod_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000,5:undef~,,' =>
+  { 'spam.mp3' =>
+      { 'author' => 'Alice', 'length' => '100000', 'undef' => undef } };
+error_ok
+  'd~,' => qr/\Adict key is not a string at 1\b/,
+  'dict key cannot be undef';
 error_ok
   'd3:foo,' => qr/\Adict key is missing value at 7\b/,
   'dict with odd number of elements';

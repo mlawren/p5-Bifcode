@@ -50,6 +50,10 @@ sub _cdecode_chunk {
     if ( defined( my $str = _cdecode_string() ) ) {
         return $str;
     }
+    elsif (m/ \G ~ /xgc) {
+        warn _msg 'UNDEF' if $DEBUG;
+        return undef;
+    }
     elsif (m/ \G i /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
@@ -125,6 +129,9 @@ sub cdecode {
 
 sub _cencode {
     my ($data) = @_;
+
+    return '~' unless defined $data;
+
     if ( not ref $data ) {
         return sprintf 'i%s' . $EOC, $data
           if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
