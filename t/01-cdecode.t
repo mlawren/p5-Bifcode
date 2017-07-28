@@ -66,11 +66,12 @@ error_ok
   'string with trailing garbage';
 error_ok '2:' . $utf8 => qr/\Acdecode: only accepts bytes\b/,
   'check for utf8 flag';
-decod_ok '0:'            => '';
-decod_ok $cstr           => $utf8;
-decod_ok '3:abc'         => 'abc';
-decod_ok '3:abc'         => 'abc';
-decod_ok '10:1234567890' => '1234567890';
+decod_ok '0:'                         => '';
+decod_ok $cstr                        => $utf8;
+decod_ok '3:abc'                      => 'abc';
+decod_ok '3:abc'                      => 'abc';
+decod_ok '10:1234567890'              => '1234567890';
+decod_ok 'b' . $length . ':' . $bytes => $bytes;
 error_ok
   '02:xy' => qr/\Amalformed string length at 0\b/,
   'string with extra leading zero in count';

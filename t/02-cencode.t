@@ -4,7 +4,7 @@ use utf8;
 
 use Test::More 0.88;    # for done_testing
 use Test::Differences;
-use Cencode 'cencode';
+use Cencode qw/cencode cencode_bless/;
 use Unicode::UTF8 'encode_utf8';
 
 my $utf8   = 'ß';
@@ -20,14 +20,16 @@ sub enc_ok {
 
 enc_ok '~'                      => undef;
 enc_ok 'i4,'                    => 4;
+enc_ok 'i5,'                    => cencode_bless( 5, 'integer' );
 enc_ok 'i0,'                    => 0;
 enc_ok 'i-10,'                  => -10;
 enc_ok 'i12345678901234567890,' => '12345678901234567890';
 enc_ok '0:'                     => '';
 enc_ok $cstr                    => $utf8;
-enc_ok '3:abc'                  => 'abc';
-enc_ok '10:1234567890'          => \'1234567890';
-enc_ok 'l,'                     => [];
+enc_ok 'b' . $length . ':' . $bytes => cencode_bless( $bytes, 'bytes' );
+enc_ok '3:abc'                      => 'abc';
+enc_ok '10:1234567890'              => \'1234567890';
+enc_ok 'l,'                         => [];
 enc_ok 'li1,i2,~' . $cstr . ',' => [ 1, 2, undef, $utf8 ];
 enc_ok 'll5:Alice3:Bob,li2,i3,,,' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
 enc_ok 'd,' => {};

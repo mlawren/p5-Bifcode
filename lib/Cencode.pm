@@ -3,7 +3,7 @@ use 5.008001;
 use strict;
 use warnings;
 use Carp;
-use Exporter::Tidy all => [qw( cencode cdecode )];
+use Exporter::Tidy all => [qw( cencode cdecode cencode_bless )];
 use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
@@ -16,11 +16,21 @@ sub _msg { sprintf "@_", pos() || 0 }
 
 sub _cdecode_string {
 
-    if (m/ \G ( 0 | [1-9] \d* ) : /xgc) {
-        my $len = $1;
+    if (m/ \G ( b ) ? ( 0 | [1-9] \d* ) : /xgc) {
+        my $blob = $1;
+        my $len  = $2;
 
         croak _msg 'unexpected end of string data starting at %s'
           if $len > length() - pos();
+
+        if ($blob) {
+            my $data = substr $_, pos(), $len;
+            pos() = pos() + $len;
+
+            warn _msg BYTES => "(length $len)", if $DEBUG;
+
+            return $data;
+        }
 
         my $str = decode_utf8( substr $_, pos(), $len );
         pos() = pos() + $len;
@@ -34,7 +44,7 @@ sub _cdecode_string {
     }
 
     my $pos = pos();
-    if (m/ \G -? 0? \d+ : /xgc) {
+    if (m/ \G b ? -? 0? \d+ : /xgc) {
         pos() = $pos;
         croak _msg 'malformed string length at %s';
     }
@@ -128,6 +138,7 @@ sub cdecode {
 
 sub _cencode {
     my ($data) = @_;
+    my $ref_data = ref $data;
 
     return '~' unless defined $data;
 
@@ -138,29 +149,48 @@ sub _cencode {
         my $str = encode_utf8($data);
         return length($str) . ':' . $str;
     }
-    elsif ( ref $data eq 'SCALAR' ) {
+    elsif ( $ref_data eq 'Cencode::INTEGER' ) {
+        croak 'Cencode::INTEGER must be defined' unless defined $$data;
+        return sprintf 'i%s' . $EOC, $$data
+          if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
+        croak 'invalid integer: ' . $$data;
+    }
+    elsif ( $ref_data eq 'SCALAR' or $ref_data eq 'Cencode::STRING' ) {
+        croak 'Cencode::STRING must be defined' unless defined $$data;
 
         # escape hatch -- use this to avoid num/str heuristics
         my $str = encode_utf8($$data);
         return length($str) . ':' . $str;
     }
-    elsif ( ref $data eq 'ARRAY' ) {
+    elsif ( $ref_data eq 'ARRAY' ) {
         return 'l' . join( '', map _cencode($_), @$data ) . $EOC;
     }
-    elsif ( ref $data eq 'HASH' ) {
+    elsif ( $ref_data eq 'HASH' ) {
         return 'd'
           . join( '',
             map { _cencode( \$_ ), _cencode( $data->{$_} ) } sort keys %$data )
           . $EOC;
     }
+    elsif ( $ref_data eq 'Cencode::BYTES' ) {
+        croak 'Cencode::BYTES must be defined' unless defined $$data;
+        return 'b' . length($$data) . ':' . $$data;
+    }
     else {
-        croak 'unhandled data type';
+        croak 'unhandled data type: ' . $ref_data;
     }
 }
 
 sub cencode {
     croak 'need exactly one argument' if @_ != 1;
     goto &_cencode;
+}
+
+sub cencode_bless {
+    my $ref  = shift;
+    my $type = shift;
+
+    croak 'ref and type must be defined' unless defined $ref and defined $type;
+    bless \$ref, 'Cencode::' . uc($type);
 }
 
 cdecode( 'i1' . $EOC );
