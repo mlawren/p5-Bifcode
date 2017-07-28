@@ -127,38 +127,31 @@ error_ok
   'negative integer with leading zero';
 decod_ok "2:\x0A\x0D" => "\x0A\x0D";
 
-decod_ok [ 'd1:a0:,', 0, 1 ] => { a => '' }
+decod_ok [ 'd1:a0:,', 1 ] => { a => '' }
   ,    # Accept single dict when max_depth is 1
-  error_ok [ 'd1:a0:,', 0, 0 ] => qr/\Anesting depth exceeded at 1/,
+  error_ok [ 'd1:a0:,', 0 ] => qr/\Anesting depth exceeded at 1/,
   'single dict when max_depth is 0';
-decod_ok [ 'd1:ad1:a0:,,', 0, 2 ] => { a => { a => '' } }
+decod_ok [ 'd1:ad1:a0:,,', 2 ] => { a => { a => '' } }
   ,    # Accept a nested dict when max_depth is 2
-  error_ok [ 'd1:ad1:a0:,,', 0, 1 ] => qr/\Anesting depth exceeded at 5/,
+  error_ok [ 'd1:ad1:a0:,,', 1 ] => qr/\Anesting depth exceeded at 5/,
   'nested dict when max_depth is 1';
-decod_ok [ 'l0:,', 0, 1 ] => [''],    # Accept single list when max_depth is 1
-  error_ok [ 'l0:,', 0, 0 ] => qr/\Anesting depth exceeded at 1/,
+decod_ok [ 'l0:,', 1 ] => [''],    # Accept single list when max_depth is 1
+  error_ok [ 'l0:,', 0 ] => qr/\Anesting depth exceeded at 1/,
   'single list when max_depth is 0';
-decod_ok [ 'll0:,,', 0, 2 ] => [ [''] ]
-  ,                                   # Accept a nested list when max_depth is 2
-  error_ok [ 'll0:,,', 0, 1 ] => qr/\Anesting depth exceeded at 2/,
+decod_ok [ 'll0:,,', 2 ] => [ [''] ], # Accept a nested list when max_depth is 2
+  error_ok [ 'll0:,,', 1 ] => qr/\Anesting depth exceeded at 2/,
   'nested list when max_depth is 1';
-decod_ok [ 'd1:al0:,,', 0, 2 ] => { a => [''] }
+decod_ok [ 'd1:al0:,,', 2 ] => { a => [''] }
   ,    # Accept dict containing list when max_depth is 2
-  error_ok [ 'd1:al0:,,', 0, 1 ] => qr/\Anesting depth exceeded at 5/,
+  error_ok [ 'd1:al0:,,', 1 ] => qr/\Anesting depth exceeded at 5/,
   'list in dict when max_depth is 1';
-decod_ok [ 'ld1:a0:,,', 0, 2 ] => [ { 'a' => '' } ]
+decod_ok [ 'ld1:a0:,,', 2 ] => [ { 'a' => '' } ]
   ,    # Accept list containing dict when max_depth is 2
-  error_ok [ 'ld1:a0:,,', 0, 1 ] => qr/\Anesting depth exceeded at 2/,
+  error_ok [ 'ld1:a0:,,', 1 ] => qr/\Anesting depth exceeded at 2/,
   'dict in list when max_depth is 1';
-decod_ok [ 'd1:a0:1:bl0:,,', 0, 2 ] => { a => '', b => [''] }
+decod_ok [ 'd1:a0:1:bl0:,,', 2 ] => { a => '', b => [''] }
   ,    # Accept dict containing list when max_depth is 2
-  error_ok [ 'd1:a0:1:bl0:,,', 0, 1 ] => qr/\Anesting depth exceeded at 10/,
+  error_ok [ 'd1:a0:1:bl0:,,', 1 ] => qr/\Anesting depth exceeded at 10/,
   'list in dict when max_depth is 1';
-
-eq_or_diff(
-    cdecode( 'd1:b0:1:a0:,', 1 ),
-    { a => '', b => '', },
-    'accept missorted keys when decoding leniently',
-);
 
 done_testing;

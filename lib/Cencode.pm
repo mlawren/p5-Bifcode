@@ -8,7 +8,7 @@ use Exporter::Tidy all => [qw( cencode cdecode )];
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
 our $VERSION = '0.001';
-our ( $DEBUG, $do_lenient_decode, $max_depth );
+our ( $DEBUG, $max_depth );
 my $EOC = ',';    # End Of Chunk
 
 sub _msg { sprintf "@_", pos() || 0 }
@@ -97,9 +97,7 @@ sub _cdecode_chunk {
               if exists $hash{$key};
 
             croak _msg 'dict key not in sort order at %s'
-              if not($do_lenient_decode)
-              and defined $last_key
-              and $key lt $last_key;
+              if defined $last_key and $key lt $last_key;
 
             croak _msg 'dict key is missing value at %s'
               if m/ \G $EOC /xgc;
@@ -117,9 +115,10 @@ sub _cdecode_chunk {
 }
 
 sub cdecode {
-    local $_                 = shift;
-    local $do_lenient_decode = shift;
-    local $max_depth         = shift;
+    local $_         = shift;
+    local $max_depth = shift;
+    croak 'cdecode: too many arguments: ' . "@_" if @_;
+
     my $deserialised_data = _cdecode_chunk();
     croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
     return $deserialised_data;
@@ -193,16 +192,12 @@ scalar.
 
 Croaks on unhandled data types.
 
-=head2 C<cdecode( $string [, $do_lenient_decode [, $max_depth ] ] )>
+=head2 C<cdecode( $string [, $max_depth ] )>
 
 Takes a string and returns the corresponding deserialised data
 structure.
 
-If you pass a true value for the second option, it will disregard the
-sort order of dict keys. This violation of the I<cencode> format is
-somewhat common.
-
-If you pass an integer for the third option, it will croak when
+If you pass an integer for the second option, it will croak when
 attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
