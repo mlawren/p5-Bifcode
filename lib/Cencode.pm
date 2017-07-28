@@ -31,14 +31,12 @@ sub _cdecode_string {
 
         return $str;
     }
-    else {
-        my $pos = pos();
-        if (m/ \G -? 0? \d+ : /xgc) {
-            pos() = $pos;
-            croak _msg 'malformed string length at %s';
-        }
-    }
 
+    my $pos = pos();
+    if (m/ \G -? 0? \d+ : /xgc) {
+        pos() = $pos;
+        croak _msg 'malformed string length at %s';
+    }
     return;
 }
 
