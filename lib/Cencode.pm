@@ -59,7 +59,7 @@ sub _cdecode_chunk {
           or croak _msg 'malformed integer data at %s';
 
         warn _msg INTEGER => $1 if $DEBUG;
-        return $1;
+        return 0 + $1;
     }
     elsif (m/ \G l /xgc) {
         warn _msg 'LIST' if $DEBUG;
