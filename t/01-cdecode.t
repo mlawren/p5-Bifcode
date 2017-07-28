@@ -3,14 +3,14 @@ use warnings;
 
 use Test::More 0.88; # for done_testing
 use Test::Differences;
-use Bencode 'bdecode';
+use Cencode 'cdecode';
 
 sub un {
 	my ( $frozen ) = @_;
 	local $, = ', ';
 	return 'ARRAY' eq ref $frozen
-		? ( "decode [@$frozen]", bdecode @$frozen )
-		: ( "decode '$frozen'",  bdecode  $frozen );
+		? ( "decode [@$frozen]", cdecode @$frozen )
+		: ( "decode '$frozen'",  cdecode  $frozen );
 }
 
 sub decod_ok {
@@ -28,7 +28,7 @@ sub error_ok {
 	like $@, $error_rx, "reject $kind_of_brokenness";
 }
 
-error_ok '0:0:'          => qr/\Atrailing garbage at 2\b/, 'data past end of first correct bencoded string';
+error_ok '0:0:'          => qr/\Atrailing garbage at 2\b/, 'data past end of first correct cencoded string';
 error_ok 'i'             => qr/\Aunexpected end of data at 1\b/, 'aborted integer';
 error_ok 'i0'            => qr/\Amalformed integer data at 1\b/, 'unterminated integer';
 error_ok 'ie'            => qr/\Amalformed integer data at 1\b/, 'empty integer';
@@ -92,7 +92,7 @@ decod_ok ['d1:a0:1:bl0:ee', 0, 2] => { a => '', b => [ '' ] }, # Accept dict con
 error_ok ['d1:a0:1:bl0:ee', 0, 1] => qr/\Anesting depth exceeded at 10/, 'list in dict when max_depth is 1';
 
 eq_or_diff(
-	bdecode( 'd1:b0:1:a0:e', 1 ),
+	cdecode( 'd1:b0:1:a0:e', 1 ),
 	{ a => '', b => '', },
 	'accept missorted keys when decoding leniently',
 );

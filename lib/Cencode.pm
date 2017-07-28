@@ -1,19 +1,18 @@
+package Cencode;
 use 5.006;
 use strict;
 use warnings;
-
-package Bencode;
-
-# ABSTRACT: BitTorrent serialisation format
-
 use Carp;
-use Exporter::Tidy all => [qw( bencode bdecode )];
+use Exporter::Tidy all => [qw( cencode cdecode )];
 
+# ABSTRACT: Serialisation similar to Bencode + undef/UTF8
+
+our $VERSION = '0.001';
 our ( $DEBUG, $do_lenient_decode, $max_depth );
 
 sub _msg { sprintf "@_", pos() || 0 }
 
-sub _bdecode_string {
+sub _cdecode_string {
 
 	if ( m/ \G ( 0 | [1-9] \d* ) : /xgc ) {
 		my $len = $1;
@@ -39,12 +38,12 @@ sub _bdecode_string {
 	return;
 }
 
-sub _bdecode_chunk {
+sub _cdecode_chunk {
 	warn _msg 'decoding at %s' if $DEBUG;
 
 	local $max_depth = $max_depth - 1 if defined $max_depth;
 
-	if ( defined( my $str = _bdecode_string() ) ) {
+	if ( defined( my $str = _cdecode_string() ) ) {
 		return $str;
 	}
 	elsif ( m/ \G i /xgc ) {
@@ -65,7 +64,7 @@ sub _bdecode_chunk {
 		my @list;
 		until ( m/ \G e /xgc ) {
 			warn _msg 'list not terminated at %s, looking for another element' if $DEBUG;
-			push @list, _bdecode_chunk();
+			push @list, _cdecode_chunk();
 		}
 		return \@list;
 	}
@@ -83,7 +82,7 @@ sub _bdecode_chunk {
 			croak _msg 'unexpected end of data at %s'
 				if m/ \G \z /xgc;
 
-			my $key = _bdecode_string();
+			my $key = _cdecode_string();
 			defined $key or croak _msg 'dict key is not a string at %s';
 
 			croak _msg 'duplicate dict key at %s'
@@ -96,7 +95,7 @@ sub _bdecode_chunk {
 				if m/ \G e /xgc;
 
 			$last_key = $key;
-			$hash{ $key } = _bdecode_chunk();
+			$hash{ $key } = _cdecode_chunk();
 		}
 		return \%hash;
 	}
@@ -105,16 +104,16 @@ sub _bdecode_chunk {
 	}
 }
 
-sub bdecode {
+sub cdecode {
 	local $_ = shift;
 	local $do_lenient_decode = shift;
 	local $max_depth = shift;
-	my $deserialised_data = _bdecode_chunk();
+	my $deserialised_data = _cdecode_chunk();
 	croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
 	return $deserialised_data;
 }
 
-sub _bencode {
+sub _cencode {
 	my ( $data ) = @_;
 	if ( not ref $data ) {
 		return sprintf 'i%se', $data if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
@@ -125,22 +124,22 @@ sub _bencode {
 		return length( $$data ) . ':' . $$data;
 	}
 	elsif ( ref $data eq 'ARRAY' ) {
-		return 'l' . join( '', map _bencode( $_ ), @$data ) . 'e';
+		return 'l' . join( '', map _cencode( $_ ), @$data ) . 'e';
 	}
 	elsif ( ref $data eq 'HASH' ) {
-		return 'd' . join( '', map { _bencode( \$_ ), _bencode( $data->{ $_ } ) } sort keys %$data ) . 'e';
+		return 'd' . join( '', map { _cencode( \$_ ), _cencode( $data->{ $_ } ) } sort keys %$data ) . 'e';
 	}
 	else {
 		croak 'unhandled data type';
 	}
 }
 
-sub bencode {
+sub cencode {
 	croak 'need exactly one argument' if @_ != 1;
-	goto &_bencode;
+	goto &_cencode;
 }
 
-bdecode( 'i1e' );
+cdecode( 'i1e' );
 
 __END__
 
@@ -148,21 +147,21 @@ __END__
 
 =head1 SYNOPSIS
 
- use Bencode qw( bencode bdecode );
+ use Cencode qw( cencode cdecode );
  
- my $bencoded = bencode { 'age' => 25, 'eyes' => 'blue' };
- print $bencoded, "\n";
- my $decoded = bdecode $bencoded;
+ my $cencoded = cencode { 'age' => 25, 'eyes' => 'blue' };
+ print $cencoded, "\n";
+ my $decoded = cdecode $cencoded;
 
 
 =head1 DESCRIPTION
 
-This module implements the BitTorrent I<bencode> serialisation format,
+This module implements the BitTorrent I<cencode> serialisation format,
 as described in L<http://www.bittorrent.org/beps/bep_0003.html#bencoding>.
 
 =head1 INTERFACE
 
-=head2 C<bencode( $datastructure )>
+=head2 C<cencode( $datastructure )>
 
 Takes a single argument which may be a scalar, or may be a reference to either
 a scalar, an array or a hash. Arrays and hashes may in turn contain values of
@@ -172,12 +171,12 @@ a string, use a reference to a scalar.
 
 Croaks on unhandled data types.
 
-=head2 C<bdecode( $string [, $do_lenient_decode [, $max_depth ] ] )>
+=head2 C<cdecode( $string [, $do_lenient_decode [, $max_depth ] ] )>
 
 Takes a string and returns the corresponding deserialised data structure.
 
 If you pass a true value for the second option, it will disregard the sort
-order of dict keys. This violation of the I<bencode> format is somewhat common.
+order of dict keys. This violation of the I<cencode> format is somewhat common.
 
 If you pass an integer for the third option, it will croak when attempting to
 parse dictionaries nested deeper than this level, to prevent DoS attacks using
@@ -191,7 +190,7 @@ Croaks on malformed data.
 
 =item C<trailing garbage at %s>
 
-Your data does not end after the first I<bencode>-serialised item.
+Your data does not end after the first I<cencode>-serialised item.
 
 You may also get this error if a malformed item follows.
 
@@ -219,17 +218,17 @@ make sense.
 
 =item C<dict key not in sort order at %s>
 
-Your data violates the I<bencode> format constaint that dict keys must appear
+Your data violates the I<cencode> format constaint that dict keys must appear
 in lexical sort order.
 
 =item C<duplicate dict key at %s>
 
-Your data violates the I<bencode> format constaint that all dict keys must be
+Your data violates the I<cencode> format constaint that all dict keys must be
 unique.
 
 =item C<dict key is not a string at %s>
 
-Your data violates the I<bencode> format constaint that all dict keys be
+Your data violates the I<cencode> format constaint that all dict keys be
 strings.
 
 =item C<dict key is missing value at %s>
@@ -239,7 +238,7 @@ Your data contains a dictionary with an odd number of elements.
 =item C<nesting depth exceeded at %s>
 
 Your data contains dicts or lists that are nested deeper than the $max_depth
-passed to C<bdecode()>.
+passed to C<cdecode()>.
 
 =item C<unhandled data type>
 
@@ -272,6 +271,6 @@ The format does not support this.
 
 =head1 BUGS AND LIMITATIONS
 
-Strings and numbers are practically indistinguishable in Perl, so C<bencode()>
+Strings and numbers are practically indistinguishable in Perl, so C<cencode()>
 has to resort to a heuristic to decide how to serialise a scalar. This cannot
 be fixed.
