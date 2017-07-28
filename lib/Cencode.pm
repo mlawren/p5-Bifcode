@@ -9,6 +9,7 @@ use Exporter::Tidy all => [qw( cencode cdecode )];
 
 our $VERSION = '0.001';
 our ( $DEBUG, $do_lenient_decode, $max_depth );
+my $EOC = 'e';    # End Of Chunk
 
 sub _msg { sprintf "@_", pos() || 0 }
 
@@ -52,7 +53,7 @@ sub _cdecode_chunk {
     elsif (m/ \G i /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
-        m/ \G ( 0 | -? [1-9] \d* ) e /xgc
+        m/ \G ( 0 | -? [1-9] \d* ) $EOC /xgc
           or croak _msg 'malformed integer data at %s';
 
         warn _msg INTEGER => $1 if $DEBUG;
@@ -65,7 +66,7 @@ sub _cdecode_chunk {
           if defined $max_depth and $max_depth < 0;
 
         my @list;
-        until (m/ \G e /xgc) {
+        until (m/ \G $EOC /xgc) {
             warn _msg 'list not terminated at %s, looking for another element'
               if $DEBUG;
             push @list, _cdecode_chunk();
@@ -80,7 +81,7 @@ sub _cdecode_chunk {
 
         my $last_key;
         my %hash;
-        until (m/ \G e /xgc) {
+        until (m/ \G $EOC /xgc) {
             warn _msg 'dict not terminated at %s, looking for another pair'
               if $DEBUG;
 
@@ -99,7 +100,7 @@ sub _cdecode_chunk {
               and $key lt $last_key;
 
             croak _msg 'dict key is missing value at %s'
-              if m/ \G e /xgc;
+              if m/ \G $EOC /xgc;
 
             $last_key = $key;
             $hash{$key} = _cdecode_chunk();
@@ -125,7 +126,7 @@ sub cdecode {
 sub _cencode {
     my ($data) = @_;
     if ( not ref $data ) {
-        return sprintf 'i%se', $data
+        return sprintf 'i%s' . $EOC, $data
           if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
         return length($data) . ':' . $data;
     }
@@ -135,13 +136,13 @@ sub _cencode {
         return length($$data) . ':' . $$data;
     }
     elsif ( ref $data eq 'ARRAY' ) {
-        return 'l' . join( '', map _cencode($_), @$data ) . 'e';
+        return 'l' . join( '', map _cencode($_), @$data ) . $EOC;
     }
     elsif ( ref $data eq 'HASH' ) {
         return 'd'
           . join( '',
             map { _cencode( \$_ ), _cencode( $data->{$_} ) } sort keys %$data )
-          . 'e';
+          . $EOC;
     }
     else {
         croak 'unhandled data type';
@@ -153,7 +154,7 @@ sub cencode {
     goto &_cencode;
 }
 
-cdecode('i1e');
+cdecode( 'i1' . $EOC );
 
 __END__
 
