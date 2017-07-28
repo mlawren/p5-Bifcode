@@ -1,14 +1,14 @@
 use strict;
 use warnings;
 
-use Test::More 0.88; # for done_testing
+use Test::More 0.88;    # for done_testing
 use Test::Differences;
 use Cencode 'cencode';
 
 sub enc_ok {
-	my ( $frozen, $thawed ) = @_;
-	local $Test::Builder::Level = $Test::Builder::Level + 1;
-	eq_or_diff cencode( $thawed ), $frozen, "encode $frozen";
+    my ( $frozen, $thawed ) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    eq_or_diff cencode($thawed), $frozen, "encode $frozen";
 }
 
 enc_ok 'i4e'                      => 4;
@@ -22,7 +22,8 @@ enc_ok 'le'                       => [];
 enc_ok 'li1ei2ei3ee'              => [ 1, 2, 3 ];
 enc_ok 'll5:Alice3:Bobeli2ei3eee' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
 enc_ok 'de'                       => {};
-enc_ok 'd3:agei25e4:eyes4:bluee'  => { 'age' => 25, 'eyes' => 'blue' };
-enc_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000eee' => { 'spam.mp3' => { 'author' => 'Alice', 'length' => 100000 } };
+enc_ok 'd3:agei25e4:eyes4:bluee' => { 'age' => 25, 'eyes' => 'blue' };
+enc_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000eee' =>
+  { 'spam.mp3' => { 'author' => 'Alice', 'length' => 100000 } };
 
 done_testing;

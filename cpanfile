@@ -1,3 +1,4 @@
+#!perl
 requires 'perl', '5.006';
 requires 'strict';
 requires 'warnings';
@@ -9,8 +10,8 @@ on build => sub {
 };
 
 on test => sub {
-	requires 'Test::Differences';
-	requires 'Test::More', '0.88';
+    requires 'Test::Differences';
+    requires 'Test::More', '0.88';
 };
 
 # vim: ft=perl

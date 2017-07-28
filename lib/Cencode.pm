@@ -14,132 +14,146 @@ sub _msg { sprintf "@_", pos() || 0 }
 
 sub _cdecode_string {
 
-	if ( m/ \G ( 0 | [1-9] \d* ) : /xgc ) {
-		my $len = $1;
+    if (m/ \G ( 0 | [1-9] \d* ) : /xgc) {
+        my $len = $1;
 
-		croak _msg 'unexpected end of string data starting at %s'
-			if $len > length() - pos();
+        croak _msg 'unexpected end of string data starting at %s'
+          if $len > length() - pos();
 
-		my $str = substr $_, pos(), $len;
-		pos() = pos() + $len;
+        my $str = substr $_, pos(), $len;
+        pos() = pos() + $len;
 
-		warn _msg STRING => "(length $len)", $len < 200 ? "[$str]" : () if $DEBUG;
+        warn _msg
+          STRING => "(length $len)",
+          $len < 200 ? "[$str]" : ()
+          if $DEBUG;
 
-		return $str;
-	}
-	else {
-		my $pos = pos();
-		if ( m/ \G -? 0? \d+ : /xgc ) {
-			pos() = $pos;
-			croak _msg 'malformed string length at %s';
-		}
-	}
+        return $str;
+    }
+    else {
+        my $pos = pos();
+        if (m/ \G -? 0? \d+ : /xgc) {
+            pos() = $pos;
+            croak _msg 'malformed string length at %s';
+        }
+    }
 
-	return;
+    return;
 }
 
 sub _cdecode_chunk {
-	warn _msg 'decoding at %s' if $DEBUG;
+    warn _msg 'decoding at %s' if $DEBUG;
 
-	local $max_depth = $max_depth - 1 if defined $max_depth;
+    local $max_depth = $max_depth - 1 if defined $max_depth;
 
-	if ( defined( my $str = _cdecode_string() ) ) {
-		return $str;
-	}
-	elsif ( m/ \G i /xgc ) {
-		croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
+    if ( defined( my $str = _cdecode_string() ) ) {
+        return $str;
+    }
+    elsif (m/ \G i /xgc) {
+        croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
-		m/ \G ( 0 | -? [1-9] \d* ) e /xgc
-			or croak _msg 'malformed integer data at %s';
+        m/ \G ( 0 | -? [1-9] \d* ) e /xgc
+          or croak _msg 'malformed integer data at %s';
 
-		warn _msg INTEGER => $1 if $DEBUG;
-		return $1;
-	}
-	elsif ( m/ \G l /xgc ) {
-		warn _msg 'LIST' if $DEBUG;
+        warn _msg INTEGER => $1 if $DEBUG;
+        return $1;
+    }
+    elsif (m/ \G l /xgc) {
+        warn _msg 'LIST' if $DEBUG;
 
-		croak _msg 'nesting depth exceeded at %s'
-			if defined $max_depth and $max_depth < 0;
+        croak _msg 'nesting depth exceeded at %s'
+          if defined $max_depth and $max_depth < 0;
 
-		my @list;
-		until ( m/ \G e /xgc ) {
-			warn _msg 'list not terminated at %s, looking for another element' if $DEBUG;
-			push @list, _cdecode_chunk();
-		}
-		return \@list;
-	}
-	elsif ( m/ \G d /xgc ) {
-		warn _msg 'DICT' if $DEBUG;
+        my @list;
+        until (m/ \G e /xgc) {
+            warn _msg 'list not terminated at %s, looking for another element'
+              if $DEBUG;
+            push @list, _cdecode_chunk();
+        }
+        return \@list;
+    }
+    elsif (m/ \G d /xgc) {
+        warn _msg 'DICT' if $DEBUG;
 
-		croak _msg 'nesting depth exceeded at %s'
-			if defined $max_depth and $max_depth < 0;
+        croak _msg 'nesting depth exceeded at %s'
+          if defined $max_depth and $max_depth < 0;
 
-		my $last_key;
-		my %hash;
-		until ( m/ \G e /xgc ) {
-			warn _msg 'dict not terminated at %s, looking for another pair' if $DEBUG;
+        my $last_key;
+        my %hash;
+        until (m/ \G e /xgc) {
+            warn _msg 'dict not terminated at %s, looking for another pair'
+              if $DEBUG;
 
-			croak _msg 'unexpected end of data at %s'
-				if m/ \G \z /xgc;
+            croak _msg 'unexpected end of data at %s'
+              if m/ \G \z /xgc;
 
-			my $key = _cdecode_string();
-			defined $key or croak _msg 'dict key is not a string at %s';
+            my $key = _cdecode_string();
+            defined $key or croak _msg 'dict key is not a string at %s';
 
-			croak _msg 'duplicate dict key at %s'
-				if exists $hash{ $key };
+            croak _msg 'duplicate dict key at %s'
+              if exists $hash{$key};
 
-			croak _msg 'dict key not in sort order at %s'
-				if not( $do_lenient_decode ) and defined $last_key and $key lt $last_key;
+            croak _msg 'dict key not in sort order at %s'
+              if not($do_lenient_decode)
+              and defined $last_key
+              and $key lt $last_key;
 
-			croak _msg 'dict key is missing value at %s'
-				if m/ \G e /xgc;
+            croak _msg 'dict key is missing value at %s'
+              if m/ \G e /xgc;
 
-			$last_key = $key;
-			$hash{ $key } = _cdecode_chunk();
-		}
-		return \%hash;
-	}
-	else {
-		croak _msg m/ \G \z /xgc ? 'unexpected end of data at %s' : 'garbage at %s';
-	}
+            $last_key = $key;
+            $hash{$key} = _cdecode_chunk();
+        }
+        return \%hash;
+    }
+    else {
+        croak _msg m/ \G \z /xgc
+          ? 'unexpected end of data at %s'
+          : 'garbage at %s';
+    }
 }
 
 sub cdecode {
-	local $_ = shift;
-	local $do_lenient_decode = shift;
-	local $max_depth = shift;
-	my $deserialised_data = _cdecode_chunk();
-	croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
-	return $deserialised_data;
+    local $_                 = shift;
+    local $do_lenient_decode = shift;
+    local $max_depth         = shift;
+    my $deserialised_data = _cdecode_chunk();
+    croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
+    return $deserialised_data;
 }
 
 sub _cencode {
-	my ( $data ) = @_;
-	if ( not ref $data ) {
-		return sprintf 'i%se', $data if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
-		return length( $data ) . ':' . $data;
-	}
-	elsif ( ref $data eq 'SCALAR' ) {
-		# escape hatch -- use this to avoid num/str heuristics
-		return length( $$data ) . ':' . $$data;
-	}
-	elsif ( ref $data eq 'ARRAY' ) {
-		return 'l' . join( '', map _cencode( $_ ), @$data ) . 'e';
-	}
-	elsif ( ref $data eq 'HASH' ) {
-		return 'd' . join( '', map { _cencode( \$_ ), _cencode( $data->{ $_ } ) } sort keys %$data ) . 'e';
-	}
-	else {
-		croak 'unhandled data type';
-	}
+    my ($data) = @_;
+    if ( not ref $data ) {
+        return sprintf 'i%se', $data
+          if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
+        return length($data) . ':' . $data;
+    }
+    elsif ( ref $data eq 'SCALAR' ) {
+
+        # escape hatch -- use this to avoid num/str heuristics
+        return length($$data) . ':' . $$data;
+    }
+    elsif ( ref $data eq 'ARRAY' ) {
+        return 'l' . join( '', map _cencode($_), @$data ) . 'e';
+    }
+    elsif ( ref $data eq 'HASH' ) {
+        return 'd'
+          . join( '',
+            map { _cencode( \$_ ), _cencode( $data->{$_} ) } sort keys %$data )
+          . 'e';
+    }
+    else {
+        croak 'unhandled data type';
+    }
 }
 
 sub cencode {
-	croak 'need exactly one argument' if @_ != 1;
-	goto &_cencode;
+    croak 'need exactly one argument' if @_ != 1;
+    goto &_cencode;
 }
 
-cdecode( 'i1e' );
+cdecode('i1e');
 
 __END__
 
@@ -157,30 +171,34 @@ __END__
 =head1 DESCRIPTION
 
 This module implements the BitTorrent I<cencode> serialisation format,
-as described in L<http://www.bittorrent.org/beps/bep_0003.html#bencoding>.
+as described in
+L<http://www.bittorrent.org/beps/bep_0003.html#bencoding>.
 
 =head1 INTERFACE
 
 =head2 C<cencode( $datastructure )>
 
-Takes a single argument which may be a scalar, or may be a reference to either
-a scalar, an array or a hash. Arrays and hashes may in turn contain values of
-these same types. Plain scalars that look like canonically represented integers
-will be serialised as such. To bypass the heuristic and force serialisation as
-a string, use a reference to a scalar.
+Takes a single argument which may be a scalar, or may be a reference to
+either a scalar, an array or a hash. Arrays and hashes may in turn
+contain values of these same types. Plain scalars that look like
+canonically represented integers will be serialised as such. To bypass
+the heuristic and force serialisation as a string, use a reference to a
+scalar.
 
 Croaks on unhandled data types.
 
 =head2 C<cdecode( $string [, $do_lenient_decode [, $max_depth ] ] )>
 
-Takes a string and returns the corresponding deserialised data structure.
+Takes a string and returns the corresponding deserialised data
+structure.
 
-If you pass a true value for the second option, it will disregard the sort
-order of dict keys. This violation of the I<cencode> format is somewhat common.
+If you pass a true value for the second option, it will disregard the
+sort order of dict keys. This violation of the I<cencode> format is
+somewhat common.
 
-If you pass an integer for the third option, it will croak when attempting to
-parse dictionaries nested deeper than this level, to prevent DoS attacks using
-maliciously crafted input.
+If you pass an integer for the third option, it will croak when
+attempting to parse dictionaries nested deeper than this level, to
+prevent DoS attacks using maliciously crafted input.
 
 Croaks on malformed data.
 
@@ -204,32 +222,33 @@ Your data is truncated.
 
 =item C<unexpected end of string data starting at %s>
 
-Your data includes a string declared to be longer than the available data.
+Your data includes a string declared to be longer than the available
+data.
 
 =item C<malformed string length at %s>
 
-Your data contained a string with negative length or a length with leading
-zeroes.
+Your data contained a string with negative length or a length with
+leading zeroes.
 
 =item C<malformed integer data at %s>
 
-Your data contained something that was supposed to be an integer but didn't
-make sense.
+Your data contained something that was supposed to be an integer but
+didn't make sense.
 
 =item C<dict key not in sort order at %s>
 
-Your data violates the I<cencode> format constaint that dict keys must appear
-in lexical sort order.
+Your data violates the I<cencode> format constaint that dict keys must
+appear in lexical sort order.
 
 =item C<duplicate dict key at %s>
 
-Your data violates the I<cencode> format constaint that all dict keys must be
-unique.
+Your data violates the I<cencode> format constaint that all dict keys
+must be unique.
 
 =item C<dict key is not a string at %s>
 
-Your data violates the I<cencode> format constaint that all dict keys be
-strings.
+Your data violates the I<cencode> format constaint that all dict keys
+be strings.
 
 =item C<dict key is missing value at %s>
 
@@ -237,13 +256,13 @@ Your data contains a dictionary with an odd number of elements.
 
 =item C<nesting depth exceeded at %s>
 
-Your data contains dicts or lists that are nested deeper than the $max_depth
-passed to C<cdecode()>.
+Your data contains dicts or lists that are nested deeper than the
+$max_depth passed to C<cdecode()>.
 
 =item C<unhandled data type>
 
-You are trying to serialise a data structure that consists of data types other
-than
+You are trying to serialise a data structure that consists of data
+types other than
 
 =over
 
@@ -271,6 +290,7 @@ The format does not support this.
 
 =head1 BUGS AND LIMITATIONS
 
-Strings and numbers are practically indistinguishable in Perl, so C<cencode()>
-has to resort to a heuristic to decide how to serialise a scalar. This cannot
-be fixed.
+Strings and numbers are practically indistinguishable in Perl, so
+C<cencode()> has to resort to a heuristic to decide how to serialise a
+scalar. This cannot be fixed.
+
