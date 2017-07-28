@@ -9,7 +9,7 @@ use Exporter::Tidy all => [qw( cencode cdecode )];
 
 our $VERSION = '0.001';
 our ( $DEBUG, $do_lenient_decode, $max_depth );
-my $EOC = 'e';    # End Of Chunk
+my $EOC = ',';    # End Of Chunk
 
 sub _msg { sprintf "@_", pos() || 0 }
 
