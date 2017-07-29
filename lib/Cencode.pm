@@ -199,20 +199,74 @@ __END__
 
 =pod
 
+=encoding utf8
+
+=head1 NAME
+
+Cencode - simple serialization format
+
+=head1 VERSION
+
+0.001 (yyyy-mm-dd)
+
 =head1 SYNOPSIS
 
- use Cencode qw( cencode cdecode );
+    use Cencode qw( cencode cdecode );
  
- my $cencoded = cencode { 'age' => 25, 'eyes' => 'blue' };
- print $cencoded, "\n";
- my $decoded = cdecode $cencoded;
-
+    my $cencoded = cencode { 'age' => 25, 'eyes' => 'blue' };
+    print $cencoded, "\n"; # d3:agei25,4:eyes4:blue,
+ 
+    my $decoded = cdecode $cencoded;
 
 =head1 DESCRIPTION
 
-This module implements the BitTorrent I<cencode> serialisation format,
-as described in
-L<http://www.bittorrent.org/beps/bep_0003.html#bencoding>.
+This module implements the I<cencode> serialisation format. It takes
+most of its inspiration and code from the L<Bencode> module. If you do
+not have a specific requirement for L<Bencode> then Cencode has the
+following advantages (in this humble author's opinion):
+
+=over
+
+=item * Support for undefined values
+
+=item * Support for UTF8-encoded strings
+
+=item * Improved readability
+
+=back
+
+The encoding is defined as follows:
+
+=over
+
+=item * Undefined values correspond to '~'.
+
+=item * UTF8 strings are length-prefixed with a base ten number
+followed by a colon and the octet version of the string.  For example
+'ß' corresponds to '2:ß'.
+
+=item * Byte strings start with 'b' then the length as a base
+ten number followed by a colon and then the byte version of the string.
+For example 'xyz' corresponds to 'b3:xyz'.
+
+=item * Integers are represented by an 'i' followed by the number in
+base 10 followed by a ','. For example 'i3,' corresponds to 3 and
+'i-3,' corresponds to -3. Integers have no size limitation. 'i-0,' is
+invalid. All encodings with a leading zero, such as 'i03,', are
+invalid, other than 'i0,', which of course corresponds to 0.
+
+=item * Lists are encoded as an 'l' followed by their elements (also
+cencoded) followed by a ','. For example 'l4:spam4:eggs,' corresponds
+to ['spam', 'eggs'].
+
+=item * Dictionaries are encoded as a 'd' followed by a list of
+alternating keys and their corresponding values followed by a ','. For
+example, 'd3:cow3:moo4:spam4:eggs,' corresponds to {'cow': 'moo',
+'spam': 'eggs'} and 'd4:spaml1:a1:b,, corresponds to {'spam': ['a',
+'b']}. Keys must be strings and appear in sorted order (sorted as raw
+strings, not alphanumerics).
+
+=back
 
 =head1 INTERFACE
 
@@ -220,10 +274,16 @@ L<http://www.bittorrent.org/beps/bep_0003.html#bencoding>.
 
 Takes a single argument which may be a scalar, or may be a reference to
 either a scalar, an array or a hash. Arrays and hashes may in turn
-contain values of these same types. Plain scalars that look like
-canonically represented integers will be serialised as such. To bypass
-the heuristic and force serialisation as a string, use a reference to a
-scalar.
+contain values of these same types.
+
+Plain scalars that look like canonically represented integers will be
+serialised as such. To bypass the heuristic and force serialisation as
+a string, use a reference to a scalar.
+
+Strings are assumed to be UTF8-encoded. To encode as bytes pass a
+reference to the data blessed as Cencode::BYTES.  Likewise
+Cencode::INTEGER and Cencode::STRING can be used to force detection of
+those types as well. See the C<cencode_bless> helper function below.
 
 Croaks on unhandled data types.
 
@@ -237,6 +297,13 @@ attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
 Croaks on malformed data.
+
+=head2 C<cencode_bless( $scalar, $type )>
+
+Returns a reference to $scalar blessed as Cencode::$TYPE. The value of
+$type is not checked, but the C<cencode> function will only accept the
+resulting references where $type is one of 'bytes', 'integer' or
+'string'.
 
 =head1 DIAGNOSTICS
 
@@ -329,4 +396,24 @@ The format does not support this.
 Strings and numbers are practically indistinguishable in Perl, so
 C<cencode()> has to resort to a heuristic to decide how to serialise a
 scalar. This cannot be fixed.
+
+=head1 AUTHOR
+
+Mark Lawrence <nomad@null.net>, heavily based on Bencode by Aristotle
+Pagaltzis <pagaltzis@gmx.de>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c):
+
+=over
+
+=item * 2015 by Aristotle Pagaltzis
+
+=item * 2017 by Mark Lawrence.
+
+=back
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
