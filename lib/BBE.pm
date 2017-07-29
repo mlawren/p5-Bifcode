@@ -86,7 +86,7 @@ sub _decode_bbe_chunk {
         }
         return \@list;
     }
-    elsif (m/ \G d /xgc) {
+    elsif (m/ \G \{ /xgc) {
         warn _msg 'DICT' if $DEBUG;
 
         croak _msg 'nesting depth exceeded at %s'
@@ -94,7 +94,7 @@ sub _decode_bbe_chunk {
 
         my $last_key;
         my %hash;
-        until (m/ \G $EOC /xgc) {
+        until (m/ \G \} /xgc) {
             warn _msg 'dict not terminated at %s, looking for another pair'
               if $DEBUG;
 
@@ -111,7 +111,7 @@ sub _decode_bbe_chunk {
               if defined $last_key and $key lt $last_key;
 
             croak _msg 'dict key is missing value at %s'
-              if m/ \G $EOC /xgc;
+              if m/ \G \} /xgc;
 
             $last_key = $key;
             $hash{$key} = _decode_bbe_chunk();
@@ -166,11 +166,11 @@ sub _encode_bbe {
         return '[' . join( '', map _encode_bbe($_), @$data ) . ']';
     }
     elsif ( $ref_data eq 'HASH' ) {
-        return 'd'
+        return '{'
           . join( '',
             map { _encode_bbe( \$_ ), _encode_bbe( $data->{$_} ) }
             sort keys %$data )
-          . $EOC;
+          . '}';
     }
     elsif ( $ref_data eq 'BBE::BYTES' ) {
         croak 'BBE::BYTES must be defined' unless defined $$data;
@@ -215,7 +215,7 @@ BBE - simple serialization format
     use BBE qw( encode_bbe decode_bbe );
  
     my $bbe = encode_bbe { 'age' => 25, 'eyes' => 'blue' };
-    print $bbe, "\n"; # d3:agei25,4:eyes4:blue,
+    print $bbe, "\n"; # {3:agei25,4:eyes4:blue}
  
     my $decoded = decode_bbe $bbe;
 
@@ -260,10 +260,10 @@ invalid, other than 'i0,', which of course corresponds to 0.
 bbe encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds
 to ['spam', 'eggs'].
 
-=item * Dictionaries are encoded as a 'd' followed by a list of
-alternating keys and their corresponding values followed by a ','. For
-example, 'd3:cow3:moo4:spam4:eggs,' corresponds to {'cow': 'moo',
-'spam': 'eggs'} and 'd4:spam[1:a1:b], corresponds to {'spam': ['a',
+=item * Dictionaries are encoded as a '{' followed by a list of
+alternating keys and their corresponding values followed by a '}'. For
+example, '{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo',
+'spam': 'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a',
 'b']}. Keys must be strings and appear in sorted order (sorted as raw
 strings, not alphanumerics).
 

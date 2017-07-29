@@ -87,30 +87,30 @@ decod_ok '[i1,i2,i3,]'              => [ 1,     2,    3 ];
 decod_ok '[3:asd2:xy' . $cstr . ']' => [ 'asd', 'xy', $utf8 ];
 decod_ok '[[5:Alice3:Bob][i2,i3,~]~]' =>
   [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
-error_ok 'd' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
+error_ok '{' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
 error_ok
-  'd,foobar' => qr/\Atrailing garbage at 2\b/,
+  '{}foobar' => qr/\Atrailing garbage at 2\b/,
   'empty dict with trailing garbage';
-decod_ok 'd,' => {};
-decod_ok 'd' . $cstr . $cstr . ',' => { $utf8 => $utf8 };
-decod_ok 'd3:agei25,4:eyes4:blue5:undef~,' =>
+decod_ok '{}' => {};
+decod_ok '{' . $cstr . $cstr . '}' => { $utf8 => $utf8 };
+decod_ok '{3:agei25,4:eyes4:blue5:undef~}' =>
   { 'age' => 25, 'eyes' => 'blue', 'undef' => undef };
-decod_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000,5:undef~,,' =>
+decod_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>
   { 'spam.mp3' =>
       { 'author' => 'Alice', 'length' => '100000', 'undef' => undef } };
 error_ok
-  'd~,' => qr/\Adict key is not a string at 1\b/,
+  '{~}' => qr/\Adict key is not a string at 1\b/,
   'dict key cannot be undef';
 error_ok
-  'd3:foo,' => qr/\Adict key is missing value at 7\b/,
+  '{3:foo}' => qr/\Adict key is missing value at 7\b/,
   'dict with odd number of elements';
 error_ok
-  'di1,0:,' => qr/\Adict key is not a string at 1/,
+  '{i1,0:}' => qr/\Adict key is not a string at 1/,
   'dict with integer key';
 error_ok
-  'd1:b0:1:a0:,' => qr/\Adict key not in sort order at 9/,
+  '{1:b0:1:a0:}' => qr/\Adict key not in sort order at 9/,
   'missorted keys';
-error_ok 'd1:a0:1:a0:,' => qr/\Aduplicate dict key at 9/, 'duplicate keys';
+error_ok '{1:a0:1:a0:}' => qr/\Aduplicate dict key at 9/, 'duplicate keys';
 error_ok
   'i03,' => qr/\Amalformed integer data at 1/,
   'integer with leading zero';
@@ -124,10 +124,10 @@ error_ok
   '[0:' => qr/\Aunexpected end of data at 3/,
   'unclosed list with content';
 error_ok
-  'd0:0:' => qr/\Aunexpected end of data at 5/,
+  '{0:0:' => qr/\Aunexpected end of data at 5/,
   'unclosed dict with content';
 error_ok
-  'd0:' => qr/\Aunexpected end of data at 3/,
+  '{0:' => qr/\Aunexpected end of data at 3/,
   'unclosed dict with odd number of elements';
 error_ok
   '00:' => qr/\Amalformed string length at 0/,
@@ -140,13 +140,13 @@ error_ok
   'negative integer with leading zero';
 decod_ok "2:\x0A\x0D" => "\x0A\x0D";
 
-decod_ok [ 'd1:a0:,', 1 ] => { a => '' }
+decod_ok [ '{1:a0:}', 1 ] => { a => '' }
   ,    # Accept single dict when max_depth is 1
-  error_ok [ 'd1:a0:,', 0 ] => qr/\Anesting depth exceeded at 1/,
+  error_ok [ '{1:a0:}', 0 ] => qr/\Anesting depth exceeded at 1/,
   'single dict when max_depth is 0';
-decod_ok [ 'd1:ad1:a0:,,', 2 ] => { a => { a => '' } }
+decod_ok [ '{1:a{1:a0:}}', 2 ] => { a => { a => '' } }
   ,    # Accept a nested dict when max_depth is 2
-  error_ok [ 'd1:ad1:a0:,,', 1 ] => qr/\Anesting depth exceeded at 5/,
+  error_ok [ '{1:a{1:a0:}}', 1 ] => qr/\Anesting depth exceeded at 5/,
   'nested dict when max_depth is 1';
 decod_ok [ '[0:]', 1 ] => [''],    # Accept single list when max_depth is 1
   error_ok [ '[0:]', 0 ] => qr/\Anesting depth exceeded at 1/,
@@ -154,17 +154,17 @@ decod_ok [ '[0:]', 1 ] => [''],    # Accept single list when max_depth is 1
 decod_ok [ '[[0:]]', 2 ] => [ [''] ], # Accept a nested list when max_depth is 2
   error_ok [ '[[0:]]', 1 ] => qr/\Anesting depth exceeded at 2/,
   'nested list when max_depth is 1';
-decod_ok [ 'd1:a[0:],', 2 ] => { a => [''] }
+decod_ok [ '{1:a[0:]}', 2 ] => { a => [''] }
   ,    # Accept dict containing list when max_depth is 2
-  error_ok [ 'd1:a[0:],', 1 ] => qr/\Anesting depth exceeded at 5/,
+  error_ok [ '{1:a[0:]}', 1 ] => qr/\Anesting depth exceeded at 5/,
   'list in dict when max_depth is 1';
-decod_ok [ '[d1:a0:,]', 2 ] => [ { 'a' => '' } ]
+decod_ok [ '[{1:a0:}]', 2 ] => [ { 'a' => '' } ]
   ,    # Accept list containing dict when max_depth is 2
-  error_ok [ '[d1:a0:,]', 1 ] => qr/\Anesting depth exceeded at 2/,
+  error_ok [ '[{1:a0:}]', 1 ] => qr/\Anesting depth exceeded at 2/,
   'dict in list when max_depth is 1';
-decod_ok [ 'd1:a0:1:b[0:],', 2 ] => { a => '', b => [''] }
+decod_ok [ '{1:a0:1:b[0:]}', 2 ] => { a => '', b => [''] }
   ,    # Accept dict containing list when max_depth is 2
-  error_ok [ 'd1:a0:1:b[0:],', 1 ] => qr/\Anesting depth exceeded at 10/,
+  error_ok [ '{1:a0:1:b[0:]}', 1 ] => qr/\Anesting depth exceeded at 10/,
   'list in dict when max_depth is 1';
 
 done_testing;

@@ -32,10 +32,10 @@ enc_ok '10:1234567890'              => \'1234567890';
 enc_ok '[]'                         => [];
 enc_ok '[i1,i2,~' . $cstr . ']' => [ 1, 2, undef, $utf8 ];
 enc_ok '[[5:Alice3:Bob][i2,i3,]]' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
-enc_ok 'd,' => {};
-enc_ok 'd3:agei25,4:eyes4:blue5:undef~' . $cstr . $cstr
-  . ',' => { 'age' => 25, 'eyes' => 'blue', 'undef' => undef, $utf8 => $utf8 };
-enc_ok 'd8:spam.mp3d6:author5:Alice6:lengthi100000,5:undef~,,' =>
+enc_ok '{}' => {};
+enc_ok '{3:agei25,4:eyes4:blue5:undef~' . $cstr . $cstr
+  . '}' => { 'age' => 25, 'eyes' => 'blue', 'undef' => undef, $utf8 => $utf8 };
+enc_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>
   { 'spam.mp3' => { 'author' => 'Alice', 'length' => 100000, 'undef' => undef }
   };
 
