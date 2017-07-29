@@ -72,14 +72,14 @@ sub _decode_bbe_chunk {
         warn _msg INTEGER => $1 if $DEBUG;
         return 0 + $1;
     }
-    elsif (m/ \G l /xgc) {
+    elsif (m/ \G \[ /xgc) {
         warn _msg 'LIST' if $DEBUG;
 
         croak _msg 'nesting depth exceeded at %s'
           if defined $max_depth and $max_depth < 0;
 
         my @list;
-        until (m/ \G $EOC /xgc) {
+        until (m/ \G \] /xgc) {
             warn _msg 'list not terminated at %s, looking for another element'
               if $DEBUG;
             push @list, _decode_bbe_chunk();
@@ -163,7 +163,7 @@ sub _encode_bbe {
         return length($str) . ':' . $str;
     }
     elsif ( $ref_data eq 'ARRAY' ) {
-        return 'l' . join( '', map _encode_bbe($_), @$data ) . $EOC;
+        return '[' . join( '', map _encode_bbe($_), @$data ) . ']';
     }
     elsif ( $ref_data eq 'HASH' ) {
         return 'd'
@@ -256,14 +256,14 @@ base 10 followed by a ','. For example 'i3,' corresponds to 3 and
 invalid. All encodings with a leading zero, such as 'i03,', are
 invalid, other than 'i0,', which of course corresponds to 0.
 
-=item * Lists are encoded as an 'l' followed by their elements (also
-encode_bbe'd) followed by a ','. For example 'l4:spam4:eggs,' corresponds
+=item * Lists are encoded as a '[' followed by their elements (also
+bbe encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds
 to ['spam', 'eggs'].
 
 =item * Dictionaries are encoded as a 'd' followed by a list of
 alternating keys and their corresponding values followed by a ','. For
 example, 'd3:cow3:moo4:spam4:eggs,' corresponds to {'cow': 'moo',
-'spam': 'eggs'} and 'd4:spaml1:a1:b,, corresponds to {'spam': ['a',
+'spam': 'eggs'} and 'd4:spam[1:a1:b], corresponds to {'spam': ['a',
 'b']}. Keys must be strings and appear in sorted order (sorted as raw
 strings, not alphanumerics).
 

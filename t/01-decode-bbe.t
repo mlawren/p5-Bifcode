@@ -75,17 +75,17 @@ decod_ok 'b' . $length . ':' . $bytes => $bytes;
 error_ok
   '02:xy' => qr/\Amalformed string length at 0\b/,
   'string with extra leading zero in count';
-error_ok 'l' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty list';
-decod_ok 'l,' => [];
+error_ok '[' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty list';
+decod_ok '[]' => [];
 error_ok
-  'l,anfdldjfh' => qr/\Atrailing garbage at 2\b/,
+  '[]anfdldjfh' => qr/\Atrailing garbage at 2\b/,
   'empty list with trailing garbage';
-decod_ok 'l~~~,'    => [ undef, undef, undef ];
-decod_ok 'l0:0:0:,' => [ '',    '',    '' ];
+decod_ok '[~~~]'    => [ undef, undef, undef ];
+decod_ok '[0:0:0:]' => [ '',    '',    '' ];
 error_ok 'relwjhrlewjh' => qr/\Agarbage at 0/, 'complete garbage';
-decod_ok 'li1,i2,i3,,'              => [ 1,     2,    3 ];
-decod_ok 'l3:asd2:xy' . $cstr . ',' => [ 'asd', 'xy', $utf8 ];
-decod_ok 'll5:Alice3:Bob,li2,i3,~,~,' =>
+decod_ok '[i1,i2,i3,]'              => [ 1,     2,    3 ];
+decod_ok '[3:asd2:xy' . $cstr . ']' => [ 'asd', 'xy', $utf8 ];
+decod_ok '[[5:Alice3:Bob][i2,i3,~]~]' =>
   [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
 error_ok 'd' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
 error_ok
@@ -115,13 +115,13 @@ error_ok
   'i03,' => qr/\Amalformed integer data at 1/,
   'integer with leading zero';
 error_ok
-  'l01:a,' => qr/\Amalformed string length at 1/,
+  '[01:a]' => qr/\Amalformed string length at 1/,
   'list with string with leading zero in count';
 error_ok
   '9999:x' => qr/\Aunexpected end of string data starting at 5/,
   'string shorter than count';
 error_ok
-  'l0:' => qr/\Aunexpected end of data at 3/,
+  '[0:' => qr/\Aunexpected end of data at 3/,
   'unclosed list with content';
 error_ok
   'd0:0:' => qr/\Aunexpected end of data at 5/,
@@ -133,7 +133,7 @@ error_ok
   '00:' => qr/\Amalformed string length at 0/,
   'zero-length string with extra leading zero in count';
 error_ok
-  'l-3:,' => qr/\Amalformed string length at 1/,
+  '[-3:]' => qr/\Amalformed string length at 1/,
   'list with negative-length string';
 error_ok
   'i-03,' => qr/\Amalformed integer data at 1/,
@@ -148,23 +148,23 @@ decod_ok [ 'd1:ad1:a0:,,', 2 ] => { a => { a => '' } }
   ,    # Accept a nested dict when max_depth is 2
   error_ok [ 'd1:ad1:a0:,,', 1 ] => qr/\Anesting depth exceeded at 5/,
   'nested dict when max_depth is 1';
-decod_ok [ 'l0:,', 1 ] => [''],    # Accept single list when max_depth is 1
-  error_ok [ 'l0:,', 0 ] => qr/\Anesting depth exceeded at 1/,
+decod_ok [ '[0:]', 1 ] => [''],    # Accept single list when max_depth is 1
+  error_ok [ '[0:]', 0 ] => qr/\Anesting depth exceeded at 1/,
   'single list when max_depth is 0';
-decod_ok [ 'll0:,,', 2 ] => [ [''] ], # Accept a nested list when max_depth is 2
-  error_ok [ 'll0:,,', 1 ] => qr/\Anesting depth exceeded at 2/,
+decod_ok [ '[[0:]]', 2 ] => [ [''] ], # Accept a nested list when max_depth is 2
+  error_ok [ '[[0:]]', 1 ] => qr/\Anesting depth exceeded at 2/,
   'nested list when max_depth is 1';
-decod_ok [ 'd1:al0:,,', 2 ] => { a => [''] }
+decod_ok [ 'd1:a[0:],', 2 ] => { a => [''] }
   ,    # Accept dict containing list when max_depth is 2
-  error_ok [ 'd1:al0:,,', 1 ] => qr/\Anesting depth exceeded at 5/,
+  error_ok [ 'd1:a[0:],', 1 ] => qr/\Anesting depth exceeded at 5/,
   'list in dict when max_depth is 1';
-decod_ok [ 'ld1:a0:,,', 2 ] => [ { 'a' => '' } ]
+decod_ok [ '[d1:a0:,]', 2 ] => [ { 'a' => '' } ]
   ,    # Accept list containing dict when max_depth is 2
-  error_ok [ 'ld1:a0:,,', 1 ] => qr/\Anesting depth exceeded at 2/,
+  error_ok [ '[d1:a0:,]', 1 ] => qr/\Anesting depth exceeded at 2/,
   'dict in list when max_depth is 1';
-decod_ok [ 'd1:a0:1:bl0:,,', 2 ] => { a => '', b => [''] }
+decod_ok [ 'd1:a0:1:b[0:],', 2 ] => { a => '', b => [''] }
   ,    # Accept dict containing list when max_depth is 2
-  error_ok [ 'd1:a0:1:bl0:,,', 1 ] => qr/\Anesting depth exceeded at 10/,
+  error_ok [ 'd1:a0:1:b[0:],', 1 ] => qr/\Anesting depth exceeded at 10/,
   'list in dict when max_depth is 1';
 
 done_testing;
