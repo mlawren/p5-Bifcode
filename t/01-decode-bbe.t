@@ -4,7 +4,7 @@ use utf8;
 
 use Test::More 0.88;    # for done_testing
 use Test::Differences;
-use Cencode 'cdecode';
+use BBE 'decode_bbe';
 use Unicode::UTF8 'encode_utf8';
 
 my $utf8   = 'ß';
@@ -16,8 +16,8 @@ sub un {
     my ($frozen) = @_;
     local $, = ', ';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen]", cdecode @$frozen )
-      : ( "decode '$frozen'", cdecode $frozen );
+      ? ( "decode [@$frozen]", decode_bbe @$frozen )
+      : ( "decode '$frozen'", decode_bbe $frozen );
 }
 
 sub decod_ok {
@@ -37,7 +37,7 @@ sub error_ok {
 
 error_ok
   '0:0:' => qr/\Atrailing garbage at 2\b/,
-  'data past end of first correct cencoded string';
+  'data past end of first correct encode_bbe\'d string';
 error_ok 'i'  => qr/\Aunexpected end of data at 1\b/, 'aborted integer';
 error_ok 'i0' => qr/\Amalformed integer data at 1\b/, 'unterminated integer';
 error_ok 'i,' => qr/\Amalformed integer data at 1\b/, 'empty integer';
@@ -64,7 +64,7 @@ error_ok
 error_ok
   '2:abfdjslhfld' => qr/\Atrailing garbage at 4\b/,
   'string with trailing garbage';
-error_ok '2:' . $utf8 => qr/\Acdecode: only accepts bytes\b/,
+error_ok '2:' . $utf8 => qr/\Adecode_bbe: only accepts bytes\b/,
   'check for utf8 flag';
 decod_ok '0:'                         => '';
 decod_ok $cstr                        => $utf8;

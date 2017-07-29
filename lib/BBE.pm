@@ -1,9 +1,9 @@
-package Cencode;
+package BBE;
 use 5.008001;
 use strict;
 use warnings;
 use Carp;
-use Exporter::Tidy all => [qw( cencode cdecode cencode_bless )];
+use Exporter::Tidy all => [qw( encode_bbe decode_bbe bless_bbe )];
 use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
@@ -14,7 +14,7 @@ my $EOC = ',';    # End Of Chunk
 
 sub _msg { sprintf "@_", pos() || 0 }
 
-sub _cdecode_string {
+sub _decode_bbe_string {
 
     if (m/ \G ( b ) ? ( 0 | [1-9] \d* ) : /xgc) {
         my $blob = $1;
@@ -51,12 +51,12 @@ sub _cdecode_string {
     return;
 }
 
-sub _cdecode_chunk {
+sub _decode_bbe_chunk {
     warn _msg 'decoding at %s' if $DEBUG;
 
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
-    if ( defined( my $str = _cdecode_string() ) ) {
+    if ( defined( my $str = _decode_bbe_string() ) ) {
         return $str;
     }
     elsif (m/ \G ~ /xgc) {
@@ -82,7 +82,7 @@ sub _cdecode_chunk {
         until (m/ \G $EOC /xgc) {
             warn _msg 'list not terminated at %s, looking for another element'
               if $DEBUG;
-            push @list, _cdecode_chunk();
+            push @list, _decode_bbe_chunk();
         }
         return \@list;
     }
@@ -101,7 +101,7 @@ sub _cdecode_chunk {
             croak _msg 'unexpected end of data at %s'
               if m/ \G \z /xgc;
 
-            my $key = _cdecode_string();
+            my $key = _decode_bbe_string();
             defined $key or croak _msg 'dict key is not a string at %s';
 
             croak _msg 'duplicate dict key at %s'
@@ -114,7 +114,7 @@ sub _cdecode_chunk {
               if m/ \G $EOC /xgc;
 
             $last_key = $key;
-            $hash{$key} = _cdecode_chunk();
+            $hash{$key} = _decode_bbe_chunk();
         }
         return \%hash;
     }
@@ -125,18 +125,18 @@ sub _cdecode_chunk {
     }
 }
 
-sub cdecode {
+sub decode_bbe {
     local $_         = shift;
     local $max_depth = shift;
-    croak 'cdecode: too many arguments: ' . "@_" if @_;
-    croak 'cdecode: only accepts bytes' if utf8::is_utf8($_);
+    croak 'decode_bbe: too many arguments: ' . "@_" if @_;
+    croak 'decode_bbe: only accepts bytes' if utf8::is_utf8($_);
 
-    my $deserialised_data = _cdecode_chunk();
+    my $deserialised_data = _decode_bbe_chunk();
     croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
     return $deserialised_data;
 }
 
-sub _cencode {
+sub _encode_bbe {
     my ($data) = @_;
     my $ref_data = ref $data;
 
@@ -149,30 +149,31 @@ sub _cencode {
         my $str = encode_utf8($data);
         return length($str) . ':' . $str;
     }
-    elsif ( $ref_data eq 'Cencode::INTEGER' ) {
-        croak 'Cencode::INTEGER must be defined' unless defined $$data;
+    elsif ( $ref_data eq 'BBE::INTEGER' ) {
+        croak 'BBE::INTEGER must be defined' unless defined $$data;
         return sprintf 'i%s' . $EOC, $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
-    elsif ( $ref_data eq 'SCALAR' or $ref_data eq 'Cencode::STRING' ) {
-        croak 'Cencode::STRING must be defined' unless defined $$data;
+    elsif ( $ref_data eq 'SCALAR' or $ref_data eq 'BBE::STRING' ) {
+        croak 'BBE::STRING must be defined' unless defined $$data;
 
         # escape hatch -- use this to avoid num/str heuristics
         my $str = encode_utf8($$data);
         return length($str) . ':' . $str;
     }
     elsif ( $ref_data eq 'ARRAY' ) {
-        return 'l' . join( '', map _cencode($_), @$data ) . $EOC;
+        return 'l' . join( '', map _encode_bbe($_), @$data ) . $EOC;
     }
     elsif ( $ref_data eq 'HASH' ) {
         return 'd'
           . join( '',
-            map { _cencode( \$_ ), _cencode( $data->{$_} ) } sort keys %$data )
+            map { _encode_bbe( \$_ ), _encode_bbe( $data->{$_} ) }
+            sort keys %$data )
           . $EOC;
     }
-    elsif ( $ref_data eq 'Cencode::BYTES' ) {
-        croak 'Cencode::BYTES must be defined' unless defined $$data;
+    elsif ( $ref_data eq 'BBE::BYTES' ) {
+        croak 'BBE::BYTES must be defined' unless defined $$data;
         return 'b' . length($$data) . ':' . $$data;
     }
     else {
@@ -180,20 +181,20 @@ sub _cencode {
     }
 }
 
-sub cencode {
+sub encode_bbe {
     croak 'need exactly one argument' if @_ != 1;
-    goto &_cencode;
+    goto &_encode_bbe;
 }
 
-sub cencode_bless {
+sub bless_bbe {
     my $ref  = shift;
     my $type = shift;
 
     croak 'ref and type must be defined' unless defined $ref and defined $type;
-    bless \$ref, 'Cencode::' . uc($type);
+    bless \$ref, 'BBE::' . uc($type);
 }
 
-cdecode( 'i1' . $EOC );
+decode_bbe( 'i1' . $EOC );
 
 __END__
 
@@ -203,7 +204,7 @@ __END__
 
 =head1 NAME
 
-Cencode - simple serialization format
+BBE - simple serialization format
 
 =head1 VERSION
 
@@ -211,18 +212,18 @@ Cencode - simple serialization format
 
 =head1 SYNOPSIS
 
-    use Cencode qw( cencode cdecode );
+    use BBE qw( encode_bbe decode_bbe );
  
-    my $cencoded = cencode { 'age' => 25, 'eyes' => 'blue' };
-    print $cencoded, "\n"; # d3:agei25,4:eyes4:blue,
+    my $bbe = encode_bbe { 'age' => 25, 'eyes' => 'blue' };
+    print $bbe, "\n"; # d3:agei25,4:eyes4:blue,
  
-    my $decoded = cdecode $cencoded;
+    my $decoded = decode_bbe $bbe;
 
 =head1 DESCRIPTION
 
-This module implements the I<cencode> serialisation format. It takes
-most of its inspiration and code from the L<Bencode> module. If you do
-not have a specific requirement for L<Bencode> then Cencode has the
+This module implements the I<bbe> serialisation format. It takes most
+of its inspiration and code from the L<Bencode> module. If you do not
+have a specific requirement for I<bencode> then I<bbe> has the
 following advantages (in this humble author's opinion):
 
 =over
@@ -256,7 +257,7 @@ invalid. All encodings with a leading zero, such as 'i03,', are
 invalid, other than 'i0,', which of course corresponds to 0.
 
 =item * Lists are encoded as an 'l' followed by their elements (also
-cencoded) followed by a ','. For example 'l4:spam4:eggs,' corresponds
+encode_bbe'd) followed by a ','. For example 'l4:spam4:eggs,' corresponds
 to ['spam', 'eggs'].
 
 =item * Dictionaries are encoded as a 'd' followed by a list of
@@ -270,26 +271,26 @@ strings, not alphanumerics).
 
 =head1 INTERFACE
 
-=head2 C<cencode( $datastructure )>
+=head2 C<encode_bbe( $datastructure )>
 
 Takes a single argument which may be a scalar, or may be a reference to
 either a scalar, an array or a hash. Arrays and hashes may in turn
-contain values of these same types.
+contain values of these same types. Returns a byte string.
 
 Plain scalars that look like canonically represented integers will be
 serialised as such. To bypass the heuristic and force serialisation as
 a string, use a reference to a scalar.
 
 Strings are assumed to be UTF8-encoded. To encode as bytes pass a
-reference to the data blessed as Cencode::BYTES.  Likewise
-Cencode::INTEGER and Cencode::STRING can be used to force detection of
-those types as well. See the C<cencode_bless> helper function below.
+reference to the data blessed as BBE::BYTES.  Likewise BBE::INTEGER and
+BBE::STRING can be used to force detection of those types as well. See
+the C<bless_bbe> helper function below.
 
 Croaks on unhandled data types.
 
-=head2 C<cdecode( $string [, $max_depth ] )>
+=head2 C<decode_bbe( $string [, $max_depth ] )>
 
-Takes a string and returns the corresponding deserialised data
+Takes a byte string and returns the corresponding deserialised data
 structure.
 
 If you pass an integer for the second option, it will croak when
@@ -298,11 +299,11 @@ prevent DoS attacks using maliciously crafted input.
 
 Croaks on malformed data.
 
-=head2 C<cencode_bless( $scalar, $type )>
+=head2 C<bless_bbe( $scalar, $type )>
 
-Returns a reference to $scalar blessed as Cencode::$TYPE. The value of
-$type is not checked, but the C<cencode> function will only accept the
-resulting references where $type is one of 'bytes', 'integer' or
+Returns a reference to $scalar blessed as BBE::$TYPE. The value of
+$type is not checked, but the C<encode_bbe> function will only accept
+the resulting reference where $type is one of 'bytes', 'integer' or
 'string'.
 
 =head1 DIAGNOSTICS
@@ -311,7 +312,7 @@ resulting references where $type is one of 'bytes', 'integer' or
 
 =item C<trailing garbage at %s>
 
-Your data does not end after the first I<cencode>-serialised item.
+Your data does not end after the first I<encode_bbe>-serialised item.
 
 You may also get this error if a malformed item follows.
 
@@ -340,18 +341,18 @@ didn't make sense.
 
 =item C<dict key not in sort order at %s>
 
-Your data violates the I<cencode> format constaint that dict keys must
-appear in lexical sort order.
+Your data violates the I<encode_bbe> format constaint that dict keys
+must appear in lexical sort order.
 
 =item C<duplicate dict key at %s>
 
-Your data violates the I<cencode> format constaint that all dict keys
-must be unique.
+Your data violates the I<encode_bbe> format constaint that all dict
+keys must be unique.
 
 =item C<dict key is not a string at %s>
 
-Your data violates the I<cencode> format constaint that all dict keys
-be strings.
+Your data violates the I<encode_bbe> format constaint that all dict
+keys be strings.
 
 =item C<dict key is missing value at %s>
 
@@ -360,7 +361,7 @@ Your data contains a dictionary with an odd number of elements.
 =item C<nesting depth exceeded at %s>
 
 Your data contains dicts or lists that are nested deeper than the
-$max_depth passed to C<cdecode()>.
+$max_depth passed to C<decode_bbe()>.
 
 =item C<unhandled data type>
 
@@ -394,8 +395,8 @@ The format does not support this.
 =head1 BUGS AND LIMITATIONS
 
 Strings and numbers are practically indistinguishable in Perl, so
-C<cencode()> has to resort to a heuristic to decide how to serialise a
-scalar. This cannot be fixed.
+C<encode_bbe()> has to resort to a heuristic to decide how to serialise
+a scalar. This cannot be fixed.
 
 =head1 AUTHOR
 

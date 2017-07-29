@@ -4,7 +4,7 @@ use warnings;
 use ExtUtils::MakeMaker::CPANfile;
 
 WriteMakefile(
-    NAME         => 'Cencode',
+    NAME         => 'BBE',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
-    VERSION_FROM => 'lib/Cencode.pm',
+    VERSION_FROM => 'lib/BBE.pm',
 );
