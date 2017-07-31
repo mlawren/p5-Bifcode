@@ -1,16 +1,20 @@
 use strict;
 use warnings;
 use utf8;
-
 use Test::More 0.88;    # for done_testing
 use Test::Differences;
 use BBE 'decode_bbe';
 use Unicode::UTF8 'encode_utf8';
+require bytes;
 
-my $utf8   = 'ß';
-my $bytes  = encode_utf8($utf8);
-my $length = length($bytes);
-my $cstr   = $length . ':' . $bytes;
+my $utf8        = 'ß';
+my $utf8_bytes  = encode_utf8($utf8);
+my $utf8_length = bytes::length($utf8_bytes);
+my $utf8_bbe    = $utf8_length . ':' . $utf8_bytes;
+
+my $data        = pack( 's<', 255 );
+my $data_length = bytes::length($data);
+my $data_bbe    = 'b' . $data_length . ':' . $data;
 
 sub un {
     my ($frozen) = @_;
@@ -66,12 +70,12 @@ error_ok
   'string with trailing garbage';
 error_ok '2:' . $utf8 => qr/\Adecode_bbe: only accepts bytes\b/,
   'check for utf8 flag';
-decod_ok '0:'                         => '';
-decod_ok $cstr                        => $utf8;
-decod_ok '3:abc'                      => 'abc';
-decod_ok '3:abc'                      => 'abc';
-decod_ok '10:1234567890'              => '1234567890';
-decod_ok 'b' . $length . ':' . $bytes => $bytes;
+decod_ok '0:'            => '';
+decod_ok '3:abc'         => 'abc';
+decod_ok '3:abc'         => 'abc';
+decod_ok '10:1234567890' => '1234567890';
+decod_ok $data_bbe       => $data;
+decod_ok $utf8_bbe       => $utf8;
 error_ok
   '02:xy' => qr/\Amalformed string length at 0\b/,
   'string with extra leading zero in count';
@@ -83,8 +87,8 @@ error_ok
 decod_ok '[~~~]'    => [ undef, undef, undef ];
 decod_ok '[0:0:0:]' => [ '',    '',    '' ];
 error_ok 'relwjhrlewjh' => qr/\Agarbage at 0/, 'complete garbage';
-decod_ok '[i1,i2,i3,]'              => [ 1,     2,    3 ];
-decod_ok '[3:asd2:xy' . $cstr . ']' => [ 'asd', 'xy', $utf8 ];
+decod_ok '[i1,i2,i3,]'                  => [ 1,     2,    3 ];
+decod_ok '[3:asd2:xy' . $utf8_bbe . ']' => [ 'asd', 'xy', $utf8 ];
 decod_ok '[[5:Alice3:Bob][i2,i3,~]~]' =>
   [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
 error_ok '{' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
@@ -92,7 +96,8 @@ error_ok
   '{}foobar' => qr/\Atrailing garbage at 2\b/,
   'empty dict with trailing garbage';
 decod_ok '{}' => {};
-decod_ok '{' . $cstr . $cstr . '}' => { $utf8 => $utf8 };
+decod_ok '{' . $data_bbe . $utf8_bbe . '}' => { $data => $utf8 };
+decod_ok '{' . $utf8_bbe . $data_bbe . '}' => { $utf8 => $data };
 decod_ok '{3:agei25,4:eyes4:blue5:undef~}' =>
   { 'age' => 25, 'eyes' => 'blue', 'undef' => undef };
 decod_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>
