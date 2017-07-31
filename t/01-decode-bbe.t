@@ -97,7 +97,7 @@ decod_ok '{3:agei25,4:eyes4:blue5:undef~}' =>
   { 'age' => 25, 'eyes' => 'blue', 'undef' => undef };
 decod_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>
   { 'spam.mp3' =>
-      { 'author' => 'Alice', 'length' => '100000', 'undef' => undef } };
+      { 'author' => 'Alice', 'length' => 100000, 'undef' => undef } };
 error_ok
   '{~}' => qr/\Adict key is not a string at 1\b/,
   'dict key cannot be undef';
