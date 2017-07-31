@@ -210,6 +210,7 @@ BBE - simple serialization format
 
 0.001 (yyyy-mm-dd)
 
+
 =head1 SYNOPSIS
 
     use BBE qw( encode_bbe decode_bbe );
@@ -240,32 +241,44 @@ The encoding is defined as follows:
 
 =over
 
-=item * Undefined values correspond to '~'.
+=item * BBE::UNDEF
 
-=item * UTF8 strings are length-prefixed with a base ten number
-followed by a colon and the octet version of the string.  For example
-'ß' corresponds to '2:ß'.
+A null or undefined value correspond to '~'.
 
-=item * Byte strings start with 'b' then the length as a base
-ten number followed by a colon and then the byte version of the string.
-For example 'xyz' corresponds to 'b3:xyz'.
+=item * BBE::STRING
 
-=item * Integers are represented by an 'i' followed by the number in
-base 10 followed by a ','. For example 'i3,' corresponds to 3 and
-'i-3,' corresponds to -3. Integers have no size limitation. 'i-0,' is
-invalid. All encodings with a leading zero, such as 'i03,', are
-invalid, other than 'i0,', which of course corresponds to 0.
+UTF8 strings are length-prefixed with a base ten number followed by a
+colon and the octet version of the string.  For example 'ß'
+corresponds to '2:ß'.
 
-=item * Lists are encoded as a '[' followed by their elements (also
-bbe encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds
-to ['spam', 'eggs'].
+=item * BBE::BYTES
 
-=item * Dictionaries are encoded as a '{' followed by a list of
-alternating keys and their corresponding values followed by a '}'. For
-example, '{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo',
-'spam': 'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a',
-'b']}. Keys must be strings and appear in sorted order (sorted as raw
-strings, not alphanumerics).
+Opaque data starts with a 'b' then the octet length as a base ten
+number followed by a colon and then the data itself. For example 'xyz'
+corresponds to 'b3:xyz'.
+
+=item * BBE::INTEGER
+
+Integers are represented by an 'i' followed by the number in base 10
+followed by a ','. For example 'i3,' corresponds to 3 and 'i-3,'
+corresponds to -3. Integers have no size limitation. 'i-0,' is invalid.
+All encodings with a leading zero, such as 'i03,', are invalid, other
+than 'i0,', which of course corresponds to 0.
+
+=item * BBE::LIST
+
+Lists are encoded as a '[' followed by their elements (also I<bbe>
+encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds to
+['spam', 'eggs'].
+
+=item * BBE::DICT
+
+Dictionaries are encoded as a '{' followed by a list of alternating
+keys and their corresponding values followed by a '}'. For example,
+'{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo', 'spam':
+'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a', 'b']}. Keys
+must be strings and appear in sorted order (sorted as raw strings, not
+alphanumerics).
 
 =back
 
@@ -277,16 +290,30 @@ Takes a single argument which may be a scalar, or may be a reference to
 either a scalar, an array or a hash. Arrays and hashes may in turn
 contain values of these same types. Returns a byte string.
 
-Plain scalars that look like canonically represented integers will be
-serialised as such. To bypass the heuristic and force serialisation as
-a string, use a reference to a scalar.
+Perl data types are automatically mapped to I<bbe> as follows:
 
-Strings are assumed to be UTF8-encoded. To encode as bytes pass a
-reference to the data blessed as BBE::BYTES.  Likewise BBE::INTEGER and
-BBE::STRING can be used to force detection of those types as well. See
-the C<bless_bbe> helper function below.
+=over
 
-Croaks on unhandled data types.
+=item * Perl's 'undef' maps directly to BBE::UNDEF.
+
+=item * Plain scalars that look like canonically represented integers
+will be serialised as BBE::INTEGER. To bypass the heuristic and force
+serialisation as a BBE::STRING, use a reference to a scalar.
+
+=item * Non-integer-looking scalars are treated as BBE::STRING.
+
+=item * Array references become BBE::LIST.
+
+=item * Hash references become BBE::DICT.
+
+=back
+
+You can force scalars to be encoded a particular way by using a
+reference to them blessed as one of the following class names:
+BBE::BYTES, BBE::INTEGER or BBE::STRING.  See the C<bless_bbe> helper
+function below for creating those.
+
+This subroutine croaks on unhandled data types.
 
 =head2 C<decode_bbe( $string [, $max_depth ] )>
 
