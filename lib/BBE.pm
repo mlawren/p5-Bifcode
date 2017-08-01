@@ -36,7 +36,7 @@ sub _decode_bbe_string {
         pos() = pos() + $len;
 
         warn _msg
-          STRING => "(length $len)",
+          UTF8 => "(length $len)",
           $len < 200 ? "[$str]" : ()
           if $DEBUG;
 
@@ -191,7 +191,7 @@ sub _encode_bbe {
                 local $get_key = 1;
                 $x       = _encode_bbe($_);
                 $get_key = 0;
-                croak 'BBE::DICT key must be BBE::BYTES or BBE::STRING'
+                croak 'BBE::DICT key must be BBE::BYTES or BBE::UTF8'
                   unless $x =~ m/\A [b0-9] /x;
                 $x, _encode_bbe( $data->{$_} )
               }
@@ -267,7 +267,7 @@ The encoding is defined as follows:
 
 A null or undefined value correspond to '~'.
 
-=item * BBE::STRING
+=item * BBE::UTF8
 
 UTF8 strings are length-prefixed with a base ten number followed by a
 colon and the octet version of the string.  For example 'ß'
@@ -299,7 +299,7 @@ Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
 '{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo', 'spam':
 'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a', 'b']}. Keys
-must be BBE::STRING or BBE::BYTES and appear in sorted order (sorted as
+must be BBE::UTF8 or BBE::BYTES and appear in sorted order (sorted as
 raw strings, not alphanumerics).
 
 =back
@@ -320,9 +320,9 @@ Perl data types are automatically mapped to I<bbe> as follows:
 
 =item * Plain scalars that look like canonically represented integers
 will be serialised as BBE::INTEGER. To bypass the heuristic and force
-serialisation as a BBE::STRING, use a reference to a scalar.
+serialisation as a BBE::UTF8, use a reference to a scalar.
 
-=item * Non-integer-looking scalars are treated as BBE::STRING.
+=item * Non-integer-looking scalars are treated as BBE::UTF8.
 
 =item * Array references become BBE::LIST.
 
@@ -332,7 +332,7 @@ serialisation as a BBE::STRING, use a reference to a scalar.
 
 You can force scalars to be encoded a particular way by using a
 reference to them blessed as one of the following class names:
-BBE::BYTES, BBE::INTEGER or BBE::STRING.  See the C<bless_bbe> helper
+BBE::BYTES, BBE::INTEGER or BBE::UTF8.  See the C<bless_bbe> helper
 function below for creating those.
 
 This subroutine croaks on unhandled data types.
@@ -353,7 +353,7 @@ Croaks on malformed data.
 Returns a reference to $scalar blessed as BBE::$TYPE. The value of
 $type is not checked, but the C<encode_bbe> function will only accept
 the resulting reference where $type is one of 'bytes', 'integer' or
-'string'.
+'utf8'.
 
 =head1 DIAGNOSTICS
 
