@@ -59,6 +59,14 @@ sub _decode_bbe_chunk {
     if ( defined( my $str = _decode_bbe_string() ) ) {
         return $str;
     }
+    elsif (m/ \G t /xgc) {
+        warn _msg 'TRUE' if $DEBUG;
+        return 1;
+    }
+    elsif (m/ \G f /xgc) {
+        warn _msg 'FALSE' if $DEBUG;
+        return 0;
+    }
     elsif (m/ \G ~ /xgc) {
         warn _msg 'UNDEF' if $DEBUG;
         return undef;
@@ -160,7 +168,13 @@ sub _encode_bbe {
 
     use bytes;    # for 'sort' and 'length' below
 
-    if ( $ref_data eq 'BBE::INTEGER' ) {
+    if ( $ref_data eq 'BBE::TRUE' ) {
+        return 't';
+    }
+    elsif ( $ref_data eq 'BBE::FALSE' ) {
+        return 'f';
+    }
+    elsif ( $ref_data eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
         return sprintf 'i%s' . $EOC, $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
@@ -253,7 +267,7 @@ following advantages (in this humble author's opinion):
 
 =over
 
-=item * Support for undefined values
+=item * Support for undefined and boolean values
 
 =item * Support for UTF8-encoded strings
 
@@ -268,6 +282,10 @@ The encoding is defined as follows:
 =item * BBE::UNDEF
 
 A null or undefined value correspond to '~'.
+
+=item * BBE::TRUE and BBE::FALSE
+
+Boolean values are represented by 't' and 'f'.
 
 =item * BBE::UTF8
 
@@ -334,8 +352,8 @@ BBE::UTF8.
 
 You can force scalars to be encoded a particular way by using a
 reference to them blessed as one of the following class names:
-BBE::BYTES, BBE::INTEGER or BBE::UTF8.  See the C<bless_bbe> helper
-function below for creating those.
+BBE::BYTES, BBE::FALSE, BBE::INTEGER, BBE::TRUE or BBE::UTF8.  See the
+C<bless_bbe> helper function below for creating those.
 
 This subroutine croaks on unhandled data types.
 
@@ -348,14 +366,25 @@ If you pass an integer for the second option, it will croak when
 attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
+I<bbe> types are mapped to Perl in the reverse way to the C<encode_bbe>
+function, with the following additions:
+
+=over
+
+=item * BBE::FALSE maps to 0.
+
+=item * BBE::TRUE maps to 1.
+
+=back
+
 Croaks on malformed data.
 
 =head2 C<bless_bbe( $scalar, $type )>
 
 Returns a reference to $scalar blessed as BBE::$TYPE. The value of
 $type is not checked, but the C<encode_bbe> function will only accept
-the resulting reference where $type is one of 'bytes', 'integer' or
-'utf8'.
+the resulting reference where $type is one of 'bytes', 'false',
+'integer', 'true' or 'utf8'.
 
 =head1 DIAGNOSTICS
 
