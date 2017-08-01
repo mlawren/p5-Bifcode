@@ -9,7 +9,7 @@ use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
 our $VERSION = '0.001';
-our ( $DEBUG, $max_depth );
+our ( $DEBUG, $max_depth, $get_key );
 my $EOC = ',';    # End Of Chunk
 
 sub _msg { sprintf "@_", pos() || 0 }
@@ -138,43 +138,63 @@ sub decode_bbe {
 
 sub _encode_bbe {
     my ($data) = @_;
-    my $ref_data = ref $data;
-
     return '~' unless defined $data;
 
-    if ( not ref $data ) {
-        return sprintf 'i%s' . $EOC, $data
-          if $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
+    my $ref_data = ref $data;
+    if ( $ref_data eq '' ) {
+        if ( $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x and not $get_key ) {
+            $ref_data = 'BBE::INTEGER';
+        }
+        else {
+            $ref_data = 'BBE::STRING';
+        }
 
-        my $str = encode_utf8($data);
-        return length($str) . ':' . $str;
+        my $x = $data;
+        $data = \$x;
     }
-    elsif ( $ref_data eq 'BBE::INTEGER' ) {
+    elsif ( $ref_data eq 'SCALAR' ) {
+        $ref_data = 'BBE::STRING';
+    }
+
+    if ( $ref_data eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
         return sprintf 'i%s' . $EOC, $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
-    elsif ( $ref_data eq 'SCALAR' or $ref_data eq 'BBE::STRING' ) {
+    elsif ( $ref_data eq 'BBE::STRING' ) {
         croak 'BBE::STRING must be defined' unless defined $$data;
-
-        # escape hatch -- use this to avoid num/str heuristics
-        my $str = encode_utf8($$data);
+        my $is_utf8 = 1;
+        my $str = encode_utf8( $$data, sub { $is_utf8 = 0 } );
+        return length($str) . ':' . $str if $is_utf8;
+        return 'b' . length($$data) . ':' . $$data;
+    }
+    elsif ( $ref_data eq 'BBE::UTF8' ) {
+        croak 'BBE::UTF8 must be defined' unless defined $$data;
+        my $str = encode_utf8( $$data, sub { croak 'invalid BBE::UTF8' } );
         return length($str) . ':' . $str;
+    }
+    elsif ( $ref_data eq 'BBE::BYTES' ) {
+        croak 'BBE::BYTES must be defined' unless defined $$data;
+        return 'b' . length($$data) . ':' . $$data;
     }
     elsif ( $ref_data eq 'ARRAY' ) {
         return '[' . join( '', map _encode_bbe($_), @$data ) . ']';
     }
     elsif ( $ref_data eq 'HASH' ) {
-        return '{'
-          . join( '',
-            map { _encode_bbe( \$_ ), _encode_bbe( $data->{$_} ) }
-            sort keys %$data )
-          . '}';
-    }
-    elsif ( $ref_data eq 'BBE::BYTES' ) {
-        croak 'BBE::BYTES must be defined' unless defined $$data;
-        return 'b' . length($$data) . ':' . $$data;
+        my $x;
+        return '{' . join(
+            '',
+            map {
+                local $get_key = 1;
+                $x       = _encode_bbe($_);
+                $get_key = 0;
+                croak 'BBE::DICT key must be BBE::BYTES or BBE::STRING'
+                  unless $x =~ m/\A [b0-9] /x;
+                $x, _encode_bbe( $data->{$_} )
+              }
+              sort keys %$data
+        ) . '}';
     }
     else {
         croak 'unhandled data type: ' . $ref_data;
@@ -277,8 +297,8 @@ Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
 '{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo', 'spam':
 'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a', 'b']}. Keys
-must be strings and appear in sorted order (sorted as raw strings, not
-alphanumerics).
+must be BBE::STRING or BBE::BYTES and appear in sorted order (sorted as
+raw strings, not alphanumerics).
 
 =back
 
