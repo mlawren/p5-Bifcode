@@ -156,6 +156,8 @@ sub _encode_bbe {
         $ref_data = 'BBE::STRING';
     }
 
+    use bytes;    # for 'sort' and 'length' below
+
     if ( $ref_data eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
         return sprintf 'i%s' . $EOC, $$data
