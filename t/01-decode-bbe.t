@@ -74,7 +74,7 @@ decod_ok '0:'            => '';
 decod_ok '3:abc'         => 'abc';
 decod_ok '3:abc'         => 'abc';
 decod_ok '10:1234567890' => '1234567890';
-decod_ok $data_bbe       => $data;
+decod_ok $data_bbe       => \$data;
 decod_ok $utf8_bbe       => $utf8;
 error_ok
   '02:xy' => qr/\Amalformed string length at 0\b/,
@@ -97,7 +97,7 @@ error_ok
   'empty dict with trailing garbage';
 decod_ok '{}' => {};
 decod_ok '{' . $data_bbe . $utf8_bbe . '}' => { $data => $utf8 };
-decod_ok '{' . $utf8_bbe . $data_bbe . '}' => { $utf8 => $data };
+decod_ok '{' . $utf8_bbe . $data_bbe . '}' => { $utf8 => \$data };
 decod_ok '{3:agei25,4:eyes4:blue5:undef~}' =>
   { 'age' => 25, 'eyes' => 'blue', 'undef' => undef };
 decod_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>

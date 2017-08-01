@@ -29,7 +29,7 @@ sub _decode_bbe_string {
 
             warn _msg BYTES => "(length $len)", if $DEBUG;
 
-            return $data;
+            return $get_key ? $data : \$data;
         }
 
         my $str = decode_utf8( substr $_, pos(), $len );
@@ -101,7 +101,9 @@ sub _decode_bbe_chunk {
             croak _msg 'unexpected end of data at %s'
               if m/ \G \z /xgc;
 
+            local $get_key = 1;
             my $key = _decode_bbe_string();
+            $get_key = 0;
             defined $key or croak _msg 'dict key is not a string at %s';
 
             croak _msg 'duplicate dict key at %s'
@@ -153,7 +155,7 @@ sub _encode_bbe {
         $data = \$x;
     }
     elsif ( $ref_data eq 'SCALAR' ) {
-        $ref_data = 'BBE::STRING';
+        $ref_data = 'BBE::BYTES';
     }
 
     use bytes;    # for 'sort' and 'length' below
@@ -270,8 +272,8 @@ A null or undefined value correspond to '~'.
 =item * BBE::UTF8
 
 UTF8 strings are length-prefixed with a base ten number followed by a
-colon and the octet version of the string.  For example 'ß'
-corresponds to '2:ß'.
+colon and the octet version of the string.  For example "ß"
+corresponds to "2:\x{df}".
 
 =item * BBE::BYTES
 
@@ -319,10 +321,10 @@ Perl data types are automatically mapped to I<bbe> as follows:
 =item * Perl's 'undef' maps directly to BBE::UNDEF.
 
 =item * Plain scalars that look like canonically represented integers
-will be serialised as BBE::INTEGER. To bypass the heuristic and force
-serialisation as a BBE::UTF8, use a reference to a scalar.
+will be serialised as BBE::INTEGER. Otherwise they are treated as
+BBE::UTF8.
 
-=item * Non-integer-looking scalars are treated as BBE::UTF8.
+=item * Scalar references become BBE::BYTES..
 
 =item * Array references become BBE::LIST.
 
