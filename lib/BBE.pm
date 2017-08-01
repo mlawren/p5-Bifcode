@@ -277,29 +277,27 @@ following advantages (in this humble author's opinion):
 
 The encoding is defined as follows:
 
-=over
-
-=item * BBE::UNDEF
+=head2 BBE::UNDEF
 
 A null or undefined value correspond to '~'.
 
-=item * BBE::TRUE and BBE::FALSE
+=head2 BBE::TRUE and BBE::FALSE
 
 Boolean values are represented by 't' and 'f'.
 
-=item * BBE::UTF8
+=head2 BBE::UTF8
 
 UTF8 strings are length-prefixed with a base ten number followed by a
 colon and the octet version of the string.  For example "ß"
 corresponds to "2:\x{df}".
 
-=item * BBE::BYTES
+=head2 BBE::BYTES
 
 Opaque data starts with a 'b' then the octet length as a base ten
 number followed by a colon and then the data itself. For example 'xyz'
 corresponds to 'b3:xyz'.
 
-=item * BBE::INTEGER
+=head2 BBE::INTEGER
 
 Integers are represented by an 'i' followed by the number in base 10
 followed by a ','. For example 'i3,' corresponds to 3 and 'i-3,'
@@ -307,13 +305,13 @@ corresponds to -3. Integers have no size limitation. 'i-0,' is invalid.
 All encodings with a leading zero, such as 'i03,', are invalid, other
 than 'i0,', which of course corresponds to 0.
 
-=item * BBE::LIST
+=head2 BBE::LIST
 
 Lists are encoded as a '[' followed by their elements (also I<bbe>
 encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds to
 ['spam', 'eggs'].
 
-=item * BBE::DICT
+=head2 BBE::DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
@@ -321,8 +319,6 @@ keys and their corresponding values followed by a '}'. For example,
 'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a', 'b']}. Keys
 must be BBE::UTF8 or BBE::BYTES and appear in sorted order (sorted as
 raw strings, not alphanumerics).
-
-=back
 
 =head1 INTERFACE
 
