@@ -7,4 +7,9 @@ WriteMakefile(
     NAME         => 'BBE',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
     VERSION_FROM => 'lib/BBE.pm',
+    META_MERGE   => {
+        no_index => {
+            package => [qw(BBE::Boolean)],
+        },
+    },
 );

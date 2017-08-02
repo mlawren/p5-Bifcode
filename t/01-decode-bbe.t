@@ -49,8 +49,8 @@ error_ok
   'i341foo382,' => qr/\Amalformed integer data at 1\b/,
   'malformed integer';
 decod_ok '~'           => undef;
-decod_ok 'T'           => 1;
-decod_ok 'F'           => 0;
+decod_ok 'T'           => $BBE::TRUE;
+decod_ok 'F'           => $BBE::FALSE;
 decod_ok 'i4,'         => 4;
 decod_ok 'i0,'         => 0;
 decod_ok 'i123456789,' => 123456789;
@@ -86,9 +86,9 @@ decod_ok '[]' => [];
 error_ok
   '[]anfdldjfh' => qr/\Atrailing garbage at 2\b/,
   'empty list with trailing garbage';
-decod_ok '[~~~]'    => [ undef, undef, undef ];
-decod_ok '[TF]'     => [ 1,     0 ];
-decod_ok '[0:0:0:]' => [ '',    '',    '' ];
+decod_ok '[~~~]' => [ undef, undef, undef ];
+decod_ok '[TF]' => [ $BBE::TRUE, $BBE::FALSE ];
+decod_ok '[0:0:0:]' => [ '', '', '' ];
 error_ok 'relwjhrlewjh' => qr/\Agarbage at 0/, 'complete garbage';
 decod_ok '[i1,i2,i3,]'                  => [ 1,     2,    3 ];
 decod_ok '[3:asd2:xy' . $utf8_bbe . ']' => [ 'asd', 'xy', $utf8 ];
@@ -101,8 +101,13 @@ error_ok
 decod_ok '{}' => {};
 decod_ok '{' . $data_bbe . $utf8_bbe . '}' => { $data => $utf8 };
 decod_ok '{' . $utf8_bbe . $data_bbe . '}' => { $utf8 => \$data };
-decod_ok '{3:agei25,4:eyes4:blue5:falseF4:trueT5:undef~}' =>
-  { 'age' => 25, 'eyes' => 'blue', 'undef' => undef, true => 1, false => 0, };
+decod_ok '{3:agei25,4:eyes4:blue5:falseF4:trueT5:undef~}' => {
+    'age'   => 25,
+    'eyes'  => 'blue',
+    'undef' => undef,
+    true    => $BBE::TRUE,
+    false   => $BBE::FALSE,
+};
 decod_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>
   { 'spam.mp3' =>
       { 'author' => 'Alice', 'length' => 100000, 'undef' => undef } };

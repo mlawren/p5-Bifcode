@@ -9,10 +9,22 @@ use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
 our $VERSION = '0.001';
-our $TRUE    = bless( do { \( my $t = 1 ) }, 'BBE::TRUE' );
-our $FALSE   = bless( do { \( my $f = 0 ) }, 'BBE::FALSE' );
 our ( $DEBUG, $max_depth, $get_key );
 my $EOC = ',';    # End Of Chunk
+
+{
+    # Shamelessly copied from JSON::PP::Boolean
+    package BBE::Boolean;
+    use overload (
+        "0+"     => sub { ${ $_[0] } },
+        "++"     => sub { Carp::croak 'BBE::Boolean is immutable' },
+        "--"     => sub { Carp::croak 'BBE::Boolean is immutable' },
+        fallback => 1,
+    );
+}
+
+$BBE::TRUE  = bless( do { \( my $t = 1 ) }, 'BBE::Boolean' );
+$BBE::FALSE = bless( do { \( my $f = 0 ) }, 'BBE::Boolean' );
 
 sub _msg { sprintf "@_", pos() || 0 }
 
@@ -63,11 +75,11 @@ sub _decode_bbe_chunk {
     }
     elsif (m/ \G T /xgc) {
         warn _msg 'TRUE' if $DEBUG;
-        return 1;
+        return $BBE::TRUE;
     }
     elsif (m/ \G F /xgc) {
         warn _msg 'FALSE' if $DEBUG;
-        return 0;
+        return $BBE::FALSE;
     }
     elsif (m/ \G ~ /xgc) {
         warn _msg 'UNDEF' if $DEBUG;
@@ -170,11 +182,8 @@ sub _encode_bbe {
 
     use bytes;    # for 'sort' and 'length' below
 
-    if ( $ref_data eq 'BBE::TRUE' ) {
-        return 'T';
-    }
-    elsif ( $ref_data eq 'BBE::FALSE' ) {
-        return 'F';
+    if ( $ref_data eq 'BBE::Boolean' ) {
+        return $$data ? 'T' : 'F';
     }
     elsif ( $ref_data eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
@@ -400,8 +409,8 @@ Croaks on malformed data.
 
 Returns a reference to $scalar blessed as BBE::$TYPE. The value of
 $type is not checked, but the C<encode_bbe> function will only accept
-the resulting reference where $type is one of 'bytes', 'false',
-'integer', 'true' or 'utf8'.
+the resulting reference where $type is one of 'bytes', 'integer', or
+'utf8'.
 
 =head1 DIAGNOSTICS
 
