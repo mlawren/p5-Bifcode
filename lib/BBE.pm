@@ -61,11 +61,11 @@ sub _decode_bbe_chunk {
     if ( defined( my $str = _decode_bbe_string() ) ) {
         return $str;
     }
-    elsif (m/ \G t /xgc) {
+    elsif (m/ \G T /xgc) {
         warn _msg 'TRUE' if $DEBUG;
         return 1;
     }
-    elsif (m/ \G f /xgc) {
+    elsif (m/ \G F /xgc) {
         warn _msg 'FALSE' if $DEBUG;
         return 0;
     }
@@ -171,10 +171,10 @@ sub _encode_bbe {
     use bytes;    # for 'sort' and 'length' below
 
     if ( $ref_data eq 'BBE::TRUE' ) {
-        return 't';
+        return 'T';
     }
     elsif ( $ref_data eq 'BBE::FALSE' ) {
-        return 'f';
+        return 'F';
     }
     elsif ( $ref_data eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
@@ -264,7 +264,7 @@ BBE - simple serialization format
         utf8    => 'ß',
     };
 
-    #  '{5:bytesb2:▒5:falsef7:integeri25,4:truet5:undef~4:utf82:ß}';
+    #  '{5:bytesb2:▒5:falseF7:integeri25,4:trueT5:undef~4:utf82:ß}';
  
     my $decoded = decode_bbe $bbe;
 
@@ -302,7 +302,7 @@ A null or undefined value correspond to '~'.
 
 =head2 BBE::TRUE and BBE::FALSE
 
-Boolean values are represented by 't' and 'f'.
+Boolean values are represented by 'T' and 'F'.
 
 =head2 BBE::UTF8
 

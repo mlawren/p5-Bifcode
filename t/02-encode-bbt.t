@@ -23,8 +23,8 @@ sub enc_ok {
 }
 
 enc_ok '~'                      => undef;
-enc_ok 't'                      => $BBE::TRUE;
-enc_ok 'f'                      => $BBE::FALSE;
+enc_ok 'T'                      => $BBE::TRUE;
+enc_ok 'F'                      => $BBE::FALSE;
 enc_ok 'i4,'                    => 4;
 enc_ok 'i5,'                    => bless_bbe( 5, 'integer' );
 enc_ok 'i0,'                    => 0;
@@ -42,7 +42,7 @@ enc_ok '[[5:Alice3:Bob][i2,i3,]]' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
 enc_ok '{}' => {};
 enc_ok '{1:13:one}' => { 1 => 'one' };
 enc_ok '{4:data' . $data_bbe . '}' => { data => bless_bbe( $data, 'bytes' ) },
-    enc_ok '{3:agei25,4:eyes4:blue5:falsef4:truet5:undef~'
+    enc_ok '{3:agei25,4:eyes4:blue5:falseF4:trueT5:undef~'
   . $utf8_bbe
   . $utf8_bbe
   . '}' => {
