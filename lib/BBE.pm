@@ -296,27 +296,27 @@ following advantages (in this humble author's opinion):
 
 The encoding is defined as follows:
 
-=head2 BBE::UNDEF
+=head2 BBE_UNDEF
 
 A null or undefined value correspond to '~'.
 
-=head2 BBE::TRUE and BBE::FALSE
+=head2 BBE_TRUE and BBE_FALSE
 
 Boolean values are represented by 'T' and 'F'.
 
-=head2 BBE::UTF8
+=head2 BBE_UTF8
 
 UTF8 strings are the octet length of the decoded string as a base ten
 number followed by a colon and the decoded string.  For example "ß"
 corresponds to "2:\x{c3}\x{9f}".
 
-=head2 BBE::BYTES
+=head2 BBE_BYTES
 
 Opaque data starts with a 'b' then the octet length as a base ten
 number followed by a colon and then the data itself. For example a
 three-byte blob 'xyz' corresponds to 'b3:xyz'.
 
-=head2 BBE::INTEGER
+=head2 BBE_INTEGER
 
 Integers are represented by an 'i' followed by the number in base 10
 followed by a ','. For example 'i3,' corresponds to 3 and 'i-3,'
@@ -324,20 +324,20 @@ corresponds to -3. Integers have no size limitation. 'i-0,' is invalid.
 All encodings with a leading zero, such as 'i03,', are invalid, other
 than 'i0,', which of course corresponds to 0.
 
-=head2 BBE::LIST
+=head2 BBE_LIST
 
 Lists are encoded as a '[' followed by their elements (also I<bbe>
 encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds to
 ['spam', 'eggs'].
 
-=head2 BBE::DICT
+=head2 BBE_DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
 '{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo', 'spam':
 'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a', 'b']}. Keys
-must be BBE::UTF8 or BBE::BYTES and appear in sorted order (sorted as
-raw strings, not alphanumerics).
+must be BBE_UTF8 or BBE_BYTES and appear in sorted order (sorted as raw
+strings, not alphanumerics).
 
 =head1 INTERFACE
 
@@ -351,17 +351,17 @@ Perl data types are automatically mapped to I<bbe> as follows:
 
 =over
 
-=item * Perl's 'undef' maps directly to BBE::UNDEF.
+=item * Perl's 'undef' maps directly to BBE_UNDEF.
 
 =item * Plain scalars that look like canonically represented integers
-will be serialised as BBE::INTEGER. Otherwise they are treated as
-BBE::UTF8.
+will be serialised as BBE_INTEGER. Otherwise they are treated as
+BBE_UTF8.
 
-=item * SCALAR references become BBE::BYTES.
+=item * SCALAR references become BBE_BYTES.
 
-=item * ARRAY references become BBE::LIST.
+=item * ARRAY references become BBE_LIST.
 
-=item * HASH references become BBE::DICT.
+=item * HASH references become BBE_DICT.
 
 =back
 
@@ -388,9 +388,9 @@ function, with the following additions:
 
 =over
 
-=item * BBE::FALSE maps to 0.
+=item * BBE_FALSE maps to 0.
 
-=item * BBE::TRUE maps to 1.
+=item * BBE_TRUE maps to 1.
 
 =back
 
