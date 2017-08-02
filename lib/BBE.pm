@@ -306,15 +306,15 @@ Boolean values are represented by 't' and 'f'.
 
 =head2 BBE::UTF8
 
-UTF8 strings are length-prefixed with a base ten number followed by a
-colon and the octet version of the string.  For example "ß"
-corresponds to "2:\x{df}".
+UTF8 strings are the octet length of the decoded string as a base ten
+number followed by a colon and the decoded string.  For example "ß"
+corresponds to "2:\x{c3}\x{9f}".
 
 =head2 BBE::BYTES
 
 Opaque data starts with a 'b' then the octet length as a base ten
-number followed by a colon and then the data itself. For example 'xyz'
-corresponds to 'b3:xyz'.
+number followed by a colon and then the data itself. For example a
+three-byte blob 'xyz' corresponds to 'b3:xyz'.
 
 =head2 BBE::INTEGER
 
@@ -365,13 +365,12 @@ BBE::UTF8.
 
 =back
 
-You can force scalars to be encoded a particular way by using a
-blessing a reference to them into the classs BBE::BYTES, BBE::INTEGER
-or BBE::UTF8.  See the C<bless_bbe> helper function below for creating
-those.
+You can force scalars to be encoded a particular way by passing a
+reference to them blessed as BBE::BYTES, BBE::INTEGER or BBE::UTF8. See
+the C<bless_bbe> helper function below for creating those.
 
 The global package variables C<$BBE::TRUE> and C<$BBE::FALSE> are
-available for encoding boolean values.
+available for boolean values.
 
 This subroutine croaks on unhandled data types.
 
