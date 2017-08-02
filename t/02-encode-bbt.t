@@ -23,8 +23,8 @@ sub enc_ok {
 }
 
 enc_ok '~'                      => undef;
-enc_ok 't'                      => bless_bbe( 1, 'true' );
-enc_ok 'f'                      => bless_bbe( 0, 'false' );
+enc_ok 't'                      => $BBE::TRUE;
+enc_ok 'f'                      => $BBE::FALSE;
 enc_ok 'i4,'                    => 4;
 enc_ok 'i5,'                    => bless_bbe( 5, 'integer' );
 enc_ok 'i0,'                    => 0;
@@ -48,8 +48,8 @@ enc_ok '{4:data' . $data_bbe . '}' => { data => bless_bbe( $data, 'bytes' ) },
   . '}' => {
     'age'   => 25,
     'eyes'  => 'blue',
-    'false' => bless_bbe( 0, 'false' ),
-    'true'  => bless_bbe( 1, 'true' ),
+    'false' => $BBE::FALSE,
+    'true'  => $BBE::TRUE,
     'undef' => undef,
     $utf8   => $utf8,
   };

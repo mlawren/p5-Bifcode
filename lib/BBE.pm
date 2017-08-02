@@ -9,6 +9,8 @@ use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
 our $VERSION = '0.001';
+our $TRUE    = bless( do { \( my $t = 1 ) }, 'BBE::TRUE' );
+our $FALSE   = bless( do { \( my $f = 0 ) }, 'BBE::FALSE' );
 our ( $DEBUG, $max_depth, $get_key );
 my $EOC = ',';    # End Of Chunk
 
@@ -251,12 +253,29 @@ BBE - simple serialization format
 
 =head1 SYNOPSIS
 
-    use BBE qw( encode_bbe decode_bbe );
+    use BBE qw( encode_bbe decode_bbe bless_bbe );
  
-    my $bbe = encode_bbe { 'age' => 25, 'eyes' => 'blue' };
-    print $bbe, "\n"; # {3:agei25,4:eyes4:blue}
+    my $bbe = encode_bbe {
+        bytes   => bless_bbe( pack( 's<', 255 ), 'bytes'),
+        false   => $BBE::FALSE,
+        integer => 25,
+        true    => $BBE::TRUE,
+        undef   => undef,
+        utf8    => 'ß',
+    };
+
+    #  '{5:bytesb2:▒5:falsef7:integeri25,4:truet5:undef~4:utf82:ß}';
  
     my $decoded = decode_bbe $bbe;
+
+    #  {
+    #      'true' => 1,
+    #      'undef' => undef,
+    #      'integer' => 25,
+    #      'false' => 0,
+    #      'bytes' => \'▒',
+    #      'utf8' => "\x{df}"
+    #  };
 
 =head1 DESCRIPTION
 
@@ -338,18 +357,21 @@ Perl data types are automatically mapped to I<bbe> as follows:
 will be serialised as BBE::INTEGER. Otherwise they are treated as
 BBE::UTF8.
 
-=item * Scalar references become BBE::BYTES..
+=item * SCALAR references become BBE::BYTES.
 
-=item * Array references become BBE::LIST.
+=item * ARRAY references become BBE::LIST.
 
-=item * Hash references become BBE::DICT.
+=item * HASH references become BBE::DICT.
 
 =back
 
 You can force scalars to be encoded a particular way by using a
-reference to them blessed as one of the following class names:
-BBE::BYTES, BBE::FALSE, BBE::INTEGER, BBE::TRUE or BBE::UTF8.  See the
-C<bless_bbe> helper function below for creating those.
+blessing a reference to them into the classs BBE::BYTES, BBE::INTEGER
+or BBE::UTF8.  See the C<bless_bbe> helper function below for creating
+those.
+
+The global package variables C<$BBE::TRUE> and C<$BBE::FALSE> are
+available for encoding boolean values.
 
 This subroutine croaks on unhandled data types.
 
