@@ -9,7 +9,7 @@ use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
 our $VERSION = '0.001';
-our ( $DEBUG, $max_depth, $get_key );
+our ( $DEBUG, $max_depth, $dict_key );
 my $EOC = ',';    # End Of Chunk
 
 {
@@ -43,7 +43,7 @@ sub _decode_bbe_string {
 
             warn _msg BYTES => "(length $len)", if $DEBUG;
 
-            return $get_key ? $data : \$data;
+            return $dict_key ? $data : \$data;
         }
 
         my $str = decode_utf8( substr $_, pos(), $len );
@@ -123,9 +123,9 @@ sub _decode_bbe_chunk {
             croak _msg 'unexpected end of data at %s'
               if m/ \G \z /xgc;
 
-            local $get_key = 1;
+            local $dict_key = 1;
             my $key = _decode_bbe_string();
-            $get_key = 0;
+            $dict_key = 0;
             defined $key or croak _msg 'dict key is not a string at %s';
 
             croak _msg 'duplicate dict key at %s'
@@ -166,7 +166,7 @@ sub _encode_bbe {
 
     my $type = ref $data;
     if ( $type eq '' ) {
-        if ( !$get_key and $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x ) {
+        if ( !$dict_key and $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x ) {
             $type = 'BBE::INTEGER';
         }
         else {
@@ -190,7 +190,7 @@ sub _encode_bbe {
         return length($$data) . ';' . $$data;
     }
 
-    croak 'BBE::DICT key must be BBE::BYTES or BBE::UTF8' if $get_key;
+    croak 'BBE::DICT key must be BBE::BYTES or BBE::UTF8' if $dict_key;
 
     if ( $type eq 'BBE::Boolean' ) {
         return $$data ? 'T' : 'F';
@@ -209,7 +209,7 @@ sub _encode_bbe {
             '',
             map {
                 do {
-                    local $get_key = 1;
+                    local $dict_key = 1;
                     _encode_bbe($_);
                   }, _encode_bbe( $data->{$_} )
               }
