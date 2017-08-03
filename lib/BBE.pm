@@ -166,15 +166,15 @@ sub _encode_bbe {
 
     my $ref_data = ref $data;
     if ( $ref_data eq '' ) {
+
         if ( $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x and not $get_key ) {
             $ref_data = 'BBE::INTEGER';
         }
         else {
-            $ref_data = 'BBE::STRING';
+            $ref_data = 'BBE::UTF8';
         }
+        $data = \( my $tmp = $data );
 
-        my $x = $data;
-        $data = \$x;
     }
     elsif ( $ref_data eq 'SCALAR' ) {
         $ref_data = 'BBE::BYTES';
@@ -190,13 +190,6 @@ sub _encode_bbe {
         return sprintf 'i%s' . $EOC, $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
         croak 'invalid integer: ' . $$data;
-    }
-    elsif ( $ref_data eq 'BBE::STRING' ) {
-        croak 'BBE::STRING must be defined' unless defined $$data;
-        my $is_utf8 = 1;
-        my $str = encode_utf8( $$data, sub { $is_utf8 = 0 } );
-        return length($str) . ':' . $str if $is_utf8;
-        return length($$data) . ';' . $$data;
     }
     elsif ( $ref_data eq 'BBE::UTF8' ) {
         croak 'BBE::UTF8 must be defined' unless defined $$data;
