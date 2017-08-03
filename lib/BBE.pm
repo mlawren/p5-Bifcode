@@ -44,7 +44,7 @@ sub _decode_bbe_chunk {
             my $data = substr $_, pos(), $len;
             pos() = pos() + $len;
 
-            warn _msg BYTES => "(length $len)", if $DEBUG;
+            warn _msg BYTES => "(length $len) at %s", if $DEBUG;
 
             return $dict_key ? $data : \$data;
         }
@@ -54,7 +54,7 @@ sub _decode_bbe_chunk {
 
         warn _msg
           UTF8 => "(length $len)",
-          $len < 200 ? "[$str]" : ()
+          $len < 200 ? "[$str]" : (), 'at %s'
           if $DEBUG;
 
         return $str;
@@ -69,15 +69,15 @@ sub _decode_bbe_chunk {
     croak _msg 'dict key is not a string at %s' if $dict_key;
 
     if (m/ \G T /xgc) {
-        warn _msg 'TRUE' if $DEBUG;
+        warn _msg 'TRUE at %s' if $DEBUG;
         return $BBE::TRUE;
     }
     elsif (m/ \G F /xgc) {
-        warn _msg 'FALSE' if $DEBUG;
+        warn _msg 'FALSE at %s' if $DEBUG;
         return $BBE::FALSE;
     }
     elsif (m/ \G ~ /xgc) {
-        warn _msg 'UNDEF' if $DEBUG;
+        warn _msg 'UNDEF at %s' if $DEBUG;
         return undef;
     }
     elsif (m/ \G i /xgc) {
@@ -86,11 +86,11 @@ sub _decode_bbe_chunk {
         m/ \G ( 0 | -? [1-9] [0-9]* ) $EOC /xgc
           or croak _msg 'malformed integer data at %s';
 
-        warn _msg INTEGER => $1 if $DEBUG;
+        warn _msg INTEGER => $1, 'at %s' if $DEBUG;
         return 0 + $1;
     }
     elsif (m/ \G \[ /xgc) {
-        warn _msg 'LIST' if $DEBUG;
+        warn _msg 'LIST at %s' if $DEBUG;
 
         croak _msg 'nesting depth exceeded at %s'
           if defined $max_depth and $max_depth < 0;
@@ -104,7 +104,7 @@ sub _decode_bbe_chunk {
         return \@list;
     }
     elsif (m/ \G \{ /xgc) {
-        warn _msg 'DICT' if $DEBUG;
+        warn _msg 'DICT at %s' if $DEBUG;
 
         croak _msg 'nesting depth exceeded at %s'
           if defined $max_depth and $max_depth < 0;
