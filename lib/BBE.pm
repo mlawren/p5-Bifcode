@@ -164,62 +164,60 @@ sub _encode_bbe {
     my ($data) = @_;
     return '~' unless defined $data;
 
-    my $ref_data = ref $data;
-    if ( $ref_data eq '' ) {
-
-        if ( $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x and not $get_key ) {
-            $ref_data = 'BBE::INTEGER';
+    my $type = ref $data;
+    if ( $type eq '' ) {
+        if ( !$get_key and $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x ) {
+            $type = 'BBE::INTEGER';
         }
         else {
-            $ref_data = 'BBE::UTF8';
+            $type = 'BBE::UTF8';
         }
         $data = \( my $tmp = $data );
-
     }
-    elsif ( $ref_data eq 'SCALAR' ) {
-        $ref_data = 'BBE::BYTES';
+    elsif ( $type eq 'SCALAR' ) {
+        $type = 'BBE::BYTES';
     }
 
     use bytes;    # for 'sort' and 'length' below
 
-    if ( $ref_data eq 'BBE::Boolean' ) {
+    if ( $type eq 'BBE::UTF8' ) {
+        croak 'BBE::UTF8 must be defined' unless defined $$data;
+        my $str = encode_utf8( $$data, sub { croak 'invalid BBE::UTF8' } );
+        return length($str) . ':' . $str;
+    }
+    elsif ( $type eq 'BBE::BYTES' ) {
+        croak 'BBE::BYTES must be defined' unless defined $$data;
+        return length($$data) . ';' . $$data;
+    }
+
+    croak 'BBE::DICT key must be BBE::BYTES or BBE::UTF8' if $get_key;
+
+    if ( $type eq 'BBE::Boolean' ) {
         return $$data ? 'T' : 'F';
     }
-    elsif ( $ref_data eq 'BBE::INTEGER' ) {
+    elsif ( $type eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
         return sprintf 'i%s' . $EOC, $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
-    elsif ( $ref_data eq 'BBE::UTF8' ) {
-        croak 'BBE::UTF8 must be defined' unless defined $$data;
-        my $str = encode_utf8( $$data, sub { croak 'invalid BBE::UTF8' } );
-        return length($str) . ':' . $str;
-    }
-    elsif ( $ref_data eq 'BBE::BYTES' ) {
-        croak 'BBE::BYTES must be defined' unless defined $$data;
-        return length($$data) . ';' . $$data;
-    }
-    elsif ( $ref_data eq 'ARRAY' ) {
+    elsif ( $type eq 'ARRAY' ) {
         return '[' . join( '', map _encode_bbe($_), @$data ) . ']';
     }
-    elsif ( $ref_data eq 'HASH' ) {
-        my $x;
+    elsif ( $type eq 'HASH' ) {
         return '{' . join(
             '',
             map {
-                local $get_key = 1;
-                $x       = _encode_bbe($_);
-                $get_key = 0;
-                croak 'BBE::DICT key must be BBE::BYTES or BBE::UTF8'
-                  unless $x =~ m/\A [b0-9] /x;
-                $x, _encode_bbe( $data->{$_} )
+                do {
+                    local $get_key = 1;
+                    _encode_bbe($_);
+                  }, _encode_bbe( $data->{$_} )
               }
               sort keys %$data
         ) . '}';
     }
     else {
-        croak 'unhandled data type: ' . $ref_data;
+        croak 'unhandled data type: ' . $type;
     }
 }
 
