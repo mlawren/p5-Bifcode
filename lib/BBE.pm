@@ -30,9 +30,9 @@ sub _msg { sprintf "@_", pos() || 0 }
 
 sub _decode_bbe_string {
 
-    if (m/ \G ( b ) ? ( 0 | [1-9] \d* ) : /xgc) {
-        my $blob = $1;
-        my $len  = $2;
+    if (m/ \G ( 0 | [1-9] \d* ) ( : | ; ) /xgc) {
+        my $len  = $1;
+        my $blob = $2 eq ';';
 
         croak _msg 'unexpected end of string data starting at %s'
           if $len > length() - pos();
@@ -58,7 +58,7 @@ sub _decode_bbe_string {
     }
 
     my $pos = pos();
-    if (m/ \G b ? -? 0? \d+ : /xgc) {
+    if (m/ \G -? 0? \d+ ( : | ; ) /xgc) {
         pos() = $pos;
         croak _msg 'malformed string length at %s';
     }
@@ -196,7 +196,7 @@ sub _encode_bbe {
         my $is_utf8 = 1;
         my $str = encode_utf8( $$data, sub { $is_utf8 = 0 } );
         return length($str) . ':' . $str if $is_utf8;
-        return 'b' . length($$data) . ':' . $$data;
+        return length($$data) . ';' . $$data;
     }
     elsif ( $ref_data eq 'BBE::UTF8' ) {
         croak 'BBE::UTF8 must be defined' unless defined $$data;
@@ -205,7 +205,7 @@ sub _encode_bbe {
     }
     elsif ( $ref_data eq 'BBE::BYTES' ) {
         croak 'BBE::BYTES must be defined' unless defined $$data;
-        return 'b' . length($$data) . ':' . $$data;
+        return length($$data) . ';' . $$data;
     }
     elsif ( $ref_data eq 'ARRAY' ) {
         return '[' . join( '', map _encode_bbe($_), @$data ) . ']';
@@ -273,7 +273,7 @@ BBE - simple serialization format
         utf8    => 'ß',
     };
 
-    #  '{5:bytesb2:▒5:falseF7:integeri25,4:trueT5:undef~4:utf82:ß}';
+    #  '{5:bytes2;▒5:falseF7:integeri25,4:trueT5:undef~4:utf82:ß}';
  
     my $decoded = decode_bbe $bbe;
 
@@ -320,15 +320,15 @@ Boolean values are represented by 'T' and 'F'.
 
 =head2 BBE_UTF8
 
-UTF8 strings are the octet length of the decoded string as a base ten
+A UTF8 string is the octet length of the decoded string as a base ten
 number followed by a colon and the decoded string.  For example "ß"
 corresponds to "2:\x{c3}\x{9f}".
 
 =head2 BBE_BYTES
 
-Opaque data starts with a 'b' then the octet length as a base ten
-number followed by a colon and then the data itself. For example a
-three-byte blob 'xyz' corresponds to 'b3:xyz'.
+Opaque data is the octet length of the data as a base ten number
+followed by a semicolon and then the data itself. For example a
+three-byte blob 'xyz' corresponds to '3;xyz'.
 
 =head2 BBE_INTEGER
 

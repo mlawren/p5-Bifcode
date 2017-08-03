@@ -14,7 +14,7 @@ my $utf8_bbe    = $utf8_length . ':' . $utf8_bytes;
 
 my $data        = pack( 's<', 255 );
 my $data_length = bytes::length($data);
-my $data_bbe    = 'b' . $data_length . ':' . $data;
+my $data_bbe    = $data_length . ';' . $data;
 
 sub un {
     my ($frozen) = @_;
