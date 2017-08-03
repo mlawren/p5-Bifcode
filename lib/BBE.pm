@@ -33,7 +33,7 @@ sub _decode_bbe_chunk {
 
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
-    if (m/ \G ( 0 | [1-9] \d* ) ( : | ; ) /xgc) {
+    if (m/ \G ( 0 | [1-9] [0-9]* ) ( : | ; ) /xgc) {
         my $len  = $1;
         my $blob = $2 eq ';';
 
@@ -61,7 +61,7 @@ sub _decode_bbe_chunk {
     }
 
     my $pos = pos();
-    if (m/ \G -? 0? \d+ ( : | ; ) /xgc) {
+    if (m/ \G -? 0? [0-9]+ ( : | ; ) /xgc) {
         pos() = $pos;
         croak _msg 'malformed string length at %s';
     }
@@ -83,7 +83,7 @@ sub _decode_bbe_chunk {
     elsif (m/ \G i /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
-        m/ \G ( 0 | -? [1-9] \d* ) $EOC /xgc
+        m/ \G ( 0 | -? [1-9] [0-9]* ) $EOC /xgc
           or croak _msg 'malformed integer data at %s';
 
         warn _msg INTEGER => $1 if $DEBUG;
@@ -158,7 +158,7 @@ sub _encode_bbe {
 
     my $type = ref $data;
     if ( $type eq '' ) {
-        if ( !$dict_key and $data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x ) {
+        if ( !$dict_key and $data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
             $type = 'BBE::INTEGER';
         }
         else {
@@ -190,7 +190,7 @@ sub _encode_bbe {
     elsif ( $type eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
         return sprintf 'i%s' . $EOC, $$data
-          if $$data =~ m/\A (?: 0 | -? [1-9] \d* ) \z/x;
+          if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
     elsif ( $type eq 'ARRAY' ) {
