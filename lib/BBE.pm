@@ -28,7 +28,10 @@ $BBE::FALSE = bless( do { \( my $f = 0 ) }, 'BBE::Boolean' );
 
 sub _msg { sprintf "@_", pos() || 0 }
 
-sub _decode_bbe_string {
+sub _decode_bbe_chunk {
+    warn _msg 'decoding at %s' if $DEBUG;
+
+    local $max_depth = $max_depth - 1 if defined $max_depth;
 
     if (m/ \G ( 0 | [1-9] \d* ) ( : | ; ) /xgc) {
         my $len  = $1;
@@ -62,18 +65,10 @@ sub _decode_bbe_string {
         pos() = $pos;
         croak _msg 'malformed string length at %s';
     }
-    return;
-}
 
-sub _decode_bbe_chunk {
-    warn _msg 'decoding at %s' if $DEBUG;
+    croak _msg 'dict key is not a string at %s' if $dict_key;
 
-    local $max_depth = $max_depth - 1 if defined $max_depth;
-
-    if ( defined( my $str = _decode_bbe_string() ) ) {
-        return $str;
-    }
-    elsif (m/ \G T /xgc) {
+    if (m/ \G T /xgc) {
         warn _msg 'TRUE' if $DEBUG;
         return $BBE::TRUE;
     }
@@ -123,10 +118,7 @@ sub _decode_bbe_chunk {
             croak _msg 'unexpected end of data at %s'
               if m/ \G \z /xgc;
 
-            local $dict_key = 1;
-            my $key = _decode_bbe_string();
-            $dict_key = 0;
-            defined $key or croak _msg 'dict key is not a string at %s';
+            my $key = do { local $dict_key = 1; _decode_bbe_chunk() };
 
             croak _msg 'duplicate dict key at %s'
               if exists $hash{$key};
