@@ -286,6 +286,11 @@ BBE - simple serialization format
     #      'utf8' => "\x{df}"
     #  };
 
+=head1 STATUS
+
+This module and related encoding format are still under development. Do
+not use it anywhere near production. Input is welcome.
+
 =head1 DESCRIPTION
 
 This module implements the I<bbe> serialisation format. It takes most
@@ -344,9 +349,9 @@ encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds to
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
 '{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo', 'spam':
-'eggs'} and '{4:spam[1:a1:b]} corresponds to {'spam': ['a', 'b']}. Keys
-must be BBE_UTF8 or BBE_BYTES and appear in sorted order (sorted as raw
-strings, not alphanumerics).
+'eggs'} and '{4:spam[1:a1:b]}' corresponds to {'spam': ['a', 'b']}.
+Keys must be BBE_UTF8 or BBE_BYTES and appear in sorted order (sorted
+as raw strings, not alphanumerics).
 
 =head1 INTERFACE
 
@@ -356,11 +361,14 @@ Takes a single argument which may be a scalar, or may be a reference to
 either a scalar, an array or a hash. Arrays and hashes may in turn
 contain values of these same types. Returns a byte string.
 
-Perl data types are automatically mapped to I<bbe> as follows:
+The mapping from Perl to I<bbe> is as follows:
 
 =over
 
-=item * Perl's 'undef' maps directly to BBE_UNDEF.
+=item * 'undef' maps directly to BBE_UNDEF.
+
+=item * The global package variables C<$BBE::TRUE> and C<$BBE::FALSE>
+encode to BBE_TRUE and BBE_FALSE.
 
 =item * Plain scalars that look like canonically represented integers
 will be serialised as BBE_INTEGER. Otherwise they are treated as
@@ -375,11 +383,8 @@ BBE_UTF8.
 =back
 
 You can force scalars to be encoded a particular way by passing a
-reference to them blessed as BBE::BYTES, BBE::INTEGER or BBE::UTF8. See
-the C<bless_bbe> helper function below for creating those.
-
-The global package variables C<$BBE::TRUE> and C<$BBE::FALSE> are
-available for boolean values.
+reference to them blessed as BBE::BYTES, BBE::INTEGER or BBE::UTF8. The
+C<bless_bbe> function below can help with creating such references.
 
 This subroutine croaks on unhandled data types.
 
@@ -392,16 +397,10 @@ If you pass an integer for the second option, it will croak when
 attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
-I<bbe> types are mapped to Perl in the reverse way to the C<encode_bbe>
-function, with the following additions:
-
-=over
-
-=item * BBE_FALSE maps to 0.
-
-=item * BBE_TRUE maps to 1.
-
-=back
+I<bbe> types are mapped back to Perl in the reverse way to the
+C<encode_bbe> function, with the exception that any scalars which were
+"forced" to a particular type (using blessed references) will decode as
+normal scalars.
 
 Croaks on malformed data.
 
