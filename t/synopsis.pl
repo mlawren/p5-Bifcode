@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use lib 'lib';
 use BBE qw( encode_bbe decode_bbe bless_bbe );
 use Data::Dumper;
 no warnings 'once';
