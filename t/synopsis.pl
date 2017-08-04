@@ -2,12 +2,12 @@
 use strict;
 use warnings;
 use lib 'lib';
-use BBE qw( encode_bbe decode_bbe bless_bbe );
+use BBE qw( encode_bbe decode_bbe force_bbe );
 use Data::Dumper;
 no warnings 'once';
 
 my $bbe = encode_bbe {
-    bytes   => bless_bbe( pack( 's<', 255 ), 'bytes' ),
+    bytes   => force_bbe( pack( 's<', 255 ), 'bytes' ),
     false   => $BBE::FALSE,
     integer => 25,
     true    => $BBE::TRUE,

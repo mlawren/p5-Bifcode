@@ -3,7 +3,7 @@ use 5.008001;
 use strict;
 use warnings;
 use Carp;
-use Exporter::Tidy all => [qw( encode_bbe decode_bbe bless_bbe )];
+use Exporter::Tidy all => [qw( encode_bbe decode_bbe force_bbe )];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
@@ -216,7 +216,7 @@ sub encode_bbe {
     goto &_encode_bbe;
 }
 
-sub bless_bbe {
+sub force_bbe {
     my $ref  = shift;
     my $type = shift;
 
@@ -243,10 +243,10 @@ BBE - simple serialization format
 
 =head1 SYNOPSIS
 
-    use BBE qw( encode_bbe decode_bbe bless_bbe );
+    use BBE qw( encode_bbe decode_bbe force_bbe );
  
     my $bbe = encode_bbe {
-        bytes   => bless_bbe( pack( 's<', 255 ), 'bytes'),
+        bytes   => force_bbe( pack( 's<', 255 ), 'bytes'),
         false   => $BBE::FALSE,
         integer => 25,
         true    => $BBE::TRUE,
@@ -365,7 +365,7 @@ BBE_UTF8.
 
 You can force scalars to be encoded a particular way by passing a
 reference to them blessed as BBE::BYTES, BBE::INTEGER or BBE::UTF8. The
-C<bless_bbe> function below can help with creating such references.
+C<force_bbe> function below can help with creating such references.
 
 This subroutine croaks on unhandled data types.
 
@@ -385,7 +385,7 @@ normal scalars.
 
 Croaks on malformed data.
 
-=head2 C<bless_bbe( $scalar, $type )>
+=head2 C<force_bbe( $scalar, $type )>
 
 Returns a reference to $scalar blessed as BBE::$TYPE. The value of
 $type is not checked, but the C<encode_bbe> function will only accept
