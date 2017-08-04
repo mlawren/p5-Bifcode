@@ -4,11 +4,11 @@ use utf8;
 use Test::More 0.88;    # for done_testing
 use Test::Differences;
 use BBE 'decode_bbe';
-use Unicode::UTF8 'encode_utf8';
 require bytes;
 
-my $utf8        = 'ß';
-my $utf8_bytes  = encode_utf8($utf8);
+my $utf8 =
+'ฉันกินกระจกได้ แต่มันไม่ทำให้ฉันเจ็บ';
+utf8::encode( my $utf8_bytes = $utf8 );
 my $utf8_length = bytes::length($utf8_bytes);
 my $utf8_bbe    = $utf8_length . ':' . $utf8_bytes;
 

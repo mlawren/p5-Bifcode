@@ -5,7 +5,6 @@ requires 'warnings';
 requires 'utf8';
 requires 'Carp';
 requires 'Exporter::Tidy';
-requires 'Unicode::UTF8';
 
 on build => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';

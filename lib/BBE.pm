@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Carp;
 use Exporter::Tidy all => [qw( encode_bbe decode_bbe bless_bbe )];
-use Unicode::UTF8 qw/decode_utf8 encode_utf8/;
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
@@ -49,7 +48,7 @@ sub _decode_bbe_chunk {
             return $dict_key ? $data : \$data;
         }
 
-        my $str = decode_utf8( substr $_, pos(), $len );
+        utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
 
         warn _msg
@@ -173,8 +172,8 @@ sub _encode_bbe {
     use bytes;    # for 'sort' and 'length' below
 
     if ( $type eq 'BBE::UTF8' ) {
-        croak 'BBE::UTF8 must be defined' unless defined $$data;
-        my $str = encode_utf8( $$data, sub { croak 'invalid BBE::UTF8' } );
+        my $str = $$data // croak 'BBE::UTF8 must be defined';
+        utf8::encode($str);    #, sub { croak 'invalid BBE::UTF8' } );
         return length($str) . ':' . $str;
     }
     elsif ( $type eq 'BBE::BYTES' ) {
