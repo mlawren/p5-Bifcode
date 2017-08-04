@@ -252,7 +252,7 @@ BBE - simple serialization format
         integer => 25,
         true    => $BBE::TRUE,
         undef   => undef,
-        utf8    => 'ß',
+        utf8    => "\x{df}",
     };
 
     #  '{5:bytes2;▒5:falseF7:integeri25,4:trueT5:undef~4:utf82:ß}';
@@ -260,12 +260,12 @@ BBE - simple serialization format
     my $decoded = decode_bbe $bbe;
 
     #  {
-    #      'true' => 1,
-    #      'undef' => undef,
+    #      'bytes'   => \'▒',
+    #      'false'   => $BBE::FALSE,
     #      'integer' => 25,
-    #      'false' => 0,
-    #      'bytes' => \'▒',
-    #      'utf8' => "\x{df}"
+    #      'true'    => $BBE::TRUE,
+    #      'undef'   => undef,
+    #      'utf8'    => "\x{df}"
     #  };
 
 =head1 STATUS
