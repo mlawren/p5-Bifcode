@@ -9,7 +9,6 @@ use Exporter::Tidy all => [qw( encode_bbe decode_bbe bless_bbe )];
 
 our $VERSION = '0.001';
 our ( $DEBUG, $max_depth, $dict_key );
-my $EOC = ',';    # End Of Chunk
 
 {
     # Shamelessly copied from JSON::PP::Boolean
@@ -82,7 +81,7 @@ sub _decode_bbe_chunk {
     elsif (m/ \G i /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
-        m/ \G ( 0 | -? [1-9] [0-9]* ) $EOC /xgc
+        m/ \G ( 0 | -? [1-9] [0-9]* ) , /xgc
           or croak _msg 'malformed integer data at %s';
 
         warn _msg INTEGER => $1, 'at %s' if $DEBUG;
@@ -188,7 +187,7 @@ sub _encode_bbe {
     }
     elsif ( $type eq 'BBE::INTEGER' ) {
         croak 'BBE::INTEGER must be defined' unless defined $$data;
-        return sprintf 'i%s' . $EOC, $$data
+        return sprintf 'i%s,', $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
@@ -225,7 +224,7 @@ sub bless_bbe {
     bless \$ref, 'BBE::' . uc($type);
 }
 
-decode_bbe( 'i1' . $EOC );
+decode_bbe('i1,');
 
 __END__
 
