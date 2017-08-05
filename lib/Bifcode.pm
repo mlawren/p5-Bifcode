@@ -31,14 +31,14 @@ sub _decode_bifcode_chunk {
 
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
-    if (m/ \G ( 0 | [1-9] [0-9]* ) ( : | ; ) /xgc) {
-        my $len  = $1;
-        my $blob = $2 eq ';';
+    if (m/ \G ( B | U ) ( 0 | [1-9] [0-9]* ) : /xgc) {
+        my $bytes = $1 eq 'B';
+        my $len   = $2;
 
         croak _msg 'unexpected end of string data starting at %s'
           if $len > length() - pos();
 
-        if ($blob) {
+        if ($bytes) {
             my $data = substr $_, pos(), $len;
             pos() = pos() + $len;
 
@@ -46,31 +46,32 @@ sub _decode_bifcode_chunk {
 
             return $dict_key ? $data : \$data;
         }
+        else {
+            utf8::decode( my $str = substr $_, pos(), $len );
+            pos() = pos() + $len;
 
-        utf8::decode( my $str = substr $_, pos(), $len );
-        pos() = pos() + $len;
+            warn _msg
+              UTF8 => "(length $len)",
+              $len < 200 ? "[$str]" : (), 'at %s'
+              if $DEBUG;
 
-        warn _msg
-          UTF8 => "(length $len)",
-          $len < 200 ? "[$str]" : (), 'at %s'
-          if $DEBUG;
-
-        return $str;
+            return $str;
+        }
     }
 
     my $pos = pos();
-    if (m/ \G -? 0? [0-9]+ ( : | ; ) /xgc) {
+    if (m/ \G ( B | U ) -? 0? [0-9]+ : /xgc) {
         pos() = $pos;
         croak _msg 'malformed string length at %s';
     }
 
     croak _msg 'dict key is not a string at %s' if $dict_key;
 
-    if (m/ \G T /xgc) {
+    if (m/ \G 1 /xgc) {
         warn _msg 'TRUE at %s' if $DEBUG;
         return $Bifcode::TRUE;
     }
-    elsif (m/ \G F /xgc) {
+    elsif (m/ \G 0 /xgc) {
         warn _msg 'FALSE at %s' if $DEBUG;
         return $Bifcode::FALSE;
     }
@@ -78,7 +79,7 @@ sub _decode_bifcode_chunk {
         warn _msg 'UNDEF at %s' if $DEBUG;
         return undef;
     }
-    elsif (m/ \G i /xgc) {
+    elsif (m/ \G I /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
         m/ \G ( 0 | -? [1-9] [0-9]* ) , /xgc
@@ -173,22 +174,22 @@ sub _encode_bifcode {
     if ( $type eq 'Bifcode::UTF8' ) {
         my $str = $$data // croak 'Bifcode::UTF8 must be defined';
         utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
-        return length($str) . ':' . $str;
+        return 'U' . length($str) . ':' . $str;
     }
     elsif ( $type eq 'Bifcode::BYTES' ) {
         croak 'Bifcode::BYTES must be defined' unless defined $$data;
-        return length($$data) . ';' . $$data;
+        return 'B' . length($$data) . ':' . $$data;
     }
 
     croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8'
       if $dict_key;
 
     if ( $type eq 'Bifcode::Boolean' ) {
-        return $$data ? 'T' : 'F';
+        return $$data ? '1' : '0';
     }
     elsif ( $type eq 'Bifcode::INTEGER' ) {
         croak 'Bifcode::INTEGER must be defined' unless defined $$data;
-        return sprintf 'i%s,', $$data
+        return sprintf 'I%s,', $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
@@ -225,7 +226,7 @@ sub force_bifcode {
     bless \$ref, 'Bifcode::' . uc($type);
 }
 
-decode_bifcode('i1,');
+decode_bifcode('I1,');
 
 __END__
 
@@ -254,11 +255,12 @@ Bifcode - simple serialization format
         utf8    => "\x{df}",
     };
 
-    # 7b 35 3a 62 6f 6f 6c 73 5b 46 54 5d    {5:bools[FT]
-    # 35 3a 62 79 74 65 73 32 3b ff  0 37    5:bytes2;..7
-    # 3a 69 6e 74 65 67 65 72 69 32 35 2c    :integeri25,
-    # 35 3a 75 6e 64 65 66 7e 34 3a 75 74    5:undef~4:ut
-    # 66 38 32 3a c3 9f 7d                   f82:..}
+    # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
+    # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
+    # ff  0 55 37 3a 69 6e 74 65 67 65 72    ..U7:integer
+    # 49 32 35 2c 55 35 3a 75 6e 64 65 66    I25,U5:undef
+    # 7e 55 34 3a 75 74 66 38 55 32 3a c3    ~U4:utf8U2:.
+    # 9f 7d                                  .}
 
     my $decoded = decode_bifcode $bifcode;
 
@@ -290,14 +292,14 @@ binary/text encoding with support for the following data types:
 
 =back
 
+I<Bifcode> is not considered human readable, but as it is mostly text
+it can usually be human-debugged.
+
 The encoding is simple to construct and relatively easy to parse. There
-is no need for escaping special characters in strings. It can only be
+is no need to escaping special characters in strings. It can only be
 constructed canonically; i.e. there is only one possible encoding per
 data structure. This last property makes it suitable for comparing
 structures (using cryptographic hashes) across networks.
-
-I<Bifcode> is not considered human readable, but as it is mostly text
-it can usually be human-debugged.
 
 In terms of size the encoding is similar to minified JSON. In terms of
 speed this module compares well with other pure Perl encoding modules
@@ -311,40 +313,40 @@ A null or undefined value correspond to '~'.
 
 =head2 BIFCODE_TRUE and BIFCODE_FALSE
 
-Boolean values are represented by 'T' and 'F'.
+Boolean values are represented by '1' and '0'.
 
 =head2 BIFCODE_UTF8
 
-A UTF8 string is the octet length of the decoded string as a base ten
-number followed by a colon and the decoded string.  For example
-"\x{df}" corresponds to "2:\x{c3}\x{9f}".
+A UTF8 string is 'U' followed by the octet length of the decoded string
+as a base ten number followed by a colon and the decoded string.  For
+example "\x{df}" corresponds to "U2:\x{c3}\x{9f}".
 
 =head2 BIFCODE_BYTES
 
-Opaque data is the octet length of the data as a base ten number
-followed by a semicolon and then the data itself. For example a
-three-byte blob 'xyz' corresponds to '3;xyz'.
+Opaque data is 'B' followed by the octet length of the data as a base
+ten number followed by a colon and then the data itself. For example a
+three-byte blob 'xyz' corresponds to 'B3:xyz'.
 
 =head2 BIFCODE_INTEGER
 
-Integers are represented by an 'i' followed by the number in base 10
-followed by a ','. For example 'i3,' corresponds to 3 and 'i-3,'
-corresponds to -3. Integers have no size limitation. 'i-0,' is invalid.
-All encodings with a leading zero, such as 'i03,', are invalid, other
-than 'i0,', which of course corresponds to 0.
+Integers are represented by an 'I' followed by the number in base 10
+followed by a ','. For example 'I3,' corresponds to 3 and 'I-3,'
+corresponds to -3. Integers have no size limitation. 'I-0,' is invalid.
+All encodings with a leading zero, such as 'I03,', are invalid, other
+than 'I0,', which of course corresponds to 0.
 
 =head2 BIFCODE_LIST
 
 Lists are encoded as a '[' followed by their elements (also I<bifcode>
-encoded) followed by a ']'. For example '[4:spam4:eggs]' corresponds to
-['spam', 'eggs'].
+encoded) followed by a ']'. For example '[U4:spamU4:eggs]' corresponds
+to ['spam', 'eggs'].
 
 =head2 BIFCODE_DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
-'{3:cow3:moo4:spam4:eggs}' corresponds to {'cow': 'moo', 'spam':
-'eggs'} and '{4:spam[1:a1:b]}' corresponds to {'spam': ['a', 'b']}.
+'{U3:cowU3:mooU4:spamU4:eggs}' corresponds to {'cow': 'moo', 'spam':
+'eggs'} and '{U4:spam[U1:aU1:b]}' corresponds to {'spam': ['a', 'b']}.
 Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in sorted order
 (sorted as raw strings, not alphanumerics).
 

@@ -10,11 +10,11 @@ my $utf8 =
 'ฉันกินกระจกได้ แต่มันไม่ทำให้ฉันเจ็บ';
 utf8::encode( my $utf8_bytes = $utf8 );
 my $utf8_length  = bytes::length($utf8_bytes);
-my $utf8_bifcode = $utf8_length . ':' . $utf8_bytes;
+my $utf8_bifcode = 'U' . $utf8_length . ':' . $utf8_bytes;
 
 my $data         = pack( 's<', 255 );
 my $data_length  = bytes::length($data);
-my $data_bifcode = $data_length . ';' . $data;
+my $data_bifcode = 'B' . $data_length . ':' . $data;
 
 sub enc_ok {
     my ( $frozen, $thawed ) = @_;
@@ -23,28 +23,28 @@ sub enc_ok {
 }
 
 enc_ok '~'                      => undef;
-enc_ok 'T'                      => $Bifcode::TRUE;
-enc_ok 'F'                      => $Bifcode::FALSE;
-enc_ok 'i4,'                    => 4;
-enc_ok 'i5,'                    => force_bifcode( 5, 'integer' );
-enc_ok 'i0,'                    => 0;
-enc_ok 'i-10,'                  => -10;
-enc_ok 'i12345678901234567890,' => '12345678901234567890';
-enc_ok '0:'                     => '';
+enc_ok '1'                      => $Bifcode::TRUE;
+enc_ok '0'                      => $Bifcode::FALSE;
+enc_ok 'I4,'                    => 4;
+enc_ok 'I5,'                    => force_bifcode( 5, 'integer' );
+enc_ok 'I0,'                    => 0;
+enc_ok 'I-10,'                  => -10;
+enc_ok 'I12345678901234567890,' => '12345678901234567890';
+enc_ok 'U0:'                    => '';
 enc_ok $utf8_bifcode            => $utf8;
-enc_ok $data_bifcode   => force_bifcode( $data,        'bytes' );
-enc_ok $data_bifcode   => \$data;
-enc_ok '3:abc'         => 'abc';
-enc_ok '10:1234567890' => force_bifcode( '1234567890', 'utf8' );
-enc_ok '[]'            => [];
-enc_ok '[i1,i2,~' . $utf8_bifcode . ']' => [ 1, 2, undef, $utf8 ];
-enc_ok '[[5:Alice3:Bob][i2,i3,]]' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
+enc_ok $data_bifcode    => force_bifcode( $data,        'bytes' );
+enc_ok $data_bifcode    => \$data;
+enc_ok 'U3:abc'         => 'abc';
+enc_ok 'U10:1234567890' => force_bifcode( '1234567890', 'utf8' );
+enc_ok '[]'             => [];
+enc_ok '[I1,I2,~' . $utf8_bifcode . ']' => [ 1, 2, undef, $utf8 ];
+enc_ok '[[U5:AliceU3:Bob][I2,I3,]]' => [ [ 'Alice', 'Bob' ], [ 2, 3 ] ];
 enc_ok '{}' => {};
-enc_ok '{1:13:one}' => { 1 => 'one' };
-enc_ok '{4:data'
+enc_ok '{U1:1U3:one}' => { 1 => 'one' };
+enc_ok '{U4:data'
   . $data_bifcode
   . '}' => { data => force_bifcode( $data, 'bytes' ) },
-  enc_ok '{3:agei25,4:eyes4:blue5:falseF4:trueT5:undef~'
+  enc_ok '{U3:ageI25,U4:eyesU4:blueU5:false0U4:true1U5:undef~'
   . $utf8_bifcode
   . $utf8_bifcode
   . '}' => {
@@ -55,10 +55,10 @@ enc_ok '{4:data'
     'undef' => undef,
     $utf8   => $utf8,
   };
-enc_ok '{8:spam.mp3{6:author5:Alice'
-  . '4:data'
+enc_ok '{U8:spam.mp3{U6:authorU5:Alice'
+  . 'U4:data'
   . $data_bifcode
-  . '6:lengthi100000,5:undef~'
+  . 'U6:lengthI100000,U5:undef~'
   . '}}' => {
     'spam.mp3' => {
         'author' => 'Alice',
