@@ -2,18 +2,23 @@
 use strict;
 use warnings;
 use lib 'lib';
-use BBE qw( encode_bbe decode_bbe force_bbe );
+use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
 use Data::Dumper;
+use Path::Tiny;
 no warnings 'once';
 
-my $bbe = encode_bbe {
-    bytes   => force_bbe( pack( 's<', 255 ), 'bytes' ),
-    false   => $BBE::FALSE,
+my $bifcode = encode_bifcode {
+    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+    bytes   => \pack( 's<',       255 ),
     integer => 25,
-    true    => $BBE::TRUE,
     undef   => undef,
     utf8    => "\x{df}",
 };
 
-print Dumper( utf8::is_utf8($bbe) );
-print Dumper($bbe);
+my $bifcode_file = Path::Tiny->tempfile;
+$bifcode_file->spew_raw($bifcode);
+
+my $format      = '12/1 " %2x"' . "\n" . '"\t" "%_p"' . "\n" . '"\n"';
+my $format_file = Path::Tiny->tempfile;
+$format_file->spew($format);
+system( 'hexdump', '-f', $format_file, $bifcode_file );

@@ -3,25 +3,25 @@ use warnings;
 use utf8;
 use Test::More 0.88;    # for done_testing
 use Test::Differences;
-use BBE 'decode_bbe';
+use Bifcode 'decode_bifcode';
 require bytes;
 
 my $utf8 =
 'ฉันกินกระจกได้ แต่มันไม่ทำให้ฉันเจ็บ';
 utf8::encode( my $utf8_bytes = $utf8 );
-my $utf8_length = bytes::length($utf8_bytes);
-my $utf8_bbe    = $utf8_length . ':' . $utf8_bytes;
+my $utf8_length  = bytes::length($utf8_bytes);
+my $utf8_bifcode = $utf8_length . ':' . $utf8_bytes;
 
-my $data        = pack( 's<', 255 );
-my $data_length = bytes::length($data);
-my $data_bbe    = $data_length . ';' . $data;
+my $data         = pack( 's<', 255 );
+my $data_length  = bytes::length($data);
+my $data_bifcode = $data_length . ';' . $data;
 
 sub un {
     my ($frozen) = @_;
     local $, = ', ';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen]", decode_bbe @$frozen )
-      : ( "decode '$frozen'", decode_bbe $frozen );
+      ? ( "decode [@$frozen]", decode_bifcode @$frozen )
+      : ( "decode '$frozen'", decode_bifcode $frozen );
 }
 
 sub decod_ok {
@@ -41,7 +41,7 @@ sub error_ok {
 
 error_ok
   '0:0:' => qr/\Atrailing garbage at 2\b/,
-  'data past end of first correct encode_bbe\'d string';
+  'data past end of first correct encode_bifcode\'d string';
 error_ok 'i'  => qr/\Aunexpected end of data at 1\b/, 'aborted integer';
 error_ok 'i0' => qr/\Amalformed integer data at 1\b/, 'unterminated integer';
 error_ok 'i,' => qr/\Amalformed integer data at 1\b/, 'empty integer';
@@ -49,8 +49,8 @@ error_ok
   'i341foo382,' => qr/\Amalformed integer data at 1\b/,
   'malformed integer';
 decod_ok '~'           => undef;
-decod_ok 'T'           => $BBE::TRUE;
-decod_ok 'F'           => $BBE::FALSE;
+decod_ok 'T'           => $Bifcode::TRUE;
+decod_ok 'F'           => $Bifcode::FALSE;
 decod_ok 'i4,'         => 4;
 decod_ok 'i0,'         => 0;
 decod_ok 'i123456789,' => 123456789;
@@ -70,14 +70,14 @@ error_ok
 error_ok
   '2:abfdjslhfld' => qr/\Atrailing garbage at 4\b/,
   'string with trailing garbage';
-error_ok '2:' . $utf8 => qr/\Adecode_bbe: only accepts bytes\b/,
+error_ok '2:' . $utf8 => qr/\Adecode_bifcode: only accepts bytes\b/,
   'check for utf8 flag';
 decod_ok '0:'            => '';
 decod_ok '3:abc'         => 'abc';
 decod_ok '3:abc'         => 'abc';
 decod_ok '10:1234567890' => '1234567890';
-decod_ok $data_bbe       => \$data;
-decod_ok $utf8_bbe       => $utf8;
+decod_ok $data_bifcode   => \$data;
+decod_ok $utf8_bifcode   => $utf8;
 error_ok
   '02:xy' => qr/\Amalformed string length at 0\b/,
   'string with extra leading zero in count';
@@ -87,11 +87,11 @@ error_ok
   '[]anfdldjfh' => qr/\Atrailing garbage at 2\b/,
   'empty list with trailing garbage';
 decod_ok '[~~~]' => [ undef, undef, undef ];
-decod_ok '[TF]' => [ $BBE::TRUE, $BBE::FALSE ];
+decod_ok '[TF]' => [ $Bifcode::TRUE, $Bifcode::FALSE ];
 decod_ok '[0:0:0:]' => [ '', '', '' ];
 error_ok 'relwjhrlewjh' => qr/\Agarbage at 0/, 'complete garbage';
-decod_ok '[i1,i2,i3,]'                  => [ 1,     2,    3 ];
-decod_ok '[3:asd2:xy' . $utf8_bbe . ']' => [ 'asd', 'xy', $utf8 ];
+decod_ok '[i1,i2,i3,]'                      => [ 1,     2,    3 ];
+decod_ok '[3:asd2:xy' . $utf8_bifcode . ']' => [ 'asd', 'xy', $utf8 ];
 decod_ok '[[5:Alice3:Bob][i2,i3,~]~]' =>
   [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
 error_ok '{' => qr/\Aunexpected end of data at 1\b/, 'unclosed empty dict';
@@ -99,14 +99,14 @@ error_ok
   '{}foobar' => qr/\Atrailing garbage at 2\b/,
   'empty dict with trailing garbage';
 decod_ok '{}' => {};
-decod_ok '{' . $data_bbe . $utf8_bbe . '}' => { $data => $utf8 };
-decod_ok '{' . $utf8_bbe . $data_bbe . '}' => { $utf8 => \$data };
+decod_ok '{' . $data_bifcode . $utf8_bifcode . '}' => { $data => $utf8 };
+decod_ok '{' . $utf8_bifcode . $data_bifcode . '}' => { $utf8 => \$data };
 decod_ok '{3:agei25,4:eyes4:blue5:falseF4:trueT5:undef~}' => {
     'age'   => 25,
     'eyes'  => 'blue',
     'undef' => undef,
-    true    => $BBE::TRUE,
-    false   => $BBE::FALSE,
+    true    => $Bifcode::TRUE,
+    false   => $Bifcode::FALSE,
 };
 decod_ok '{8:spam.mp3{6:author5:Alice6:lengthi100000,5:undef~}}' =>
   { 'spam.mp3' =>
