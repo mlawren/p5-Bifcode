@@ -280,19 +280,24 @@ binary/text encoding with support for the following data types:
 
 =item * Integers
 
-=item * UTF8-encoded strings
+=item * UTF8 strings
 
-=item * Opaque(binary) data strings
+=item * Binary strings
 
-=item * Arrays(lists) and hashes(dictionaries)
+=item * Arrays(lists)
+
+=item * Hashes(dictionaries)
 
 =back
 
-The encoding is simple to construct and relatively easy to parse. No
-characters need escaping. It is not considered human readable.  It is
-bijective, meaning that there is only one encoding for a data
-structure. This last property makes it suitable for comparing data
+The encoding is simple to construct and relatively easy to parse. There
+is no need for escaping special characters in strings. It can only be
+constructed canonically; i.e. there is only one possible encoding per
+data structure. This last property makes it suitable for comparing
 structures (using cryptographic hashes) across networks.
+
+I<Bifcode> is not considered human readable, but as it is mostly text
+it can usually be human-debugged.
 
 In terms of size the encoding is similar to minified JSON. In terms of
 speed this module compares well with other pure Perl encoding modules
@@ -311,8 +316,8 @@ Boolean values are represented by 'T' and 'F'.
 =head2 BIFCODE_UTF8
 
 A UTF8 string is the octet length of the decoded string as a base ten
-number followed by a colon and the decoded string.  For example "ß"
-corresponds to "2:\x{c3}\x{9f}".
+number followed by a colon and the decoded string.  For example
+"\x{df}" corresponds to "2:\x{c3}\x{9f}".
 
 =head2 BIFCODE_BYTES
 
