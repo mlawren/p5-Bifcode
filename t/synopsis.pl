@@ -18,7 +18,7 @@ my $bifcode = encode_bifcode {
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 
-my $format      = '12/1 " %2x"' . "\n" . '"\t" "%_p"' . "\n" . '"\n"';
+my $format      = '12/1 " %2x"' . "\n" . '"    " "%_p"' . "\n" . '"\n"' . "\n";
 my $format_file = Path::Tiny->tempfile;
 $format_file->spew($format);
 system( 'hexdump', '-f', $format_file, $bifcode_file );
