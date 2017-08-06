@@ -11,6 +11,7 @@ my $bifcode = encode_bifcode {
     bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
+    float   => 1.0 / 300000000.0,
     undef   => undef,
     utf8    => "\x{df}",
 };

@@ -88,6 +88,23 @@ sub _decode_bifcode_chunk {
         warn _msg INTEGER => $1, 'at %s' if $DEBUG;
         return 0 + $1;
     }
+    elsif (m/ \G F /xgc) {
+        croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
+
+        m/ \G -? ( 0 | [1-9] [0-9]* )
+        \. ( 0 | [0-9]* [1-9] )
+        e (( 0 | -? [1-9] ) [0-9]*) , /xgc
+          or croak _msg 'malformed float data at %s';
+
+        warn "$1 and $2 and $3 and $4 from $_";
+        croak _msg 'malformed float data at %s'
+          if $1 eq '0'
+          and $2 eq '0'
+          and $3 ne '0';
+
+        warn _msg FLOAT => $1 . '.' . $2 . 'e' . $3, 'at %s' if $DEBUG;
+        return $1 . '.' . $2 . 'e' . $3;
+    }
     elsif (m/ \G \[ /xgc) {
         warn _msg 'LIST at %s' if $DEBUG;
 
@@ -151,22 +168,31 @@ sub decode_bifcode {
     return $deserialised_data;
 }
 
+my $float_qr = qr/\A ( -? [0-9]+ )
+                    \. ( [0-9]* [1-9] )
+                    ( e ( [+-]? [0-9]+ ) )? \z/xi;
+
 sub _encode_bifcode {
     my ($data) = @_;
     return '~' unless defined $data;
 
     my $type = ref $data;
     if ( $type eq '' ) {
-        if ( !$dict_key and $data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
-            $type = 'Bifcode::INTEGER';
+        if ($dict_key) {
+            $type = 'Bifcode::UTF8';
+        }
+        elsif ( $data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
+            return sprintf 'I%s,', $data;
+        }
+        elsif ( $data =~ $float_qr ) {
+            return sprintf 'F%s,',
+              ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) );
         }
         else {
             $type = 'Bifcode::UTF8';
         }
+
         $data = \( my $tmp = $data );
-    }
-    elsif ( $type eq 'SCALAR' ) {
-        $type = 'Bifcode::BYTES';
     }
 
     use bytes;    # for 'sort' and 'length' below
@@ -176,7 +202,7 @@ sub _encode_bifcode {
         utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
         return 'U' . length($str) . ':' . $str;
     }
-    elsif ( $type eq 'Bifcode::BYTES' ) {
+    elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
         croak 'Bifcode::BYTES must be defined' unless defined $$data;
         return 'B' . length($$data) . ':' . $$data;
     }
@@ -192,6 +218,12 @@ sub _encode_bifcode {
         return sprintf 'I%s,', $$data
           if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
+    }
+    elsif ( $type eq 'Bifcode::FLOAT' ) {
+        croak 'Bifcode::FLOAT must be defined' unless defined $$data;
+        return sprintf 'F%s,', ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) )
+          if $$data =~ $float_qr;
+        croak 'invalid float: ' . $$data;
     }
     elsif ( $type eq 'ARRAY' ) {
         return '[' . join( '', map _encode_bifcode($_), @$data ) . ']';
@@ -249,18 +281,21 @@ Bifcode - simple serialization format
  
     my $bifcode = encode_bifcode {
         bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
-        bytes   => \pack( 's<', 255 ),
+        bytes   => \pack( 's<',       255 ),
         integer => 25,
+        float   => 1.0 / 300000000.0,
         undef   => undef,
         utf8    => "\x{df}",
     };
 
     # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
     # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
-    # ff  0 55 37 3a 69 6e 74 65 67 65 72    ..U7:integer
-    # 49 32 35 2c 55 35 3a 75 6e 64 65 66    I25,U5:undef
-    # 7e 55 34 3a 75 74 66 38 55 32 3a c3    ~U4:utf8U2:.
-    # 9f 7d                                  .}
+    # ff  0 55 35 3a 66 6c 6f 61 74 46 33    ..U5:floatF3
+    # 2e 33 33 33 33 33 33 33 33 33 33 33    .33333333333
+    # 33 33 33 65 2d 39 2c 55 37 3a 69 6e    333e-9,U7:in
+    # 74 65 67 65 72 49 32 35 2c 55 35 3a    tegerI25,U5:
+    # 75 6e 64 65 66 7e 55 34 3a 75 74 66    undef~U4:utf
+    # 38 55 32 3a c3 9f 7d                   8U2:..}
 
     my $decoded = decode_bifcode $bifcode;
 
@@ -280,7 +315,9 @@ binary/text encoding with support for the following data types:
 
 =item * Booleans(true/false)
 
-=item * Integers
+=item * Integer numbers
+
+=item * Floating point numbers
 
 =item * UTF8 strings
 
@@ -334,6 +371,15 @@ followed by a ','. For example 'I3,' corresponds to 3 and 'I-3,'
 corresponds to -3. Integers have no size limitation. 'I-0,' is invalid.
 All encodings with a leading zero, such as 'I03,', are invalid, other
 than 'I0,', which of course corresponds to 0.
+
+=head2 BIFCODE_FLOAT
+
+Floats are represented by an 'F' followed by a decimal number in base
+10 followed by a 'e' followed by an exponent followed by a ','.  For
+example 'F3.0e-1,' corresponds to 0.3 and 'F-0.1e0,' corresponds to
+-0.1. Floats have no size limitation.  'F-0.0,' is invalid.  All
+encodings with an extraneous leading zero, such as 'F03.0e0,', are
+invalid.
 
 =head2 BIFCODE_LIST
 

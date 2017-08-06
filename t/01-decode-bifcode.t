@@ -51,6 +51,8 @@ error_ok
 decod_ok '~'           => undef;
 decod_ok '1'           => $Bifcode::TRUE;
 decod_ok '0'           => $Bifcode::FALSE;
+decod_ok 'F0.0e0,'     => '0.0e0';
+decod_ok 'F4.1e-2,'    => '4.1e-2';
 decod_ok 'I4,'         => 4;
 decod_ok 'I0,'         => 0;
 decod_ok 'I123456789,' => 123456789;
@@ -64,6 +66,9 @@ error_ok
 error_ok
   'I6,asd' => qr/\Atrailing garbage at 3\b/,
   'integer with trailing garbage';
+error_ok
+  'F0.0e-1,' => qr/\Amalformed float data at 8\b/,
+  'non-zero exponent for 0.0 float';
 error_ok
   'U35208734823ljdahflajhdf' => qr/\Agarbage at 0/,
   'garbage looking vaguely like a string, with large count';
