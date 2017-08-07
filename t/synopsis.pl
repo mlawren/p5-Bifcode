@@ -16,6 +16,7 @@ my $bifcode = encode_bifcode {
     utf8    => "\x{df}",
 };
 
+print $bifcode, "\n\n";
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 
