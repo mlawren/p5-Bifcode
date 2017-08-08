@@ -96,7 +96,6 @@ sub _decode_bifcode_chunk {
         e (( 0 | -? [1-9] ) [0-9]*) , /xgc
           or croak _msg 'malformed float data at %s';
 
-        warn "$1 and $2 and $3 and $4 from $_";
         croak _msg 'malformed float data at %s'
           if $1 eq '0'
           and $2 eq '0'
