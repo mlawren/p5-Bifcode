@@ -311,6 +311,10 @@ binary/text encoding with support for the following data types:
 
 =over
 
+=item * Primitive:
+
+=over
+
 =item * Undefined(null)
 
 =item * Booleans(true/false)
@@ -323,24 +327,58 @@ binary/text encoding with support for the following data types:
 
 =item * Binary strings
 
+=back
+
+=item * Structured:
+
+=over
+
 =item * Arrays(lists)
 
 =item * Hashes(dictionaries)
 
 =back
 
-I<Bifcode> is not considered human readable, but as it is mostly text
-it can usually be human-debugged.
+=back
 
 The encoding is simple to construct and relatively easy to parse. There
-is no need to escaping special characters in strings. It can only be
-constructed canonically; i.e. there is only one possible encoding per
-data structure. This last property makes it suitable for comparing
-structures (using cryptographic hashes) across networks.
+is no need to escape special characters in strings. It is not
+considered human readable, but as it is mostly text it can usually be
+visually debugged.
+
+I<Bifcode> can only be constructed canonically; i.e. there is only one
+possible encoding per data structure. This property makes it suitable
+for comparing structures (using cryptographic hashes) across networks.
 
 In terms of size the encoding is similar to minified JSON. In terms of
 speed this module compares well with other pure Perl encoding modules
 with the same features.
+
+=head1 MOTIVATION & GOALS
+
+Bifcode was created for a project because none of currently available
+serialization formats (Bencode, JSON, MsgPack, Sereal, YAML, etc) met
+the requirements of:
+
+=over
+
+=item * Support for undef
+
+=item * Support for UTF8 strings
+
+=item * Support for binary data
+
+=item * Trivial to construct on the fly from within SQLite triggers
+
+=item * Universally-recognized canonical form for hashing
+
+=back
+
+There no lofty goals or intentions to promote this outside of my
+specific case.  Use it or not, as you please, based on your own
+requirements. Constructive discussion is welcome.
+
+=head1 SPECIFICATION
 
 The encoding is defined as follows:
 
