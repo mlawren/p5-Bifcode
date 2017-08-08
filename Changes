@@ -1,3 +1,20 @@
+0.001_2 (yyyy-mm-dd)
+
+    API / Behaviour Changes:
+        - None.
+
+    New Features:
+        - None.
+
+    Enhancements:
+        - None.
+
+    Bug Fixes:
+        - None.
+
+    Dependencies:
+        - None.
+
 0.001_1 (2017-08-09)
 
     Initial Bifcode release (based heavily on Bencode)
