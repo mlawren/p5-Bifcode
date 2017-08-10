@@ -168,7 +168,7 @@ sub decode_bifcode {
 }
 
 my $float_qr = qr/\A ( -? [0-9]+ )
-                    \. ( [0-9]* [1-9] )
+                    ( \. ( [0-9]* [1-9] ) )?
                     ( e ( [+-]? [0-9]+ ) )? \z/xi;
 
 sub _encode_bifcode {
@@ -183,9 +183,9 @@ sub _encode_bifcode {
         elsif ( $data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
             return sprintf 'I%s,', $data;
         }
-        elsif ( $data =~ $float_qr ) {
+        elsif ( ( $data =~ $float_qr ) && ( defined $2 or defined $4 ) ) {
             return sprintf 'F%s,',
-              ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) );
+              ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
         }
         else {
             $type = 'Bifcode::UTF8';
@@ -215,6 +215,7 @@ sub _encode_bifcode {
     elsif ( $type eq 'Bifcode::INTEGER' ) {
         croak 'Bifcode::INTEGER must be defined' unless defined $$data;
         use warnings FATAL => 'all';
+        use integer;
         return sprintf 'I%s,', $$data + 0
           if ( $$data + 0 ) =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
@@ -222,7 +223,8 @@ sub _encode_bifcode {
     elsif ( $type eq 'Bifcode::FLOAT' ) {
         croak 'Bifcode::FLOAT must be defined' unless defined $$data;
         use warnings FATAL => 'all';
-        return sprintf 'F%s,', ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) )
+        return sprintf 'F%s,',
+          ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
           if ( $$data + 0 ) =~ $float_qr;
         croak 'invalid float: ' . $$data;
     }

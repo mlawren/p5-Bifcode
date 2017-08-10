@@ -24,15 +24,39 @@ subtest 'INTEGER' => sub {
     enc_ok '12345678901234567890' => 'I12345678901234567890,';
     enc_ok force_bifcode( '00', 'integer' ) => 'I0,';
     enc_error_ok force_bifcode( '00abc', 'integer' ) =>
-      qr/Argument "00abc" isn't numeric in addition/,
+      qr/Argument "00abc" isn't numeric/,
       'forcing a non-integer as integer';
 };
 
 subtest 'FLOAT' => sub {
-    enc_ok '0.1e1'    => 'F0.1e1,';
-    enc_ok '1.001e13' => 'F1.001e13,';
+    enc_ok '100.2'    => 'F100.2e0,';
+    enc_ok '100.08'   => 'F100.08e0,';
+    enc_ok '100.1e1'  => 'F100.1e1,';
+    enc_ok '100.01e1' => 'F100.01e1,';
+
+    # Plain integer
+    enc_ok force_bifcode( 0, 'float' ) => 'F0.0e0,';
+
+    # Plain float
+    enc_ok force_bifcode( '100.2', 'float' ) => 'F100.2e0,';
+
+    # Plain float trailing .x0
+    enc_ok force_bifcode( '100.20', 'float' ) => 'F100.2e0,';
+
+    # Plain float leading .0x
+    enc_ok force_bifcode( '100.08', 'float' ) => 'F100.08e0,';
+
+    # exponent no decimal
+    enc_ok force_bifcode( '100e0', 'float' ) => 'F100.0e0,';
+
+    # decimal and exponent
+    enc_ok force_bifcode( '100.2e0', 'float' ) => 'F100.2e0,';
+
+    # decimal and exponent leading .0x
+    enc_ok force_bifcode( '100.008e0', 'float' ) => 'F100.008e0,';
+
     enc_error_ok force_bifcode( '00abc', 'float' ) =>
-      qr/Argument "00abc" isn't numeric in addition/,
+      qr/Argument "00abc" isn't numeric/,
       'forcing a non-float as float';
 };
 
