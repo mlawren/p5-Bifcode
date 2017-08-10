@@ -214,14 +214,16 @@ sub _encode_bifcode {
     }
     elsif ( $type eq 'Bifcode::INTEGER' ) {
         croak 'Bifcode::INTEGER must be defined' unless defined $$data;
-        return sprintf 'I%s,', $$data
-          if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
+        use warnings FATAL => 'all';
+        return sprintf 'I%s,', $$data + 0
+          if ( $$data + 0 ) =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
     elsif ( $type eq 'Bifcode::FLOAT' ) {
         croak 'Bifcode::FLOAT must be defined' unless defined $$data;
+        use warnings FATAL => 'all';
         return sprintf 'F%s,', ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) )
-          if $$data =~ $float_qr;
+          if ( $$data + 0 ) =~ $float_qr;
         croak 'invalid float: ' . $$data;
     }
     elsif ( $type eq 'ARRAY' ) {

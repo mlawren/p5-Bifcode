@@ -22,11 +22,18 @@ subtest 'INTEGER' => sub {
     enc_ok 0                      => 'I0,';
     enc_ok - 10                   => 'I-10,';
     enc_ok '12345678901234567890' => 'I12345678901234567890,';
+    enc_ok force_bifcode( '00', 'integer' ) => 'I0,';
+    enc_error_ok force_bifcode( '00abc', 'integer' ) =>
+      qr/Argument "00abc" isn't numeric in addition/,
+      'forcing a non-integer as integer';
 };
 
 subtest 'FLOAT' => sub {
     enc_ok '0.1e1'    => 'F0.1e1,';
     enc_ok '1.001e13' => 'F1.001e13,';
+    enc_error_ok force_bifcode( '00abc', 'float' ) =>
+      qr/Argument "00abc" isn't numeric in addition/,
+      'forcing a non-float as float';
 };
 
 subtest 'UTF8' => sub {
@@ -34,6 +41,8 @@ subtest 'UTF8' => sub {
     enc_ok $utf8 => $UTF8;
     enc_ok 'abc' => 'U3:abc';
     enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890';
+    enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0';
+    enc_ok '00' => 'U2:00';
 };
 
 subtest 'BYTES' => sub {

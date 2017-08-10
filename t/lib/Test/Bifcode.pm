@@ -10,7 +10,7 @@ use Exporter::Tidy default => [
     qw($bytes $BYTES
       $utf8 $UTF8
       enc_ok
-      un
+      enc_error_ok
       decod_ok
       error_ok)
 ];
@@ -34,6 +34,14 @@ sub enc_ok {
     my ( $thawed, $frozen ) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     eq_or_diff encode_bifcode($thawed), $frozen, "encode $frozen";
+}
+
+sub enc_error_ok {
+    my ( $data, $error_rx, $kind_of_brokenness ) = @_;
+    local $@;
+    eval { encode_bifcode $data };
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    like $@, $error_rx, "reject $kind_of_brokenness";
 }
 
 sub un {
