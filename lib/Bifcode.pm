@@ -7,7 +7,7 @@ use Exporter::Tidy all => [qw( encode_bifcode decode_bifcode force_bifcode )];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_3';
+our $VERSION = '0.001_4';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -268,7 +268,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_3 (2017-08-11)
+0.001_4 (yyyy-mm-dd)
 
 
 =head1 SYNOPSIS
