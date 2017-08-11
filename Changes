@@ -1,19 +1,15 @@
+0.001_3 (2017-08-11)
+
+    Bug Fixes:
+        - Restore ability to encode infinite-length integers
+        - Add missing strings to MANIFEST.SKIP
+
 0.001_2 (2017-08-11)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
 
     Enhancements:
         - Add Git repository to META info
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
+        - Accept a wider range of float formats
+        - Various small test and efficiency improvements
 
 0.001_1 (2017-08-09)
 

@@ -22,9 +22,10 @@ subtest 'INTEGER' => sub {
     enc_ok 0                      => 'I0,';
     enc_ok - 10                   => 'I-10,';
     enc_ok '12345678901234567890' => 'I12345678901234567890,';
-    enc_ok force_bifcode( '00', 'integer' ) => 'I0,';
+    enc_error_ok force_bifcode( '00', 'integer' ) => qr/invalid integer: 00/,
+      'invalid 00 integer';
     enc_error_ok force_bifcode( '00abc', 'integer' ) =>
-      qr/Argument "00abc" isn't numeric/,
+      qr/invalid integer: 00abc/,
       'forcing a non-integer as integer';
 };
 
