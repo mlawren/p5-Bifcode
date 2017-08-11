@@ -189,8 +189,7 @@ sub _encode_bifcode {
             return sprintf 'I%s,', $data + 0;
         }
 
-        my $str = $data // croak 'Bifcode::UTF8 must be defined';
-        utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+        utf8::encode( my $str = $data );
         return 'U' . length($str) . ':' . $str;
     }
     elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
