@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - Test that encode_bifcode doesn't strip utf8 flag from string
 
     Bug Fixes:
         - None.

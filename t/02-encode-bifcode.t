@@ -76,6 +76,7 @@ subtest 'FLOAT' => sub {
 subtest 'UTF8' => sub {
     enc_ok ''    => 'U0:';
     enc_ok $utf8 => $UTF8;
+    ok utf8::is_utf8($utf8), 'still have utf8 flag on source string';
     enc_ok 'abc' => 'U3:abc';
     enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890';
     enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0';
