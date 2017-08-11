@@ -3,7 +3,12 @@ use 5.010;
 use strict;
 use warnings;
 use Carp;
-use Exporter::Tidy all => [qw( encode_bifcode decode_bifcode force_bifcode )];
+use Exporter::Tidy all => [
+    qw( encode_bifcode
+      decode_bifcode
+      force_bifcode
+      diff_bifcode)
+];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
@@ -254,6 +259,47 @@ sub force_bifcode {
     bless \$ref, 'Bifcode::' . uc($type);
 }
 
+sub _expand_bifcode {
+    my $bifcode = shift;
+    $bifcode =~ s/ (
+            [~\[\]\{\}]
+            | (U|B) [0-9]+ :  
+            | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,  
+            | I [0-9]+ ,  
+        ) /\n$-[0]: $1/gmx;
+    $bifcode =~ s/ \A ^ $ //mx;
+    $bifcode . "\n";
+}
+
+sub diff_bifcode {
+    croak 'usage: diff_bifcode($b1, $b2)' if @_ != 2;
+    croak 'diff_bifcode need Text::Diff' unless eval { require Text::Diff };
+
+    my $b1    = shift;
+    my $b2    = shift;
+    my $data1 = eval { decode_bifcode($b1) };
+    my $data2 = eval { decode_bifcode($b2) };
+
+    # Valid structures so let Perl help us out
+    if ( $data1 and $data2 ) {
+        require Data::Dumper;
+
+        local $Data::Dumper::Indent    = 1;
+        local $Data::Dumper::Purity    = 0;
+        local $Data::Dumper::Terse     = 1;
+        local $Data::Dumper::Deepcopy  = 1;
+        local $Data::Dumper::Quotekeys = 0;
+        local $Data::Dumper::Sortkeys  = 1;
+
+        my ( $str1, $str2 ) = map { Data::Dumper::Dumper($_) } $data1, $data2;
+        return Text::Diff::diff( \$str1, \$str2 );
+    }
+
+    $b1 = _expand_bifcode($b1);
+    $b2 = _expand_bifcode($b2);
+    return Text::Diff::diff( \$b1, \$b2 );    #, {STYLE => 'Table'} );
+}
+
 decode_bifcode('I1,');
 
 __END__
@@ -499,6 +545,17 @@ Returns a reference to $scalar blessed as Bifcode::$TYPE. The value of
 $type is not checked, but the C<encode_bifcode> function will only
 accept the resulting reference where $type is one of 'bytes', 'float',
 'integer' or 'utf8'.
+
+=head2 C<diff_bifcode( $bc1, $bc2 )>
+
+Returns a string representing the difference between two (possible)
+bifcodes.  If $bc1 and $bc2 decode to valid Perl structures then the
+diff is against a L<Data::Dumper> serialization.  If one (or both)
+cannot be decoded then the diff is against an "expanded" bifcode format
+that breaks bifcodes up into tokens prefixed by their position in the
+bytestring.
+
+Croaks if L<Text::Diff> is not installed.
 
 =head1 DIAGNOSTICS
 

@@ -4,7 +4,7 @@
         - None.
 
     New Features:
-        - None.
+        - Add diff_bifcode() function to aid debugging
 
     Enhancements:
         - Test that encode_bifcode doesn't strip utf8 flag from string
