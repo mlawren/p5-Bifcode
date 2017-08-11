@@ -1,16 +1,7 @@
-0.001_4 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
+0.001_4 (2017-08-11)
 
     Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
+        - Minor documentation fixes.
 
     Dependencies:
         - Require Perl 5.10.0 for the defined-or (//) operator.
