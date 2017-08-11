@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use 5.010;
 use ExtUtils::MakeMaker::CPANfile;
+use Pod::Text;
 
 WriteMakefile(
     NAME         => 'Bifcode',
@@ -20,3 +21,8 @@ WriteMakefile(
         },
     },
 );
+my $parser = Pod::Text->new( sentence => 0 );
+
+# Read POD from file.pod and write to file.txt.
+$parser->parse_from_file( 'lib/Bifcode.pm', 'README' );
+

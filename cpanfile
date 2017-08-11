@@ -9,6 +9,7 @@ recommends 'Text::Diff';
 
 on build => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';
+    requires 'Pod::Text';
 };
 
 on test => sub {
