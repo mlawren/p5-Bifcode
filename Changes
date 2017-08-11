@@ -13,7 +13,7 @@
         - None.
 
     Dependencies:
-        - None.
+        - Require Perl 5.10.0 for the defined-or (//) operator.
 
 0.001_3 (2017-08-11)
 
