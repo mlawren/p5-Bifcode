@@ -1,4 +1,4 @@
-0.001_3 (yyyy-mm-dd)
+0.001_3 (2017-08-11)
 
     Bug Fixes:
         - Restore ability to encode infinite-length integers
