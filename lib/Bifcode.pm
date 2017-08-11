@@ -188,17 +188,8 @@ sub _encode_bifcode {
 
             return sprintf 'I%s,', $data + 0;
         }
-        else {
-            $type = 'Bifcode::UTF8';
-        }
 
-        $data = \( my $tmp = $data );
-    }
-
-    use bytes;    # for 'sort' and 'length' below
-
-    if ( $type eq 'Bifcode::UTF8' ) {
-        my $str = $$data // croak 'Bifcode::UTF8 must be defined';
+        my $str = $data // croak 'Bifcode::UTF8 must be defined';
         utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
         return 'U' . length($str) . ':' . $str;
     }
@@ -206,11 +197,30 @@ sub _encode_bifcode {
         croak 'Bifcode::BYTES must be defined' unless defined $$data;
         return 'B' . length($$data) . ':' . $$data;
     }
-
-    croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8'
-      if $dict_key;
-
-    if ( $type eq 'Bifcode::Boolean' ) {
+    elsif ( $type eq 'Bifcode::UTF8' ) {
+        my $str = $$data // croak 'Bifcode::UTF8 must be defined';
+        utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+        return 'U' . length($str) . ':' . $str;
+    }
+    elsif ($dict_key) {
+        croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8';
+    }
+    elsif ( $type eq 'ARRAY' ) {
+        return '[' . join( '', map _encode_bifcode($_), @$data ) . ']';
+    }
+    elsif ( $type eq 'HASH' ) {
+        return '{' . join(
+            '',
+            map {
+                do {
+                    local $dict_key = 1;
+                    _encode_bifcode($_);
+                  }, _encode_bifcode( $data->{$_} )
+              }
+              sort keys %$data
+        ) . '}';
+    }
+    elsif ( $type eq 'Bifcode::Boolean' ) {
         return $$data ? '1' : '0';
     }
     elsif ( $type eq 'Bifcode::INTEGER' ) {
@@ -228,21 +238,6 @@ sub _encode_bifcode {
           ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
           if ( $$data + 0 ) =~ $number_qr;
         croak 'invalid float: ' . $$data;
-    }
-    elsif ( $type eq 'ARRAY' ) {
-        return '[' . join( '', map _encode_bifcode($_), @$data ) . ']';
-    }
-    elsif ( $type eq 'HASH' ) {
-        return '{' . join(
-            '',
-            map {
-                do {
-                    local $dict_key = 1;
-                    _encode_bifcode($_);
-                  }, _encode_bifcode( $data->{$_} )
-              }
-              sort keys %$data
-        ) . '}';
     }
     else {
         croak 'unhandled data type: ' . $type;
