@@ -1,5 +1,5 @@
 #!perl
-requires 'perl', '5.008001';
+requires 'perl', '5.010';
 requires 'strict';
 requires 'warnings';
 requires 'utf8';

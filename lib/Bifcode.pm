@@ -1,5 +1,5 @@
 package Bifcode;
-use 5.008001;
+use 5.010;
 use strict;
 use warnings;
 use Carp;
@@ -7,7 +7,7 @@ use Exporter::Tidy all => [qw( encode_bifcode decode_bifcode force_bifcode )];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_3';
+our $VERSION = '0.001_4';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -268,7 +268,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_3 (2017-08-11)
+0.001_4 (2017-08-11)
 
 
 =head1 SYNOPSIS
@@ -447,9 +447,21 @@ The mapping from Perl to I<bifcode> is as follows:
 =item * The global package variables C<$Bifcode::TRUE> and C<$Bifcode::FALSE>
 encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
-=item * Plain scalars that look like canonically represented integers
-will be serialised as BIFCODE_INTEGER. Otherwise they are treated as
-BIFCODE_UTF8.
+=item * Plain scalars are treated as BIFCODE_UTF8 unless:
+
+=over
+
+=item 
+
+They look like canonically represented integers in which case they are
+mapped to BIFCODE_INTEGER; or
+
+=item
+
+They look like canonically represented floats in which case they are
+mapped to BIFCODE_FLOAT.
+
+=back
 
 =item * SCALAR references become BIFCODE_BYTES.
 
@@ -460,9 +472,9 @@ BIFCODE_UTF8.
 =back
 
 You can force scalars to be encoded a particular way by passing a
-reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER or
-Bifcode::UTF8. The C<force_bifcode> function below can help with
-creating such references.
+reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER,
+Bifcode::FLOAT or Bifcode::UTF8. The C<force_bifcode> function below
+can help with creating such references.
 
 This subroutine croaks on unhandled data types.
 
@@ -486,8 +498,8 @@ Croaks on malformed data.
 
 Returns a reference to $scalar blessed as Bifcode::$TYPE. The value of
 $type is not checked, but the C<encode_bifcode> function will only
-accept the resulting reference where $type is one of 'bytes',
-'integer', or 'utf8'.
+accept the resulting reference where $type is one of 'bytes', 'float',
+'integer' or 'utf8'.
 
 =head1 DIAGNOSTICS
 

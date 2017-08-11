@@ -4,7 +4,7 @@
       "Mark Lawrencde <nomad@null.net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "ExtUtils::MakeMaker version 7.0401, CPAN::Meta::Converter version 2.142690",
+   "generated_by" : "ExtUtils::MakeMaker version 7.0402, CPAN::Meta::Converter version 2.150001",
    "license" : [
       "unknown"
    ],
@@ -39,7 +39,7 @@
          "requires" : {
             "Carp" : "0",
             "Exporter::Tidy" : "0",
-            "perl" : "5.008001",
+            "perl" : "5.010",
             "strict" : "0",
             "utf8" : "0",
             "warnings" : "0"
@@ -52,5 +52,5 @@
          "url" : "https://github.com/mlawren/p5-Bifcode"
       }
    },
-   "version" : "0.001_3"
+   "version" : "0.001_4"
 }
