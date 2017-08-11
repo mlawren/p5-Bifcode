@@ -169,7 +169,7 @@ sub decode_bifcode {
 
 my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( \. ( [0-9]+? ) 0* )?
-                    ( e ( 0 | -? [1-9] [0-9]* ) )? \z/xi;
+                    ( e ( -? [0-9]+ ) )? \z/xi;
 
 sub _encode_bifcode {
     my ($data) = @_;
@@ -458,8 +458,7 @@ mapped to BIFCODE_INTEGER; or
 
 =item
 
-They look like canonically represented floats in which case they are
-mapped to BIFCODE_FLOAT.
+They look like floats in which case they are mapped to BIFCODE_FLOAT.
 
 =back
 
