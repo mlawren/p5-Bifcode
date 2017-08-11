@@ -447,9 +447,21 @@ The mapping from Perl to I<bifcode> is as follows:
 =item * The global package variables C<$Bifcode::TRUE> and C<$Bifcode::FALSE>
 encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
-=item * Plain scalars that look like canonically represented integers
-will be serialised as BIFCODE_INTEGER. Otherwise they are treated as
-BIFCODE_UTF8.
+=item * Plain scalars are treated as BIFCODE_UTF8 unless:
+
+=over
+
+=item 
+
+They look like canonically represented integers in which case they are
+mapped to BIFCODE_INTEGER; or
+
+=item
+
+They look like canonically represented floats in which case they are
+mapped to BIFCODE_FLOAT.
+
+=back
 
 =item * SCALAR references become BIFCODE_BYTES.
 
@@ -486,8 +498,8 @@ Croaks on malformed data.
 
 Returns a reference to $scalar blessed as Bifcode::$TYPE. The value of
 $type is not checked, but the C<encode_bifcode> function will only
-accept the resulting reference where $type is one of 'bytes',
-'integer', or 'utf8'.
+accept the resulting reference where $type is one of 'bytes', 'float',
+'integer' or 'utf8'.
 
 =head1 DIAGNOSTICS
 

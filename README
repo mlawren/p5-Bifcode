@@ -146,9 +146,13 @@ INTERFACE
     *   The global package variables $Bifcode::TRUE and $Bifcode::FALSE
         encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
-    *   Plain scalars that look like canonically represented integers will
-        be serialised as BIFCODE_INTEGER. Otherwise they are treated as
-        BIFCODE_UTF8.
+    *   Plain scalars are treated as BIFCODE_UTF8 unless:
+
+        *   They look like canonically represented integers in which case
+            they are mapped to BIFCODE_INTEGER; or
+
+        *   They look like canonically represented floats in which case they
+            are mapped to BIFCODE_FLOAT.
 
     *   SCALAR references become BIFCODE_BYTES.
 
@@ -181,8 +185,8 @@ INTERFACE
   "force_bifcode( $scalar, $type )"
     Returns a reference to $scalar blessed as Bifcode::$TYPE. The value of
     $type is not checked, but the "encode_bifcode" function will only accept
-    the resulting reference where $type is one of 'bytes', 'integer', or
-    'utf8'.
+    the resulting reference where $type is one of 'bytes', 'float',
+    'integer' or 'utf8'.
 
 DIAGNOSTICS
     "trailing garbage at %s"
