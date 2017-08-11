@@ -167,9 +167,9 @@ sub decode_bifcode {
     return $deserialised_data;
 }
 
-my $float_qr = qr/\A ( -? [0-9]+ )
+my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( \. ( [0-9]* [1-9] ) )?
-                    ( e ( [+-]? [0-9]+ ) )? \z/xi;
+                    ( e ( 0 | -? [1-9] [0-9]* ) )? \z/xi;
 
 sub _encode_bifcode {
     my ($data) = @_;
@@ -177,15 +177,12 @@ sub _encode_bifcode {
 
     my $type = ref $data;
     if ( $type eq '' ) {
-        if ($dict_key) {
-            $type = 'Bifcode::UTF8';
-        }
-        elsif ( $data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
-            return sprintf 'I%s,', $data;
-        }
-        elsif ( ( $data =~ $float_qr ) && ( defined $2 or defined $4 ) ) {
+        if ( !$dict_key and $data =~ $number_qr ) {
             return sprintf 'F%s,',
-              ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
+              ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
+              if defined $2 or defined $4;
+
+            return sprintf 'I%s,', $data + 0;
         }
         else {
             $type = 'Bifcode::UTF8';
@@ -225,7 +222,7 @@ sub _encode_bifcode {
         use warnings FATAL => 'all';
         return sprintf 'F%s,',
           ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
-          if ( $$data + 0 ) =~ $float_qr;
+          if ( $$data + 0 ) =~ $number_qr;
         croak 'invalid float: ' . $$data;
     }
     elsif ( $type eq 'ARRAY' ) {
