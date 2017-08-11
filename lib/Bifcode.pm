@@ -186,7 +186,7 @@ sub _encode_bifcode {
                   ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
             }
 
-            return sprintf 'I%s,', $data + 0;
+            return sprintf 'I%s,', $data;
         }
 
         utf8::encode( my $str = $data );
@@ -224,10 +224,8 @@ sub _encode_bifcode {
     }
     elsif ( $type eq 'Bifcode::INTEGER' ) {
         croak 'Bifcode::INTEGER must be defined' unless defined $$data;
-        use warnings FATAL => 'all';
-        use integer;
-        return sprintf 'I%s,', $$data + 0
-          if ( $$data + 0 ) =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
+        return sprintf 'I%s,', $$data
+          if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
         croak 'invalid integer: ' . $$data;
     }
     elsif ( $type eq 'Bifcode::FLOAT' ) {

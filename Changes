@@ -10,7 +10,7 @@
         - None.
 
     Bug Fixes:
-        - None.
+        - Restore ability to encode infinite-length integers
 
     Dependencies:
         - None.
