@@ -1,20 +1,8 @@
 0.001_3 (yyyy-mm-dd)
 
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
     Bug Fixes:
         - Restore ability to encode infinite-length integers
         - Add missing strings to MANIFEST.SKIP
-
-    Dependencies:
-        - None.
 
 0.001_2 (2017-08-11)
 
