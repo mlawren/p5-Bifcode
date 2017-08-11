@@ -161,9 +161,9 @@ INTERFACE
     *   HASH references become BIFCODE_DICT.
 
     You can force scalars to be encoded a particular way by passing a
-    reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER or
-    Bifcode::UTF8. The "force_bifcode" function below can help with creating
-    such references.
+    reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER,
+    Bifcode::FLOAT or Bifcode::UTF8. The "force_bifcode" function below can
+    help with creating such references.
 
     This subroutine croaks on unhandled data types.
 
