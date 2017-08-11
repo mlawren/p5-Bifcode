@@ -29,10 +29,16 @@ subtest 'INTEGER' => sub {
 };
 
 subtest 'FLOAT' => sub {
-    enc_ok '100.2'    => 'F100.2e0,';
-    enc_ok '100.08'   => 'F100.08e0,';
-    enc_ok '100.1e1'  => 'F100.1e1,';
-    enc_ok '100.01e1' => 'F100.01e1,';
+    enc_ok '100.2'     => 'F100.2e0,';
+    enc_ok '100.20'    => 'F100.2e0,';
+    enc_ok '100.08'    => 'F100.08e0,';
+    enc_ok '100.080'   => 'F100.08e0,';
+    enc_ok '100e0'     => 'F100.0e0,';
+    enc_ok '100e1'     => 'F1000.0e0,';
+    enc_ok '100.1e1'   => 'F1001.0e0,';
+    enc_ok '100.10e1'  => 'F1001.0e0,';
+    enc_ok '100.01e1'  => 'F1000.1e0,';
+    enc_ok '100.010e1' => 'F1000.1e0,';
 
     # Plain integer
     enc_ok force_bifcode( 0, 'float' ) => 'F0.0e0,';

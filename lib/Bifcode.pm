@@ -168,7 +168,7 @@ sub decode_bifcode {
 }
 
 my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
-                    ( \. ( [0-9]* [1-9] ) )?
+                    ( \. ( [0-9]+? ) 0* )?
                     ( e ( 0 | -? [1-9] [0-9]* ) )? \z/xi;
 
 sub _encode_bifcode {
@@ -178,9 +178,13 @@ sub _encode_bifcode {
     my $type = ref $data;
     if ( $type eq '' ) {
         if ( !$dict_key and $data =~ $number_qr ) {
-            return sprintf 'F%s,',
-              ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
-              if defined $2 or defined $4;
+
+            # Normalize the number a bit
+            if ( defined $2 or defined $4 ) {
+                ( $data + 0 ) =~ $number_qr;
+                return sprintf 'F%s,',
+                  ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
+            }
 
             return sprintf 'I%s,', $data + 0;
         }
