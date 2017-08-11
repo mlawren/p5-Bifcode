@@ -180,8 +180,8 @@ sub _encode_bifcode {
         if ( !$dict_key and $data =~ $number_qr ) {
 
             # Normalize the number a bit
-            if ( defined $2 or defined $4 ) {
-                ( $data + 0 ) =~ $number_qr;
+            if ( defined $3 or defined $5 ) {
+                ( $data + 0 ) =~ $number_qr if ( $5 // 0 ) != 0;
                 return sprintf 'F%s,',
                   ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
             }

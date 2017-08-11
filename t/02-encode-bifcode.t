@@ -40,6 +40,12 @@ subtest 'FLOAT' => sub {
     enc_ok '100.01e1'  => 'F1000.1e0,';
     enc_ok '100.010e1' => 'F1000.1e0,';
 
+    enc_ok '100e-1'     => 'F10.0e0,';
+    enc_ok '100.1e-1'   => 'F10.01e0,';
+    enc_ok '100.10e-1'  => 'F10.01e0,';
+    enc_ok '100.01e-1'  => 'F10.001e0,';
+    enc_ok '100.010e-1' => 'F10.001e0,';
+
     # Plain integer
     enc_ok force_bifcode( 0, 'float' ) => 'F0.0e0,';
 
