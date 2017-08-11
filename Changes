@@ -1,3 +1,20 @@
+0.001_2 (2017-08-11)
+
+    API / Behaviour Changes:
+        - None.
+
+    New Features:
+        - None.
+
+    Enhancements:
+        - Add Git repository to META info
+
+    Bug Fixes:
+        - None.
+
+    Dependencies:
+        - None.
+
 0.001_1 (2017-08-09)
 
     Initial Bifcode release (based heavily on Bencode)

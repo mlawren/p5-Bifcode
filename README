@@ -2,7 +2,7 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    0.001_1 (2017-08-09)
+    0.001_2 (2017-08-11)
 
 SYNOPSIS
         use Bifcode qw( encode_bifcode decode_bifcode );

@@ -7,7 +7,7 @@ use Exporter::Tidy all => [qw( encode_bifcode decode_bifcode force_bifcode )];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_1';
+our $VERSION = '0.001_2';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -167,9 +167,9 @@ sub decode_bifcode {
     return $deserialised_data;
 }
 
-my $float_qr = qr/\A ( -? [0-9]+ )
-                    \. ( [0-9]* [1-9] )
-                    ( e ( [+-]? [0-9]+ ) )? \z/xi;
+my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
+                    ( \. ( [0-9]+? ) 0* )?
+                    ( e ( 0 | -? [1-9] [0-9]* ) )? \z/xi;
 
 sub _encode_bifcode {
     my ($data) = @_;
@@ -177,52 +177,32 @@ sub _encode_bifcode {
 
     my $type = ref $data;
     if ( $type eq '' ) {
-        if ($dict_key) {
-            $type = 'Bifcode::UTF8';
-        }
-        elsif ( $data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
-            return sprintf 'I%s,', $data;
-        }
-        elsif ( $data =~ $float_qr ) {
-            return sprintf 'F%s,',
-              ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) );
-        }
-        else {
-            $type = 'Bifcode::UTF8';
+        if ( !$dict_key and $data =~ $number_qr ) {
+
+            # Normalize the number a bit
+            if ( defined $3 or defined $5 ) {
+                ( $data + 0 ) =~ $number_qr if ( $5 // 0 ) != 0;
+                return sprintf 'F%s,',
+                  ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
+            }
+
+            return sprintf 'I%s,', $data + 0;
         }
 
-        $data = \( my $tmp = $data );
-    }
-
-    use bytes;    # for 'sort' and 'length' below
-
-    if ( $type eq 'Bifcode::UTF8' ) {
-        my $str = $$data // croak 'Bifcode::UTF8 must be defined';
-        utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+        utf8::encode( my $str = $data );
         return 'U' . length($str) . ':' . $str;
     }
     elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
         croak 'Bifcode::BYTES must be defined' unless defined $$data;
         return 'B' . length($$data) . ':' . $$data;
     }
-
-    croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8'
-      if $dict_key;
-
-    if ( $type eq 'Bifcode::Boolean' ) {
-        return $$data ? '1' : '0';
+    elsif ( $type eq 'Bifcode::UTF8' ) {
+        my $str = $$data // croak 'Bifcode::UTF8 must be defined';
+        utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+        return 'U' . length($str) . ':' . $str;
     }
-    elsif ( $type eq 'Bifcode::INTEGER' ) {
-        croak 'Bifcode::INTEGER must be defined' unless defined $$data;
-        return sprintf 'I%s,', $$data
-          if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
-        croak 'invalid integer: ' . $$data;
-    }
-    elsif ( $type eq 'Bifcode::FLOAT' ) {
-        croak 'Bifcode::FLOAT must be defined' unless defined $$data;
-        return sprintf 'F%s,', ( 0 + $1 ) . '.' . $2 . 'e' . ( 0 + ( $4 // 0 ) )
-          if $$data =~ $float_qr;
-        croak 'invalid float: ' . $$data;
+    elsif ($dict_key) {
+        croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8';
     }
     elsif ( $type eq 'ARRAY' ) {
         return '[' . join( '', map _encode_bifcode($_), @$data ) . ']';
@@ -239,13 +219,32 @@ sub _encode_bifcode {
               sort keys %$data
         ) . '}';
     }
+    elsif ( $type eq 'Bifcode::Boolean' ) {
+        return $$data ? '1' : '0';
+    }
+    elsif ( $type eq 'Bifcode::INTEGER' ) {
+        croak 'Bifcode::INTEGER must be defined' unless defined $$data;
+        use warnings FATAL => 'all';
+        use integer;
+        return sprintf 'I%s,', $$data + 0
+          if ( $$data + 0 ) =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
+        croak 'invalid integer: ' . $$data;
+    }
+    elsif ( $type eq 'Bifcode::FLOAT' ) {
+        croak 'Bifcode::FLOAT must be defined' unless defined $$data;
+        use warnings FATAL => 'all';
+        return sprintf 'F%s,',
+          ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
+          if ( $$data + 0 ) =~ $number_qr;
+        croak 'invalid float: ' . $$data;
+    }
     else {
         croak 'unhandled data type: ' . $type;
     }
 }
 
 sub encode_bifcode {
-    croak 'need exactly one argument' if @_ != 1;
+    croak 'usage: encode_bifcode($arg)' if @_ != 1;
     goto &_encode_bifcode;
 }
 
@@ -271,7 +270,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_1 (2017-08-09)
+0.001_2 (2017-08-11)
 
 
 =head1 SYNOPSIS
