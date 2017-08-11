@@ -1,7 +1,12 @@
+\.direnv
+\.envrc
 \.git
 \.perltidyrc
 \.podtidy-opts
+^blib
+^Bifcode-*
 Makefile$
 MANIFEST.SKIP
 \.bak$
 MYMETA
+pm_to_blib
