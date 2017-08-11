@@ -122,4 +122,9 @@ subtest 'DICT' => sub {
       . 'U6:lengthI100000,U5:undef~' . '}}';
 };
 
+eval { encode_bifcode() };
+like $@, qr/usage: encode_bifcode\(\$arg\)/, 'not enough arguments';
+eval { encode_bifcode( 1, 2 ) };
+like $@, qr/usage: encode_bifcode\(\$arg\)/, 'too many arguments';
+
 done_testing;

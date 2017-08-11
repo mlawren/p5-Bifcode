@@ -192,6 +192,8 @@ subtest nest_limits => sub {
       'list in dict when max_depth is 1';
 };
 
+error_ok [ '[U0:]', 0, 'arg3' ] => qr/\Adecode_bifcode: too many arguments/,
+  'decode_bifcode only takes up to 2 args';
 error_ok '' => qr/\Aunexpected end of data at 0/, 'empty data';
 error_ok $utf8 => qr/\Adecode_bifcode: only accepts bytes\b/,
   'check for utf8 flag';
