@@ -325,16 +325,15 @@ Bifcode - simple serialization format
         bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
-        float   => 1.0 / 300000000.0,
+        float   => 1.0 / 80000.0,
         undef   => undef,
         utf8    => "\x{df}",
     };
 
     # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
     # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
-    # ff  0 55 35 3a 66 6c 6f 61 74 46 33    ..U5:floatF3
-    # 2e 33 33 33 33 33 33 33 33 33 33 33    .33333333333
-    # 33 33 33 65 2d 39 2c 55 37 3a 69 6e    333e-9,U7:in
+    # ff  0 55 35 3a 66 6c 6f 61 74 46 31    ..U5:floatF1
+    # 2e 32 35 65 2d 35 2c 55 37 3a 69 6e    .25e-5,U7:in
     # 74 65 67 65 72 49 32 35 2c 55 35 3a    tegerI25,U5:
     # 75 6e 64 65 66 7e 55 34 3a 75 74 66    undef~U4:utf
     # 38 55 32 3a c3 9f 7d                   8U2:..}
