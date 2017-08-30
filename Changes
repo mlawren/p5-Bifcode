@@ -1,4 +1,4 @@
-0.001_5 (yyyy-mm-dd)
+0.001_5 (2017-08-30)
 
     New Features:
         - Add diff_bifcode() function to aid debugging
