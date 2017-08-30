@@ -284,6 +284,7 @@ sub diff_bifcode {
     if ( $data1 and $data2 ) {
         require Data::Dumper;
 
+        no warnings 'once';
         local $Data::Dumper::Indent    = 1;
         local $Data::Dumper::Purity    = 0;
         local $Data::Dumper::Terse     = 1;
