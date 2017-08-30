@@ -116,8 +116,9 @@ SPECIFICATION
     Floats are represented by an 'F' followed by a decimal number in base 10
     followed by a 'e' followed by an exponent followed by a ','. For example
     'F3.0e-1,' corresponds to 0.3 and 'F-0.1e0,' corresponds to -0.1. Floats
-    have no size limitation. 'F-0.0,' is invalid. All encodings with an
-    extraneous leading zero, such as 'F03.0e0,', are invalid.
+    have no size limitation. 'F-0.0e0,' is invalid. All encodings with an
+    extraneous leading zero, such as 'F03.0e0,', or an extraneous trailing
+    zero, such as 'F3.10e0,', are invalid.
 
   BIFCODE_LIST
     Lists are encoded as a '[' followed by their elements (also *bifcode*

@@ -96,18 +96,21 @@ sub _decode_bifcode_chunk {
     elsif (m/ \G F /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
-        m/ \G -? ( 0 | [1-9] [0-9]* )
+        m/ \G (-)? ( 0 | [1-9] [0-9]* )
         \. ( 0 | [0-9]* [1-9] )
         e (( 0 | -? [1-9] ) [0-9]*) , /xgc
           or croak _msg 'malformed float data at %s';
 
         croak _msg 'malformed float data at %s'
-          if $1 eq '0'
-          and $2 eq '0'
-          and $3 ne '0';
+          if $2 eq '0'
+          and $3 eq '0'
+          and ( $1 or $4 ne '0' );
 
-        warn _msg FLOAT => $1 . '.' . $2 . 'e' . $3, 'at %s' if $DEBUG;
-        return $1 . '.' . $2 . 'e' . $3;
+        warn _msg
+          FLOAT => ( $1 // '' ) . $2 . '.' . $3 . 'e' . $4,
+          'at %s'
+          if $DEBUG;
+        return ( $1 // '' ) . $2 . '.' . $3 . 'e' . $4;
     }
     elsif (m/ \G \[ /xgc) {
         warn _msg 'LIST at %s' if $DEBUG;
@@ -186,9 +189,9 @@ sub _encode_bifcode {
 
             # Normalize the number a bit
             if ( defined $3 or defined $5 ) {
-                ( $data + 0 ) =~ $number_qr if ( $5 // 0 ) != 0;
-                return sprintf 'F%s,',
-                  ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
+                my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+                  . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+                return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx   # remove trailing zeros
             }
 
             return 'I' . $data . ',';
@@ -235,10 +238,11 @@ sub _encode_bifcode {
     }
     elsif ( $type eq 'Bifcode::FLOAT' ) {
         croak 'Bifcode::FLOAT must be defined' unless defined $$data;
-        use warnings FATAL => 'all';
-        return sprintf 'F%s,',
-          ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
-          if ( $$data + 0 ) =~ $number_qr;
+        if ( $$data =~ $number_qr ) {
+            my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+            return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx    # remove trailing zeros
+        }
         croak 'invalid float: ' . $$data;
     }
     else {
@@ -457,9 +461,9 @@ than 'I0,', which of course corresponds to 0.
 Floats are represented by an 'F' followed by a decimal number in base
 10 followed by a 'e' followed by an exponent followed by a ','.  For
 example 'F3.0e-1,' corresponds to 0.3 and 'F-0.1e0,' corresponds to
--0.1. Floats have no size limitation.  'F-0.0,' is invalid.  All
-encodings with an extraneous leading zero, such as 'F03.0e0,', are
-invalid.
+-0.1. Floats have no size limitation.  'F-0.0e0,' is invalid.  All
+encodings with an extraneous leading zero, such as 'F03.0e0,', or an
+extraneous trailing zero, such as 'F3.10e0,', are invalid.
 
 =head2 BIFCODE_LIST
 
