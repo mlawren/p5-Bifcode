@@ -49,6 +49,9 @@ subtest FLOAT => sub {
     decod_ok 'F0.0e0,'  => '0.0e0';
     decod_ok 'F4.1e-2,' => '4.1e-2';
     error_ok
+      'F-0.0e0,' => qr/\Amalformed float data at 8\b/,
+      'non-zero exponent for 0.0 float';
+    error_ok
       'F0.0e-1,' => qr/\Amalformed float data at 8\b/,
       'non-zero exponent for 0.0 float';
 };

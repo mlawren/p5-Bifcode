@@ -3,11 +3,13 @@ use strict;
 use warnings;
 use 5.010;
 use ExtUtils::MakeMaker::CPANfile;
+use Pod::Text;
 
 WriteMakefile(
     NAME         => 'Bifcode',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
     VERSION_FROM => 'lib/Bifcode.pm',
+    LICENSE      => 'perl_5',
     META_ADD     => {
         resources => {
             repository => 'https://github.com/mlawren/p5-Bifcode',
@@ -19,3 +21,8 @@ WriteMakefile(
         },
     },
 );
+my $parser = Pod::Text->new( sentence => 0 );
+
+# Read POD from file.pod and write to file.txt.
+$parser->parse_from_file( 'lib/Bifcode.pm', 'README' );
+

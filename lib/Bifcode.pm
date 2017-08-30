@@ -3,11 +3,16 @@ use 5.010;
 use strict;
 use warnings;
 use Carp;
-use Exporter::Tidy all => [qw( encode_bifcode decode_bifcode force_bifcode )];
+use Exporter::Tidy all => [
+    qw( encode_bifcode
+      decode_bifcode
+      force_bifcode
+      diff_bifcode)
+];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_4';
+our $VERSION = '0.001_5';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -86,23 +91,26 @@ sub _decode_bifcode_chunk {
           or croak _msg 'malformed integer data at %s';
 
         warn _msg INTEGER => $1, 'at %s' if $DEBUG;
-        return 0 + $1;
+        return $1;
     }
     elsif (m/ \G F /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
 
-        m/ \G -? ( 0 | [1-9] [0-9]* )
+        m/ \G (-)? ( 0 | [1-9] [0-9]* )
         \. ( 0 | [0-9]* [1-9] )
         e (( 0 | -? [1-9] ) [0-9]*) , /xgc
           or croak _msg 'malformed float data at %s';
 
         croak _msg 'malformed float data at %s'
-          if $1 eq '0'
-          and $2 eq '0'
-          and $3 ne '0';
+          if $2 eq '0'
+          and $3 eq '0'
+          and ( $1 or $4 ne '0' );
 
-        warn _msg FLOAT => $1 . '.' . $2 . 'e' . $3, 'at %s' if $DEBUG;
-        return $1 . '.' . $2 . 'e' . $3;
+        warn _msg
+          FLOAT => ( $1 // '' ) . $2 . '.' . $3 . 'e' . $4,
+          'at %s'
+          if $DEBUG;
+        return ( $1 // '' ) . $2 . '.' . $3 . 'e' . $4;
     }
     elsif (m/ \G \[ /xgc) {
         warn _msg 'LIST at %s' if $DEBUG;
@@ -169,7 +177,7 @@ sub decode_bifcode {
 
 my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( \. ( [0-9]+? ) 0* )?
-                    ( e ( 0 | -? [1-9] [0-9]* ) )? \z/xi;
+                    ( e ( -? [0-9]+ ) )? \z/xi;
 
 sub _encode_bifcode {
     my ($data) = @_;
@@ -181,12 +189,12 @@ sub _encode_bifcode {
 
             # Normalize the number a bit
             if ( defined $3 or defined $5 ) {
-                ( $data + 0 ) =~ $number_qr if ( $5 // 0 ) != 0;
-                return sprintf 'F%s,',
-                  ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
+                my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+                  . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+                return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx   # remove trailing zeros
             }
 
-            return sprintf 'I%s,', $data;
+            return 'I' . $data . ',';
         }
 
         utf8::encode( my $str = $data );
@@ -230,10 +238,11 @@ sub _encode_bifcode {
     }
     elsif ( $type eq 'Bifcode::FLOAT' ) {
         croak 'Bifcode::FLOAT must be defined' unless defined $$data;
-        use warnings FATAL => 'all';
-        return sprintf 'F%s,',
-          ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) )
-          if ( $$data + 0 ) =~ $number_qr;
+        if ( $$data =~ $number_qr ) {
+            my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+            return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx    # remove trailing zeros
+        }
         croak 'invalid float: ' . $$data;
     }
     else {
@@ -254,6 +263,48 @@ sub force_bifcode {
     bless \$ref, 'Bifcode::' . uc($type);
 }
 
+sub _expand_bifcode {
+    my $bifcode = shift;
+    $bifcode =~ s/ (
+            [~\[\]\{\}]
+            | (U|B) [0-9]+ :  
+            | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,  
+            | I [0-9]+ ,  
+        ) /\n$-[0]: $1/gmx;
+    $bifcode =~ s/ \A ^ $ //mx;
+    $bifcode . "\n";
+}
+
+sub diff_bifcode {
+    croak 'usage: diff_bifcode($b1, $b2)' if @_ != 2;
+    croak 'diff_bifcode need Text::Diff' unless eval { require Text::Diff };
+
+    my $b1    = shift;
+    my $b2    = shift;
+    my $data1 = eval { decode_bifcode($b1) };
+    my $data2 = eval { decode_bifcode($b2) };
+
+    # Valid structures so let Perl help us out
+    if ( $data1 and $data2 ) {
+        require Data::Dumper;
+
+        no warnings 'once';
+        local $Data::Dumper::Indent    = 1;
+        local $Data::Dumper::Purity    = 0;
+        local $Data::Dumper::Terse     = 1;
+        local $Data::Dumper::Deepcopy  = 1;
+        local $Data::Dumper::Quotekeys = 0;
+        local $Data::Dumper::Sortkeys  = 1;
+
+        my ( $str1, $str2 ) = map { Data::Dumper::Dumper($_) } $data1, $data2;
+        return Text::Diff::diff( \$str1, \$str2 );
+    }
+
+    $b1 = _expand_bifcode($b1);
+    $b2 = _expand_bifcode($b2);
+    return Text::Diff::diff( \$b1, \$b2 );    #, {STYLE => 'Table'} );
+}
+
 decode_bifcode('I1,');
 
 __END__
@@ -268,7 +319,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_4 (2017-08-11)
+0.001_5 (2017-08-30)
 
 
 =head1 SYNOPSIS
@@ -279,16 +330,15 @@ Bifcode - simple serialization format
         bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
-        float   => 1.0 / 300000000.0,
+        float   => 1.0 / 80000.0,
         undef   => undef,
         utf8    => "\x{df}",
     };
 
     # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
     # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
-    # ff  0 55 35 3a 66 6c 6f 61 74 46 33    ..U5:floatF3
-    # 2e 33 33 33 33 33 33 33 33 33 33 33    .33333333333
-    # 33 33 33 65 2d 39 2c 55 37 3a 69 6e    333e-9,U7:in
+    # ff  0 55 35 3a 66 6c 6f 61 74 46 31    ..U5:floatF1
+    # 2e 32 35 65 2d 35 2c 55 37 3a 69 6e    .25e-5,U7:in
     # 74 65 67 65 72 49 32 35 2c 55 35 3a    tegerI25,U5:
     # 75 6e 64 65 66 7e 55 34 3a 75 74 66    undef~U4:utf
     # 38 55 32 3a c3 9f 7d                   8U2:..}
@@ -411,9 +461,9 @@ than 'I0,', which of course corresponds to 0.
 Floats are represented by an 'F' followed by a decimal number in base
 10 followed by a 'e' followed by an exponent followed by a ','.  For
 example 'F3.0e-1,' corresponds to 0.3 and 'F-0.1e0,' corresponds to
--0.1. Floats have no size limitation.  'F-0.0,' is invalid.  All
-encodings with an extraneous leading zero, such as 'F03.0e0,', are
-invalid.
+-0.1. Floats have no size limitation.  'F-0.0e0,' is invalid.  All
+encodings with an extraneous leading zero, such as 'F03.0e0,', or an
+extraneous trailing zero, such as 'F3.10e0,', are invalid.
 
 =head2 BIFCODE_LIST
 
@@ -458,8 +508,7 @@ mapped to BIFCODE_INTEGER; or
 
 =item
 
-They look like canonically represented floats in which case they are
-mapped to BIFCODE_FLOAT.
+They look like floats in which case they are mapped to BIFCODE_FLOAT.
 
 =back
 
@@ -500,6 +549,17 @@ Returns a reference to $scalar blessed as Bifcode::$TYPE. The value of
 $type is not checked, but the C<encode_bifcode> function will only
 accept the resulting reference where $type is one of 'bytes', 'float',
 'integer' or 'utf8'.
+
+=head2 C<diff_bifcode( $bc1, $bc2 )>
+
+Returns a string representing the difference between two (possible)
+bifcodes.  If $bc1 and $bc2 decode to valid Perl structures then the
+diff is against a L<Data::Dumper> serialization.  If one (or both)
+cannot be decoded then the diff is against an "expanded" bifcode format
+that breaks bifcodes up into tokens prefixed by their position in the
+bytestring.
+
+Croaks if L<Text::Diff> is not installed.
 
 =head1 DIAGNOSTICS
 

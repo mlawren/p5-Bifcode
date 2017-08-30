@@ -2,7 +2,7 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    0.001_4 (2017-08-11)
+    0.001_5 (2017-08-30)
 
 SYNOPSIS
         use Bifcode qw( encode_bifcode decode_bifcode );
@@ -11,16 +11,15 @@ SYNOPSIS
             bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
             bytes   => \pack( 's<',       255 ),
             integer => 25,
-            float   => 1.0 / 300000000.0,
+            float   => 1.0 / 80000.0,
             undef   => undef,
             utf8    => "\x{df}",
         };
 
         # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
         # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
-        # ff  0 55 35 3a 66 6c 6f 61 74 46 33    ..U5:floatF3
-        # 2e 33 33 33 33 33 33 33 33 33 33 33    .33333333333
-        # 33 33 33 65 2d 39 2c 55 37 3a 69 6e    333e-9,U7:in
+        # ff  0 55 35 3a 66 6c 6f 61 74 46 31    ..U5:floatF1
+        # 2e 32 35 65 2d 35 2c 55 37 3a 69 6e    .25e-5,U7:in
         # 74 65 67 65 72 49 32 35 2c 55 35 3a    tegerI25,U5:
         # 75 6e 64 65 66 7e 55 34 3a 75 74 66    undef~U4:utf
         # 38 55 32 3a c3 9f 7d                   8U2:..}
@@ -117,8 +116,9 @@ SPECIFICATION
     Floats are represented by an 'F' followed by a decimal number in base 10
     followed by a 'e' followed by an exponent followed by a ','. For example
     'F3.0e-1,' corresponds to 0.3 and 'F-0.1e0,' corresponds to -0.1. Floats
-    have no size limitation. 'F-0.0,' is invalid. All encodings with an
-    extraneous leading zero, such as 'F03.0e0,', are invalid.
+    have no size limitation. 'F-0.0e0,' is invalid. All encodings with an
+    extraneous leading zero, such as 'F03.0e0,', or an extraneous trailing
+    zero, such as 'F3.10e0,', are invalid.
 
   BIFCODE_LIST
     Lists are encoded as a '[' followed by their elements (also *bifcode*
@@ -151,8 +151,8 @@ INTERFACE
         *   They look like canonically represented integers in which case
             they are mapped to BIFCODE_INTEGER; or
 
-        *   They look like canonically represented floats in which case they
-            are mapped to BIFCODE_FLOAT.
+        *   They look like floats in which case they are mapped to
+            BIFCODE_FLOAT.
 
     *   SCALAR references become BIFCODE_BYTES.
 
@@ -187,6 +187,16 @@ INTERFACE
     $type is not checked, but the "encode_bifcode" function will only accept
     the resulting reference where $type is one of 'bytes', 'float',
     'integer' or 'utf8'.
+
+  "diff_bifcode( $bc1, $bc2 )"
+    Returns a string representing the difference between two (possible)
+    bifcodes. If $bc1 and $bc2 decode to valid Perl structures then the diff
+    is against a Data::Dumper serialization. If one (or both) cannot be
+    decoded then the diff is against an "expanded" bifcode format that
+    breaks bifcodes up into tokens prefixed by their position in the
+    bytestring.
+
+    Croaks if Text::Diff is not installed.
 
 DIAGNOSTICS
     "trailing garbage at %s"

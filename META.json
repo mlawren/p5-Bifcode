@@ -6,7 +6,7 @@
    "dynamic_config" : 0,
    "generated_by" : "ExtUtils::MakeMaker version 7.0402, CPAN::Meta::Converter version 2.150001",
    "license" : [
-      "unknown"
+      "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -26,8 +26,7 @@
       "build" : {
          "requires" : {
             "ExtUtils::MakeMaker::CPANfile" : "0",
-            "Test::Differences" : "0",
-            "Test::More" : "0.88"
+            "Pod::Text" : "0"
          }
       },
       "configure" : {
@@ -36,6 +35,9 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "Text::Diff" : "0"
+         },
          "requires" : {
             "Carp" : "0",
             "Exporter::Tidy" : "0",
@@ -43,6 +45,13 @@
             "strict" : "0",
             "utf8" : "0",
             "warnings" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::Differences" : "0",
+            "Test::More" : "0.88",
+            "Test::Needs" : "0"
          }
       }
    },
@@ -52,5 +61,5 @@
          "url" : "https://github.com/mlawren/p5-Bifcode"
       }
    },
-   "version" : "0.001_4"
+   "version" : "0.001_5"
 }

@@ -7,6 +7,7 @@ README
 t/00-bifcode.t
 t/01-decode-bifcode.t
 t/02-encode-bifcode.t
+t/03-diff-bifcode.t
 t/lib/Test/Bifcode.pm
 t/synopsis.pl
 META.yml                                 Module YAML meta-data (added by MakeMaker)

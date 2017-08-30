@@ -1,3 +1,17 @@
+0.001_5 (2017-08-30)
+
+    New Features:
+        - Add diff_bifcode() function to aid debugging
+
+    Enhancements:
+        - Test that encode_bifcode doesn't strip utf8 flag from string
+        - Decode integers as strings in support of infinite length
+        - Make code dealing with floats more robust
+        - Minor test improvements
+
+    Packaging:
+        - Add licence to meta data
+
 0.001_4 (2017-08-11)
 
     Enhancements:

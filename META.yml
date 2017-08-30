@@ -4,13 +4,15 @@ author:
   - 'Mark Lawrencde <nomad@null.net>'
 build_requires:
   ExtUtils::MakeMaker::CPANfile: '0'
+  Pod::Text: '0'
   Test::Differences: '0'
   Test::More: '0.88'
+  Test::Needs: '0'
 configure_requires:
   ExtUtils::MakeMaker::CPANfile: '0.08'
 dynamic_config: 0
 generated_by: 'ExtUtils::MakeMaker version 7.0402, CPAN::Meta::Converter version 2.150001'
-license: unknown
+license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: '1.4'
@@ -21,6 +23,8 @@ no_index:
     - inc
   package:
     - Bifcode::Boolean
+recommends:
+  Text::Diff: '0'
 requires:
   Carp: '0'
   Exporter::Tidy: '0'
@@ -30,4 +34,4 @@ requires:
   warnings: '0'
 resources:
   repository: https://github.com/mlawren/p5-Bifcode
-version: 0.001_4
+version: 0.001_5
