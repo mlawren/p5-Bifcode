@@ -91,7 +91,7 @@ sub _decode_bifcode_chunk {
           or croak _msg 'malformed integer data at %s';
 
         warn _msg INTEGER => $1, 'at %s' if $DEBUG;
-        return 0 + $1;
+        return $1;
     }
     elsif (m/ \G F /xgc) {
         croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
@@ -191,7 +191,7 @@ sub _encode_bifcode {
                   ( 0 + $1 ) . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) );
             }
 
-            return sprintf 'I%s,', $data;
+            return 'I' . $data . ',';
         }
 
         utf8::encode( my $str = $data );
