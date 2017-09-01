@@ -34,4 +34,4 @@ requires:
   warnings: '0'
 resources:
   repository: https://github.com/mlawren/p5-Bifcode
-version: 0.001_5
+version: 0.001_6

@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_5';
+our $VERSION = '0.001_6';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -187,11 +187,12 @@ sub _encode_bifcode {
     if ( $type eq '' ) {
         if ( !$dict_key and $data =~ $number_qr ) {
 
-            # Normalize the number a bit
             if ( defined $3 or defined $5 ) {
+
+                # normalize to BIFCODE_FLOAT standards
                 my $x = 'F' . ( 0 + $1 )    # remove leading zeros
                   . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-                return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx   # remove trailing zeros
+                return $x =~ s/ ([1-9]) (0+ e)/.${1}e/rx # remove trailing zeros
             }
 
             return 'I' . $data . ',';
@@ -241,7 +242,7 @@ sub _encode_bifcode {
         if ( $$data =~ $number_qr ) {
             my $x = 'F' . ( 0 + $1 )    # remove leading zeros
               . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-            return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx    # remove trailing zeros
+            return $x =~ s/ ([1-9]) (0+ e)/.${1}e/rx    # remove trailing zeros
         }
         croak 'invalid float: ' . $$data;
     }
@@ -319,7 +320,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_5 (2017-08-30)
+0.001_6 (2017-09-01)
 
 
 =head1 SYNOPSIS
@@ -330,7 +331,7 @@ Bifcode - simple serialization format
         bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
-        float   => 1.0 / 80000.0,
+        float   => 1.25e-5,
         undef   => undef,
         utf8    => "\x{df}",
     };
