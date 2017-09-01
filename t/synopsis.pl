@@ -14,7 +14,7 @@ my $str = q{encode_bifcode {
     bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
-    float   => 1.0 / 80000.0,
+    float   => 1.25e-5,
     undef   => undef,
     utf8    => "\x{df}",
 };

@@ -62,7 +62,7 @@ subtest 'FLOAT' => sub {
     enc_ok '100e-09'  => 'F100.0e-9,';
     enc_ok '100e-011' => 'F100.0e-11,';
 
-    enc_ok 1.0 / 3e7 => 'F3.33333333333333e-8,';
+    enc_ok 3.33333333e-8 => 'F3.33333333e-8,';
 
     # Plain integer
     enc_ok force_bifcode( 0, 'float' ) => 'F0.0e0,';

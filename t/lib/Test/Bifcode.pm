@@ -34,7 +34,7 @@ our $data1 = {
     bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
     bytes   => \$bytes,
     integer => 25,
-    float   => 1.0 / 8.0e9,
+    float   => -1.25e-9,
     undef   => undef,
     utf8    => $utf8,
 };
@@ -42,7 +42,7 @@ our $data1 = {
 our $DATA1 = '{'
   . ( 'U5:bools' . '[01]' )
   . ( 'U5:bytes' . $BYTES )
-  . ( 'U5:float' . 'F1.25e-10,' )
+  . ( 'U5:float' . 'F-1.25e-9,' )
   . ( 'U7:integer' . 'I25,' )
   . ( 'U5:undef' . '~' )
   . ( 'U4:utf8' . $UTF8 ) . '}';
@@ -51,7 +51,7 @@ our $data2 = {
     bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
     bytes   => \$bytes,
     integer => 24,
-    float   => 1.0 / 8.0e8,
+    float   => 1.25e-9,
     undef   => undef,
     utf8    => $utf8,
 };
