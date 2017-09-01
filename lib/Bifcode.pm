@@ -187,8 +187,9 @@ sub _encode_bifcode {
     if ( $type eq '' ) {
         if ( !$dict_key and $data =~ $number_qr ) {
 
-            # Normalize the number a bit
             if ( defined $3 or defined $5 ) {
+
+                # normalize to BIFCODE_FLOAT standards
                 my $x = 'F' . ( 0 + $1 )    # remove leading zeros
                   . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
                 return $x =~ s/ ([1-9]) (0+ e)/.$1e/rx   # remove trailing zeros
