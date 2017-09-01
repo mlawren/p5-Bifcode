@@ -1,19 +1,8 @@
-0.001_6 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
+0.001_6 (2017-09-01)
 
     Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
+        - Fix possible regex interpolation error on Perls >= 5.22
+        - Fix float precision in tests
 
 0.001_5 (2017-08-30)
 
