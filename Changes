@@ -1,23 +1,8 @@
-0.001_7 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
+0.001_7 (2017-09-02)
 
     Dependencies:
         - Restore Perl 5.10 and 5.12 support by not using the /r regex
           and replace operator.
-
-    Packaging:
-        - None.
 
 0.001_6 (2017-09-01)
 
