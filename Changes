@@ -13,7 +13,8 @@
         - None.
 
     Dependencies:
-        - None.
+        - Restore Perl 5.10 and 5.12 support by not using the /r regex
+          and replace operator.
 
     Packaging:
         - None.
