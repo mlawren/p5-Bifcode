@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_7';
+our $VERSION = '0.001_8';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -322,7 +322,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_7 (2017-09-02)
+0.001_8 (yyyy-mm-dd)
 
 
 =head1 SYNOPSIS
