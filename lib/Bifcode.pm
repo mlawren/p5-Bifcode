@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_6';
+our $VERSION = '0.001_7';
 our ( $DEBUG, $max_depth, $dict_key );
 
 {
@@ -192,7 +192,8 @@ sub _encode_bifcode {
                 # normalize to BIFCODE_FLOAT standards
                 my $x = 'F' . ( 0 + $1 )    # remove leading zeros
                   . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-                return $x =~ s/ ([1-9]) (0+ e)/.${1}e/rx # remove trailing zeros
+                $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
+                return $x;
             }
 
             return 'I' . $data . ',';
@@ -242,7 +243,8 @@ sub _encode_bifcode {
         if ( $$data =~ $number_qr ) {
             my $x = 'F' . ( 0 + $1 )    # remove leading zeros
               . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-            return $x =~ s/ ([1-9]) (0+ e)/.${1}e/rx    # remove trailing zeros
+            $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
+            return $x;
         }
         croak 'invalid float: ' . $$data;
     }
@@ -320,8 +322,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_6 (2017-09-01)
-
+0.001_7 (2017-09-02)
 
 =head1 SYNOPSIS
 

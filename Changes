@@ -1,3 +1,9 @@
+0.001_7 (2017-09-02)
+
+    Dependencies:
+        - Restore Perl 5.10 and 5.12 support by not using the /r regex
+          and replace operator.
+
 0.001_6 (2017-09-01)
 
     Bug Fixes:
