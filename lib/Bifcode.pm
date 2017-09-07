@@ -273,8 +273,8 @@ sub _expand_bifcode {
             | (U|B) [0-9]+ :  
             | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,  
             | I [0-9]+ ,  
-        ) /\n$-[0]: $1/gmx;
-    $bifcode =~ s/ \A ^ $ //mx;
+        ) /\n$1/gmx;
+    $bifcode =~ s/ \A \n //mx;
     $bifcode . "\n";
 }
 

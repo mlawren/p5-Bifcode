@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - Clearer output format from diff_bifcode()
 
     Bug Fixes:
         - None.
