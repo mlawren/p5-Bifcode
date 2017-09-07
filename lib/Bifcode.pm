@@ -279,33 +279,17 @@ sub _expand_bifcode {
 }
 
 sub diff_bifcode {
-    croak 'usage: diff_bifcode($b1, $b2)' if @_ != 2;
-    croak 'diff_bifcode need Text::Diff' unless eval { require Text::Diff };
+    croak 'usage: diff_bifcode($b1, $b2, [$diff_args])'
+      unless @_ >= 2 and @_ <= 3;
+    my $b1        = shift;
+    my $b2        = shift;
+    my $diff_args = shift || { STYLE => 'Unified' };
 
-    my $b1    = shift;
-    my $b2    = shift;
-    my $data1 = eval { decode_bifcode($b1) };
-    my $data2 = eval { decode_bifcode($b2) };
-
-    # Valid structures so let Perl help us out
-    if ( $data1 and $data2 ) {
-        require Data::Dumper;
-
-        no warnings 'once';
-        local $Data::Dumper::Indent    = 1;
-        local $Data::Dumper::Purity    = 0;
-        local $Data::Dumper::Terse     = 1;
-        local $Data::Dumper::Deepcopy  = 1;
-        local $Data::Dumper::Quotekeys = 0;
-        local $Data::Dumper::Sortkeys  = 1;
-
-        my ( $str1, $str2 ) = map { Data::Dumper::Dumper($_) } $data1, $data2;
-        return Text::Diff::diff( \$str1, \$str2 );
-    }
+    require Text::Diff;
 
     $b1 = _expand_bifcode($b1);
     $b2 = _expand_bifcode($b2);
-    return Text::Diff::diff( \$b1, \$b2 );    #, {STYLE => 'Table'} );
+    return Text::Diff::diff( \$b1, \$b2, $diff_args );
 }
 
 decode_bifcode('I1,');
@@ -553,14 +537,12 @@ $type is not checked, but the C<encode_bifcode> function will only
 accept the resulting reference where $type is one of 'bytes', 'float',
 'integer' or 'utf8'.
 
-=head2 C<diff_bifcode( $bc1, $bc2 )>
+=head2 C<diff_bifcode( $bc1, $bc2, [$diff_args] )>
 
-Returns a string representing the difference between two (possible)
-bifcodes.  If $bc1 and $bc2 decode to valid Perl structures then the
-diff is against a L<Data::Dumper> serialization.  If one (or both)
-cannot be decoded then the diff is against an "expanded" bifcode format
-that breaks bifcodes up into tokens prefixed by their position in the
-bytestring.
+Returns a string representing the difference between two bifcodes. The
+inputs do not need to be valid Bifcode; they are only expanded with a
+very simple regex before the diff is done. The third argument
+C<$diff_args>) is passed directly to L<Text::Diff>
 
 Croaks if L<Text::Diff> is not installed.
 

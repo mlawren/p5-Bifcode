@@ -8,6 +8,7 @@
 
     Enhancements:
         - Clearer output format from diff_bifcode()
+        - Pass Text::Diff options through diff_bifcode()
 
     Bug Fixes:
         - None.
