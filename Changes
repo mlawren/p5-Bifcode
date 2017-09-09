@@ -1,3 +1,12 @@
+0.001_8 (2017-09-10)
+
+    New Features:
+        - diff-bifcode command line utility
+
+    Enhancements:
+        - Clearer output format from diff_bifcode()
+        - Pass Text::Diff options through diff_bifcode()
+
 0.001_7 (2017-09-02)
 
     Dependencies:

@@ -2,7 +2,7 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    0.001_7 (2017-09-02)
+    0.001_8 (2017-09-10)
 
 SYNOPSIS
         use Bifcode qw( encode_bifcode decode_bifcode );
@@ -188,13 +188,11 @@ INTERFACE
     the resulting reference where $type is one of 'bytes', 'float',
     'integer' or 'utf8'.
 
-  "diff_bifcode( $bc1, $bc2 )"
-    Returns a string representing the difference between two (possible)
-    bifcodes. If $bc1 and $bc2 decode to valid Perl structures then the diff
-    is against a Data::Dumper serialization. If one (or both) cannot be
-    decoded then the diff is against an "expanded" bifcode format that
-    breaks bifcodes up into tokens prefixed by their position in the
-    bytestring.
+  "diff_bifcode( $bc1, $bc2, [$diff_args] )"
+    Returns a string representing the difference between two bifcodes. The
+    inputs do not need to be valid Bifcode; they are only expanded with a
+    very simple regex before the diff is done. The third argument
+    ($diff_args) is passed directly to Text::Diff.
 
     Croaks if Text::Diff is not installed.
 

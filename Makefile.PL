@@ -10,6 +10,7 @@ WriteMakefile(
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
     VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
+    EXE_FILES    => ['bin/diff-bifcode'],
     META_ADD     => {
         resources => {
             repository => 'https://github.com/mlawren/p5-Bifcode',

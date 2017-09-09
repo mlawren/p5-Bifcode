@@ -1,3 +1,4 @@
+bin/diff-bifcode
 Changes
 cpanfile
 lib/Bifcode.pm
