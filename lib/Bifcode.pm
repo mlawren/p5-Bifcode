@@ -542,7 +542,7 @@ accept the resulting reference where $type is one of 'bytes', 'float',
 Returns a string representing the difference between two bifcodes. The
 inputs do not need to be valid Bifcode; they are only expanded with a
 very simple regex before the diff is done. The third argument
-C<$diff_args>) is passed directly to L<Text::Diff>
+(C<$diff_args>) is passed directly to L<Text::Diff>.
 
 Croaks if L<Text::Diff> is not installed.
 

@@ -192,7 +192,7 @@ INTERFACE
     Returns a string representing the difference between two bifcodes. The
     inputs do not need to be valid Bifcode; they are only expanded with a
     very simple regex before the diff is done. The third argument
-    $diff_args) is passed directly to Text::Diff
+    ($diff_args) is passed directly to Text::Diff.
 
     Croaks if Text::Diff is not installed.
 
