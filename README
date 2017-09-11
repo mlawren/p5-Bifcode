@@ -259,6 +259,10 @@ BUGS AND LIMITATIONS
     "encode_bifcode()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
 
+SEE ALSO
+    This distribution includes the diff-bifcode command-line utility for
+    comparing Bifcodes in files.
+
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by Aristotle
     Pagaltzis <pagaltzis@gmx.de>

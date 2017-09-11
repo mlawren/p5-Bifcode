@@ -639,6 +639,11 @@ Strings and numbers are practically indistinguishable in Perl, so
 C<encode_bifcode()> has to resort to a heuristic to decide how to
 serialise a scalar. This cannot be fixed.
 
+=head1 SEE ALSO
+
+This distribution includes the L<diff-bifcode> command-line utility for
+comparing Bifcodes in files.
+
 =head1 AUTHOR
 
 Mark Lawrence <nomad@null.net>, heavily based on Bencode by Aristotle
