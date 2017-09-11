@@ -7,6 +7,7 @@ use Pod::Text;
 
 WriteMakefile(
     NAME         => 'Bifcode',
+    ABSTRACT     => 'Simple serialization format',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
     VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
