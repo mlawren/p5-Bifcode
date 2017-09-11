@@ -17,6 +17,8 @@
 
     Packaging:
         - Added a package ABSTRACT
+        - Correctly specify *configure* dependencies which were
+          previously marked as *build* dependencies
 
 0.001_8 (2017-09-10)
 

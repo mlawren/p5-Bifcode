@@ -7,7 +7,7 @@ requires 'Carp';
 requires 'Exporter::Tidy';
 recommends 'Text::Diff';
 
-on build => sub {
+on configure => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';
     requires 'Pod::Text';
 };
