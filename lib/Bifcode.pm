@@ -407,9 +407,9 @@ the requirements of:
 
 =back
 
-There no lofty goals or intentions to promote this outside of my
-specific case.  Use it or not, as you please, based on your own
-requirements. Constructive discussion is welcome.
+I have no lofty goals or intentions to promote this outside of my
+specific case, but would appreciate hearing about other uses.
+Constructive discussion is welcome.
 
 =head1 SPECIFICATION
 
@@ -425,9 +425,9 @@ Boolean values are represented by '1' and '0'.
 
 =head2 BIFCODE_UTF8
 
-A UTF8 string is 'U' followed by the octet length of the decoded string
-as a base ten number followed by a colon and the decoded string.  For
-example "\x{df}" corresponds to "U2:\x{c3}\x{9f}".
+A UTF8 string is 'U' followed by the octet length of the encoded string
+as a base ten number followed by a colon and the encoded string.  For
+example the Perl string "\x{df}" (ß) corresponds to "U2:\x{c3}\x{9f}".
 
 =head2 BIFCODE_BYTES
 
