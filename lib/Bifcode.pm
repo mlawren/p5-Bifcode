@@ -552,8 +552,7 @@ Croaks if L<Text::Diff> is not installed.
 
 =item C<trailing garbage at %s>
 
-Your data does not end after the first I<encode_bifcode>-serialised
-item.
+Your data does not end after the first I<bifcode>-serialised item.
 
 You may also get this error if a malformed item follows.
 
@@ -582,18 +581,18 @@ didn't make sense.
 
 =item C<dict key not in sort order at %s>
 
-Your data violates the I<encode_bifcode> format constaint that dict
-keys must appear in lexical sort order.
+Your data violates the I<bifcode> format constaint that dict keys must
+appear in lexical sort order.
 
 =item C<duplicate dict key at %s>
 
-Your data violates the I<encode_bifcode> format constaint that all dict
-keys must be unique.
+Your data violates the I<bifcode> format constaint that all dict keys
+must be unique.
 
 =item C<dict key is not a string at %s>
 
-Your data violates the I<encode_bifcode> format constaint that all dict
-keys be strings.
+Your data violates the I<bifcode> format constaint that all dict keys
+be strings.
 
 =item C<dict key is missing value at %s>
 

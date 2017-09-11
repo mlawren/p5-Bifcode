@@ -198,8 +198,7 @@ INTERFACE
 
 DIAGNOSTICS
     "trailing garbage at %s"
-        Your data does not end after the first *encode_bifcode*-serialised
-        item.
+        Your data does not end after the first *bifcode*-serialised item.
 
         You may also get this error if a malformed item follows.
 
@@ -222,16 +221,16 @@ DIAGNOSTICS
         didn't make sense.
 
     "dict key not in sort order at %s"
-        Your data violates the *encode_bifcode* format constaint that dict
-        keys must appear in lexical sort order.
+        Your data violates the *bifcode* format constaint that dict keys
+        must appear in lexical sort order.
 
     "duplicate dict key at %s"
-        Your data violates the *encode_bifcode* format constaint that all
-        dict keys must be unique.
+        Your data violates the *bifcode* format constaint that all dict keys
+        must be unique.
 
     "dict key is not a string at %s"
-        Your data violates the *encode_bifcode* format constaint that all
-        dict keys be strings.
+        Your data violates the *bifcode* format constaint that all dict keys
+        be strings.
 
     "dict key is missing value at %s"
         Your data contains a dictionary with an odd number of elements.
