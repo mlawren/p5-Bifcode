@@ -19,6 +19,8 @@
         - Added a package ABSTRACT
         - Correctly specify *configure* dependencies which were
           previously marked as *build* dependencies
+        - Only re-create README when .git/ exists (only a developer
+          action)
 
 0.001_8 (2017-09-10)
 
