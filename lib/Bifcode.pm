@@ -305,7 +305,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_9 (yyyy-mm-dd)
+0.001_9 (2017-11-05)
 
 
 =head1 SYNOPSIS

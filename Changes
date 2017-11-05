@@ -1,19 +1,13 @@
-0.001_9 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
+0.001_9 (2017-11-05)
 
     Enhancements:
         - Minor documentation edits.
-
-    Bug Fixes:
-        - None.
+        - Reduced recursion during encoding.
+        - Minor documentation edits.
 
     Dependencies:
-        - None.
+        - No longer need Test::Differences for tests
+        - Require "boolean" for true/false
 
     Packaging:
         - Added a package ABSTRACT
