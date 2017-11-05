@@ -5,7 +5,6 @@ requires 'warnings';
 requires 'utf8';
 requires 'Carp';
 requires 'Exporter::Tidy';
-recommends 'Text::Diff';
 
 on configure => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';
@@ -13,7 +12,7 @@ on configure => sub {
 };
 
 on test => sub {
-    requires 'Test::Differences';
+    requires 'Text::Diff';
     requires 'Test::More', '0.88';
     requires 'Test::Needs';
 };
