@@ -1,10 +1,11 @@
 #!perl
-requires 'perl', '5.010';
-requires 'strict';
-requires 'warnings';
-requires 'utf8';
+requires 'boolean';
 requires 'Carp';
 requires 'Exporter::Tidy';
+requires 'perl', '5.010';
+requires 'strict';
+requires 'utf8';
+requires 'warnings';
 
 on configure => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';

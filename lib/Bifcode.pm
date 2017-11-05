@@ -2,6 +2,7 @@ package Bifcode;
 use 5.010;
 use strict;
 use warnings;
+use boolean;
 use Carp;
 use Exporter::Tidy all => [
     qw( encode_bifcode
@@ -14,20 +15,6 @@ use Exporter::Tidy all => [
 
 our $VERSION = '0.001_9';
 our ( $DEBUG, $max_depth, $dict_key );
-
-{
-    # Shamelessly copied from JSON::PP::Boolean
-    package Bifcode::Boolean;
-    use overload (
-        "0+"     => sub { ${ $_[0] } },
-        "++"     => sub { Carp::croak 'Bifcode::Boolean is immutable' },
-        "--"     => sub { Carp::croak 'Bifcode::Boolean is immutable' },
-        fallback => 1,
-    );
-}
-
-$Bifcode::TRUE  = bless( do { \( my $t = 1 ) }, 'Bifcode::Boolean' );
-$Bifcode::FALSE = bless( do { \( my $f = 0 ) }, 'Bifcode::Boolean' );
 
 sub _msg { sprintf "@_", pos() || 0 }
 
@@ -74,11 +61,11 @@ sub _decode_bifcode_chunk {
 
     if (m/ \G 1 /xgc) {
         warn _msg 'TRUE at %s' if $DEBUG;
-        return $Bifcode::TRUE;
+        return boolean::true;
     }
     elsif (m/ \G 0 /xgc) {
         warn _msg 'FALSE at %s' if $DEBUG;
-        return $Bifcode::FALSE;
+        return boolean::false;
     }
     elsif (m/ \G ~ /xgc) {
         warn _msg 'UNDEF at %s' if $DEBUG;
@@ -235,7 +222,7 @@ sub _encode_bifcode {
                   }
             ) . '}';
         }
-        elsif ( $type eq 'Bifcode::Boolean' ) {
+        elsif ( $type eq 'boolean' ) {
             $$_ ? '1' : '0';
         }
         elsif ( $type eq 'Bifcode::INTEGER' ) {
@@ -323,10 +310,11 @@ Bifcode - simple serialization format
 
 =head1 SYNOPSIS
 
+    use boolean;
     use Bifcode qw( encode_bifcode decode_bifcode );
  
     my $bifcode = encode_bifcode {
-        bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+        bools   => [ boolean::false, boolean::true, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
         float   => 1.25e-5,
@@ -493,8 +481,8 @@ The mapping from Perl to I<bifcode> is as follows:
 
 =item * 'undef' maps directly to BIFCODE_UNDEF.
 
-=item * The global package variables C<$Bifcode::TRUE> and C<$Bifcode::FALSE>
-encode to BIFCODE_TRUE and BIFCODE_FALSE.
+=item * The C<true> and C<false> functions from the L<boolean>
+distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
 =item * Plain scalars are treated as BIFCODE_UTF8 unless:
 
