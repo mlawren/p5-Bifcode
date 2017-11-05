@@ -180,77 +180,89 @@ my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( e ( -? [0-9]+ ) )? \z/xi;
 
 sub _encode_bifcode {
-    my ($data) = @_;
-    return '~' unless defined $data;
+    map {
+        if ( !defined $_ ) {
+            '~';
+        }
+        elsif ( ( my $type = ref $_ ) eq '' ) {
+            if ( $_ =~ $number_qr ) {
+                if ( defined $3 or defined $5 ) {
 
-    my $type = ref $data;
-    if ( $type eq '' ) {
-        if ( !$dict_key and $data =~ $number_qr ) {
+                    # normalize to BIFCODE_FLOAT standards
+                    my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+                      . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+                    $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
+                    $x;
+                }
+                else {
+                    'I' . $_ . ',';
+                }
+            }
+            else {
+                utf8::encode( my $str = $_ );
+                'U' . length($str) . ':' . $str;
+            }
+        }
+        elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
+            croak 'Bifcode::BYTES must be defined' unless defined $$_;
+            'B' . length($$_) . ':' . $$_;
+        }
+        elsif ( $type eq 'Bifcode::UTF8' ) {
+            my $str = $$_ // croak 'Bifcode::UTF8 must be defined';
+            utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+            'U' . length($str) . ':' . $str;
+        }
+        elsif ( $type eq 'ARRAY' ) {
+            '[' . join( '', map _encode_bifcode($_), @$_ ) . ']';
+        }
+        elsif ( $type eq 'HASH' ) {
+            '{' . join(
+                '',
+                do {
+                    my @k = sort keys %$_;
+                    map {
+                        my $k = shift @k;
 
-            if ( defined $3 or defined $5 ) {
+                        # if ( is valid utf8($k) ) {
+                        utf8::encode($k);
+                        ( 'U' . length($k) . ':' . $k, $_ );
 
-                # normalize to BIFCODE_FLOAT standards
+                        # }
+                        # else {
+                        #     ('B' . length($k) . ':' . $k, $_);
+                        # }
+                    } _encode_bifcode( @$_{@k} );
+                  }
+            ) . '}';
+        }
+        elsif ( $type eq 'Bifcode::Boolean' ) {
+            $$_ ? '1' : '0';
+        }
+        elsif ( $type eq 'Bifcode::INTEGER' ) {
+            croak 'Bifcode::INTEGER must be defined' unless defined $$_;
+            if ( $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
+                sprintf 'I%s,', $$_;
+            }
+            else {
+                croak 'invalid integer: ' . $$_;
+            }
+        }
+        elsif ( $type eq 'Bifcode::FLOAT' ) {
+            croak 'Bifcode::FLOAT must be defined' unless defined $$_;
+            if ( $$_ =~ $number_qr ) {
                 my $x = 'F' . ( 0 + $1 )    # remove leading zeros
                   . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
                 $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
-                return $x;
+                $x;
             }
-
-            return 'I' . $data . ',';
+            else {
+                croak 'invalid float: ' . $$_;
+            }
         }
-
-        utf8::encode( my $str = $data );
-        return 'U' . length($str) . ':' . $str;
-    }
-    elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
-        croak 'Bifcode::BYTES must be defined' unless defined $$data;
-        return 'B' . length($$data) . ':' . $$data;
-    }
-    elsif ( $type eq 'Bifcode::UTF8' ) {
-        my $str = $$data // croak 'Bifcode::UTF8 must be defined';
-        utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
-        return 'U' . length($str) . ':' . $str;
-    }
-    elsif ($dict_key) {
-        croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8';
-    }
-    elsif ( $type eq 'ARRAY' ) {
-        return '[' . join( '', map _encode_bifcode($_), @$data ) . ']';
-    }
-    elsif ( $type eq 'HASH' ) {
-        return '{' . join(
-            '',
-            map {
-                do {
-                    local $dict_key = 1;
-                    _encode_bifcode($_);
-                  }, _encode_bifcode( $data->{$_} )
-              }
-              sort keys %$data
-        ) . '}';
-    }
-    elsif ( $type eq 'Bifcode::Boolean' ) {
-        return $$data ? '1' : '0';
-    }
-    elsif ( $type eq 'Bifcode::INTEGER' ) {
-        croak 'Bifcode::INTEGER must be defined' unless defined $$data;
-        return sprintf 'I%s,', $$data
-          if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
-        croak 'invalid integer: ' . $$data;
-    }
-    elsif ( $type eq 'Bifcode::FLOAT' ) {
-        croak 'Bifcode::FLOAT must be defined' unless defined $$data;
-        if ( $$data =~ $number_qr ) {
-            my $x = 'F' . ( 0 + $1 )    # remove leading zeros
-              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-            $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
-            return $x;
+        else {
+            croak 'unhandled data type: ' . $type;
         }
-        croak 'invalid float: ' . $$data;
-    }
-    else {
-        croak 'unhandled data type: ' . $type;
-    }
+    } @_;
 }
 
 sub encode_bifcode {
