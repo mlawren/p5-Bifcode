@@ -1,17 +1,17 @@
 ---
-abstract: unknown
+abstract: 'Simple serialization format'
 author:
   - 'Mark Lawrencde <nomad@null.net>'
 build_requires:
-  ExtUtils::MakeMaker::CPANfile: '0'
-  Pod::Text: '0'
-  Test::Differences: '0'
+  ExtUtils::MakeMaker: '0'
   Test::More: '0.88'
   Test::Needs: '0'
+  Text::Diff: '0'
 configure_requires:
   ExtUtils::MakeMaker::CPANfile: '0.08'
+  Pod::Text: '0'
 dynamic_config: 0
-generated_by: 'ExtUtils::MakeMaker version 7.0402, CPAN::Meta::Converter version 2.150001'
+generated_by: 'ExtUtils::MakeMaker version 7.0401, CPAN::Meta::Converter version 2.142690'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -23,15 +23,14 @@ no_index:
     - inc
   package:
     - Bifcode::Boolean
-recommends:
-  Text::Diff: '0'
 requires:
   Carp: '0'
   Exporter::Tidy: '0'
+  boolean: '0'
   perl: '5.010'
   strict: '0'
   utf8: '0'
   warnings: '0'
 resources:
   repository: https://github.com/mlawren/p5-Bifcode
-version: 0.001_8
+version: 0.001_9

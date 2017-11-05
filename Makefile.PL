@@ -7,6 +7,7 @@ use Pod::Text;
 
 WriteMakefile(
     NAME         => 'Bifcode',
+    ABSTRACT     => 'Simple serialization format',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
     VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
@@ -22,8 +23,11 @@ WriteMakefile(
         },
     },
 );
-my $parser = Pod::Text->new( sentence => 0 );
 
-# Read POD from file.pod and write to file.txt.
-$parser->parse_from_file( 'lib/Bifcode.pm', 'README' );
+if ( -e '.git' ) {
+    my $parser = Pod::Text->new( sentence => 0 );
+
+    # Read POD from file.pod and write to file.txt.
+    $parser->parse_from_file( 'lib/Bifcode.pm', 'README' );
+}
 

@@ -2,13 +2,14 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    0.001_8 (2017-09-10)
+    0.001_9 (2017-11-05)
 
 SYNOPSIS
+        use boolean;
         use Bifcode qw( encode_bifcode decode_bifcode );
  
         my $bifcode = encode_bifcode {
-            bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+            bools   => [ boolean::false, boolean::true, ],
             bytes   => \pack( 's<',       255 ),
             integer => 25,
             float   => 1.25e-5,
@@ -82,9 +83,9 @@ MOTIVATION & GOALS
 
     *   Universally-recognized canonical form for hashing
 
-    There no lofty goals or intentions to promote this outside of my
-    specific case. Use it or not, as you please, based on your own
-    requirements. Constructive discussion is welcome.
+    I have no lofty goals or intentions to promote this outside of my
+    specific case, but would appreciate hearing about other uses.
+    Constructive discussion is welcome.
 
 SPECIFICATION
     The encoding is defined as follows:
@@ -96,9 +97,9 @@ SPECIFICATION
     Boolean values are represented by '1' and '0'.
 
   BIFCODE_UTF8
-    A UTF8 string is 'U' followed by the octet length of the decoded string
-    as a base ten number followed by a colon and the decoded string. For
-    example "\x{df}" corresponds to "U2:\x{c3}\x{9f}".
+    A UTF8 string is 'U' followed by the octet length of the encoded string
+    as a base ten number followed by a colon and the encoded string. For
+    example the Perl string "\x{df}" (ß) corresponds to "U2:\x{c3}\x{9f}".
 
   BIFCODE_BYTES
     Opaque data is 'B' followed by the octet length of the data as a base
@@ -143,7 +144,7 @@ INTERFACE
 
     *   'undef' maps directly to BIFCODE_UNDEF.
 
-    *   The global package variables $Bifcode::TRUE and $Bifcode::FALSE
+    *   The "true" and "false" functions from the boolean distribution
         encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
     *   Plain scalars are treated as BIFCODE_UTF8 unless:
@@ -198,8 +199,7 @@ INTERFACE
 
 DIAGNOSTICS
     "trailing garbage at %s"
-        Your data does not end after the first *encode_bifcode*-serialised
-        item.
+        Your data does not end after the first *bifcode*-serialised item.
 
         You may also get this error if a malformed item follows.
 
@@ -222,16 +222,16 @@ DIAGNOSTICS
         didn't make sense.
 
     "dict key not in sort order at %s"
-        Your data violates the *encode_bifcode* format constaint that dict
-        keys must appear in lexical sort order.
+        Your data violates the *bifcode* format constaint that dict keys
+        must appear in lexical sort order.
 
     "duplicate dict key at %s"
-        Your data violates the *encode_bifcode* format constaint that all
-        dict keys must be unique.
+        Your data violates the *bifcode* format constaint that all dict keys
+        must be unique.
 
     "dict key is not a string at %s"
-        Your data violates the *encode_bifcode* format constaint that all
-        dict keys be strings.
+        Your data violates the *bifcode* format constaint that all dict keys
+        be strings.
 
     "dict key is missing value at %s"
         Your data contains a dictionary with an odd number of elements.
@@ -258,6 +258,10 @@ BUGS AND LIMITATIONS
     Strings and numbers are practically indistinguishable in Perl, so
     "encode_bifcode()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
+
+SEE ALSO
+    This distribution includes the diff-bifcode command-line utility for
+    comparing Bifcodes in files.
 
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by Aristotle

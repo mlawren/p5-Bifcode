@@ -1,19 +1,19 @@
 #!perl
-requires 'perl', '5.010';
-requires 'strict';
-requires 'warnings';
-requires 'utf8';
+requires 'boolean';
 requires 'Carp';
 requires 'Exporter::Tidy';
-recommends 'Text::Diff';
+requires 'perl', '5.010';
+requires 'strict';
+requires 'utf8';
+requires 'warnings';
 
-on build => sub {
+on configure => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';
     requires 'Pod::Text';
 };
 
 on test => sub {
-    requires 'Test::Differences';
+    requires 'Text::Diff';
     requires 'Test::More', '0.88';
     requires 'Test::Needs';
 };

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use utf8;
-use Bifcode qw/decode_bifcode encode_bifcode force_bifcode/;
+use Bifcode qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES
@@ -17,7 +17,6 @@ use Exporter::Tidy default => [
       error_ok)
 ];
 use Test::More 0.88;    # for done_testing
-use Test::Differences;
 
 our $utf8 = "\x{100}\x{df}";
 
@@ -69,7 +68,10 @@ sub enc_ok {
       unless 2 == @_;
     my ( $thawed, $frozen ) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    eq_or_diff encode_bifcode($thawed), $frozen, "encode $frozen";
+    my $diff = diff_bifcode( encode_bifcode($thawed), $frozen );
+    length($diff)
+      ? ok 0, "encode $frozen:\n$diff"
+      : ok 1, "encode $frozen";
 }
 
 sub enc_error_ok {
@@ -92,7 +94,7 @@ sub decod_ok {
     my ( $frozen,   $thawed ) = @_;
     my ( $testname, $result ) = un $frozen;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    eq_or_diff $result, $thawed, $testname;
+    is_deeply $result, $thawed, $testname;
 }
 
 sub error_ok {

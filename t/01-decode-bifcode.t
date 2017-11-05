@@ -3,6 +3,7 @@ use warnings;
 use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
+use boolean;
 use Test::Bifcode;
 use Test::More 0.88;    # for done_testing
 
@@ -11,8 +12,8 @@ subtest UNDEF => sub {
 };
 
 subtest BOOLEAN => sub {
-    decod_ok '1' => $Bifcode::TRUE;
-    decod_ok '0' => $Bifcode::FALSE;
+    decod_ok '1' => boolean::true;
+    decod_ok '0' => boolean::false;
 };
 
 subtest INTEGER => sub {
@@ -97,7 +98,7 @@ subtest LIST => sub {
       '[]anfdldjfh' => qr/\Atrailing garbage at 2\b/,
       'empty list with trailing garbage';
     decod_ok '[~~~]' => [ undef, undef, undef ];
-    decod_ok '[10]' => [ $Bifcode::TRUE, $Bifcode::FALSE ];
+    decod_ok '[10]' => [ boolean::true, boolean::false ];
     decod_ok '[U0:U0:U0:]'                => [ '',    '',   '' ];
     decod_ok '[I1,I2,I3,]'                => [ 1,     2,    3 ];
     decod_ok '[U3:asdU2:xy' . $UTF8 . ']' => [ 'asd', 'xy', $utf8 ];
@@ -127,8 +128,8 @@ subtest DICT => sub {
         'age'   => 25,
         'eyes'  => 'blue',
         'undef' => undef,
-        true    => $Bifcode::TRUE,
-        false   => $Bifcode::FALSE,
+        true    => boolean::true,
+        false   => boolean::false,
     };
     decod_ok '{U8:spam.mp3{U6:authorU5:AliceU6:lengthI100000,U5:undef~}}' =>
       { 'spam.mp3' =>

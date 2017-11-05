@@ -3,6 +3,7 @@ use warnings;
 use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
+use boolean;
 use Test::Bifcode;
 use Test::More 0.88;    # for done_testing
 use Bifcode 'encode_bifcode', 'force_bifcode';
@@ -12,8 +13,8 @@ subtest 'UNDEF' => sub {
 };
 
 subtest 'BOOLEAN' => sub {
-    enc_ok $Bifcode::TRUE  => '1';
-    enc_ok $Bifcode::FALSE => '0';
+    enc_ok boolean::true  => '1';
+    enc_ok boolean::false => '0';
 };
 
 subtest 'INTEGER' => sub {
@@ -119,8 +120,8 @@ subtest 'DICT' => sub {
     enc_ok {
         'age'   => 25,
         'eyes'  => 'blue',
-        'false' => $Bifcode::FALSE,
-        'true'  => $Bifcode::TRUE,
+        'false' => boolean::false,
+        'true'  => boolean::true,
         'undef' => undef,
         $utf8   => $utf8,
       } => '{U3:ageI25,U4:eyesU4:blueU5:false0U4:true1U5:undef~'

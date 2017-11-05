@@ -2,6 +2,7 @@ package Bifcode;
 use 5.010;
 use strict;
 use warnings;
+use boolean;
 use Carp;
 use Exporter::Tidy all => [
     qw( encode_bifcode
@@ -12,22 +13,8 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_8';
+our $VERSION = '0.001_9';
 our ( $DEBUG, $max_depth, $dict_key );
-
-{
-    # Shamelessly copied from JSON::PP::Boolean
-    package Bifcode::Boolean;
-    use overload (
-        "0+"     => sub { ${ $_[0] } },
-        "++"     => sub { Carp::croak 'Bifcode::Boolean is immutable' },
-        "--"     => sub { Carp::croak 'Bifcode::Boolean is immutable' },
-        fallback => 1,
-    );
-}
-
-$Bifcode::TRUE  = bless( do { \( my $t = 1 ) }, 'Bifcode::Boolean' );
-$Bifcode::FALSE = bless( do { \( my $f = 0 ) }, 'Bifcode::Boolean' );
 
 sub _msg { sprintf "@_", pos() || 0 }
 
@@ -74,11 +61,11 @@ sub _decode_bifcode_chunk {
 
     if (m/ \G 1 /xgc) {
         warn _msg 'TRUE at %s' if $DEBUG;
-        return $Bifcode::TRUE;
+        return boolean::true;
     }
     elsif (m/ \G 0 /xgc) {
         warn _msg 'FALSE at %s' if $DEBUG;
-        return $Bifcode::FALSE;
+        return boolean::false;
     }
     elsif (m/ \G ~ /xgc) {
         warn _msg 'UNDEF at %s' if $DEBUG;
@@ -180,77 +167,89 @@ my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( e ( -? [0-9]+ ) )? \z/xi;
 
 sub _encode_bifcode {
-    my ($data) = @_;
-    return '~' unless defined $data;
+    map {
+        if ( !defined $_ ) {
+            '~';
+        }
+        elsif ( ( my $type = ref $_ ) eq '' ) {
+            if ( $_ =~ $number_qr ) {
+                if ( defined $3 or defined $5 ) {
 
-    my $type = ref $data;
-    if ( $type eq '' ) {
-        if ( !$dict_key and $data =~ $number_qr ) {
+                    # normalize to BIFCODE_FLOAT standards
+                    my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+                      . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+                    $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
+                    $x;
+                }
+                else {
+                    'I' . $_ . ',';
+                }
+            }
+            else {
+                utf8::encode( my $str = $_ );
+                'U' . length($str) . ':' . $str;
+            }
+        }
+        elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
+            croak 'Bifcode::BYTES must be defined' unless defined $$_;
+            'B' . length($$_) . ':' . $$_;
+        }
+        elsif ( $type eq 'Bifcode::UTF8' ) {
+            my $str = $$_ // croak 'Bifcode::UTF8 must be defined';
+            utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+            'U' . length($str) . ':' . $str;
+        }
+        elsif ( $type eq 'ARRAY' ) {
+            '[' . join( '', map _encode_bifcode($_), @$_ ) . ']';
+        }
+        elsif ( $type eq 'HASH' ) {
+            '{' . join(
+                '',
+                do {
+                    my @k = sort keys %$_;
+                    map {
+                        my $k = shift @k;
 
-            if ( defined $3 or defined $5 ) {
+                        # if ( is valid utf8($k) ) {
+                        utf8::encode($k);
+                        ( 'U' . length($k) . ':' . $k, $_ );
 
-                # normalize to BIFCODE_FLOAT standards
+                        # }
+                        # else {
+                        #     ('B' . length($k) . ':' . $k, $_);
+                        # }
+                    } _encode_bifcode( @$_{@k} );
+                  }
+            ) . '}';
+        }
+        elsif ( $type eq 'boolean' ) {
+            $$_ ? '1' : '0';
+        }
+        elsif ( $type eq 'Bifcode::INTEGER' ) {
+            croak 'Bifcode::INTEGER must be defined' unless defined $$_;
+            if ( $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
+                sprintf 'I%s,', $$_;
+            }
+            else {
+                croak 'invalid integer: ' . $$_;
+            }
+        }
+        elsif ( $type eq 'Bifcode::FLOAT' ) {
+            croak 'Bifcode::FLOAT must be defined' unless defined $$_;
+            if ( $$_ =~ $number_qr ) {
                 my $x = 'F' . ( 0 + $1 )    # remove leading zeros
                   . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
                 $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
-                return $x;
+                $x;
             }
-
-            return 'I' . $data . ',';
+            else {
+                croak 'invalid float: ' . $$_;
+            }
         }
-
-        utf8::encode( my $str = $data );
-        return 'U' . length($str) . ':' . $str;
-    }
-    elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
-        croak 'Bifcode::BYTES must be defined' unless defined $$data;
-        return 'B' . length($$data) . ':' . $$data;
-    }
-    elsif ( $type eq 'Bifcode::UTF8' ) {
-        my $str = $$data // croak 'Bifcode::UTF8 must be defined';
-        utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
-        return 'U' . length($str) . ':' . $str;
-    }
-    elsif ($dict_key) {
-        croak 'Bifcode::DICT key must be Bifcode::BYTES or Bifcode::UTF8';
-    }
-    elsif ( $type eq 'ARRAY' ) {
-        return '[' . join( '', map _encode_bifcode($_), @$data ) . ']';
-    }
-    elsif ( $type eq 'HASH' ) {
-        return '{' . join(
-            '',
-            map {
-                do {
-                    local $dict_key = 1;
-                    _encode_bifcode($_);
-                  }, _encode_bifcode( $data->{$_} )
-              }
-              sort keys %$data
-        ) . '}';
-    }
-    elsif ( $type eq 'Bifcode::Boolean' ) {
-        return $$data ? '1' : '0';
-    }
-    elsif ( $type eq 'Bifcode::INTEGER' ) {
-        croak 'Bifcode::INTEGER must be defined' unless defined $$data;
-        return sprintf 'I%s,', $$data
-          if $$data =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
-        croak 'invalid integer: ' . $$data;
-    }
-    elsif ( $type eq 'Bifcode::FLOAT' ) {
-        croak 'Bifcode::FLOAT must be defined' unless defined $$data;
-        if ( $$data =~ $number_qr ) {
-            my $x = 'F' . ( 0 + $1 )    # remove leading zeros
-              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-            $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
-            return $x;
+        else {
+            croak 'unhandled data type: ' . $type;
         }
-        croak 'invalid float: ' . $$data;
-    }
-    else {
-        croak 'unhandled data type: ' . $type;
-    }
+    } @_;
 }
 
 sub encode_bifcode {
@@ -306,15 +305,16 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_8 (2017-09-10)
+0.001_9 (2017-11-05)
 
 
 =head1 SYNOPSIS
 
+    use boolean;
     use Bifcode qw( encode_bifcode decode_bifcode );
  
     my $bifcode = encode_bifcode {
-        bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+        bools   => [ boolean::false, boolean::true, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
         float   => 1.25e-5,
@@ -407,9 +407,9 @@ the requirements of:
 
 =back
 
-There no lofty goals or intentions to promote this outside of my
-specific case.  Use it or not, as you please, based on your own
-requirements. Constructive discussion is welcome.
+I have no lofty goals or intentions to promote this outside of my
+specific case, but would appreciate hearing about other uses.
+Constructive discussion is welcome.
 
 =head1 SPECIFICATION
 
@@ -425,9 +425,9 @@ Boolean values are represented by '1' and '0'.
 
 =head2 BIFCODE_UTF8
 
-A UTF8 string is 'U' followed by the octet length of the decoded string
-as a base ten number followed by a colon and the decoded string.  For
-example "\x{df}" corresponds to "U2:\x{c3}\x{9f}".
+A UTF8 string is 'U' followed by the octet length of the encoded string
+as a base ten number followed by a colon and the encoded string.  For
+example the Perl string "\x{df}" (ß) corresponds to "U2:\x{c3}\x{9f}".
 
 =head2 BIFCODE_BYTES
 
@@ -481,8 +481,8 @@ The mapping from Perl to I<bifcode> is as follows:
 
 =item * 'undef' maps directly to BIFCODE_UNDEF.
 
-=item * The global package variables C<$Bifcode::TRUE> and C<$Bifcode::FALSE>
-encode to BIFCODE_TRUE and BIFCODE_FALSE.
+=item * The C<true> and C<false> functions from the L<boolean>
+distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
 =item * Plain scalars are treated as BIFCODE_UTF8 unless:
 
@@ -552,8 +552,7 @@ Croaks if L<Text::Diff> is not installed.
 
 =item C<trailing garbage at %s>
 
-Your data does not end after the first I<encode_bifcode>-serialised
-item.
+Your data does not end after the first I<bifcode>-serialised item.
 
 You may also get this error if a malformed item follows.
 
@@ -582,18 +581,18 @@ didn't make sense.
 
 =item C<dict key not in sort order at %s>
 
-Your data violates the I<encode_bifcode> format constaint that dict
-keys must appear in lexical sort order.
+Your data violates the I<bifcode> format constaint that dict keys must
+appear in lexical sort order.
 
 =item C<duplicate dict key at %s>
 
-Your data violates the I<encode_bifcode> format constaint that all dict
-keys must be unique.
+Your data violates the I<bifcode> format constaint that all dict keys
+must be unique.
 
 =item C<dict key is not a string at %s>
 
-Your data violates the I<encode_bifcode> format constaint that all dict
-keys be strings.
+Your data violates the I<bifcode> format constaint that all dict keys
+be strings.
 
 =item C<dict key is missing value at %s>
 
@@ -638,6 +637,11 @@ The format does not support this.
 Strings and numbers are practically indistinguishable in Perl, so
 C<encode_bifcode()> has to resort to a heuristic to decide how to
 serialise a scalar. This cannot be fixed.
+
+=head1 SEE ALSO
+
+This distribution includes the L<diff-bifcode> command-line utility for
+comparing Bifcodes in files.
 
 =head1 AUTHOR
 
