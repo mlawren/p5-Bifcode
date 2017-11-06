@@ -2,7 +2,7 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    0.001_10 (2017-11-06)
+    0.001_11 (yyyy-mm-dd)
 
 SYNOPSIS
         use boolean;
