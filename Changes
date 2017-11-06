@@ -1,22 +1,15 @@
-0.001_10 (yyyy-mm-dd)
+0.001_10 (2017-11-06)
 
     API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
+        - decode_bifcode() now does what the documentation says with
+          repect to inflating BIFCODE_BYTES. They become normal scalars
+          and not SCALAR references.
 
     Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
+        - Refactor decode()
 
     Packaging:
-        - None.
+        - Fix README file
 
 0.001_9 (2017-11-05)
 
