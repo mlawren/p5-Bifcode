@@ -10,7 +10,7 @@
         - None.
 
     Bug Fixes:
-        - None.
+        - Return correct encode_bifcode() result in array context.
 
     Dependencies:
         - None.

@@ -256,7 +256,7 @@ sub _encode_bifcode {
 
 sub encode_bifcode {
     croak 'usage: encode_bifcode($arg)' if @_ != 1;
-    goto &_encode_bifcode;
+    (&_encode_bifcode)[0];
 }
 
 sub force_bifcode {
