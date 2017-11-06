@@ -13,93 +13,93 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_9';
-our ( $DEBUG, $max_depth, $dict_key );
+our $VERSION = '0.001_10';
+our ( $DEBUG, $max_depth );
 
 sub _msg { sprintf "@_", pos() || 0 }
+
+my $match = qr/ \G (?|
+      (~)
+    | (0)
+    | (1)
+    | (B|U) (?: ( 0 | [1-9] [0-9]* ) : )? 
+    | (I) (?: ( 0 | -? [1-9] [0-9]* ) , )?
+    | (F) (?: (-)? ( 0 | [1-9] [0-9]* )
+        \. ( 0 | [0-9]* [1-9] )
+        e (( 0 | -? [1-9] ) [0-9]*) , )?
+    | (\[)
+    | (\{)
+) /x;
 
 sub _decode_bifcode_chunk {
     warn _msg 'decoding at %s' if $DEBUG;
 
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
-    if (m/ \G ( B | U ) ( 0 | [1-9] [0-9]* ) : /xgc) {
-        my $bytes = $1 eq 'B';
-        my $len   = $2;
+    if ( !m/$match/gc ) {
+        croak _msg m/ \G \z /xgc
+          ? 'unexpected end of data at %s'
+          : 'garbage at %s';
+    }
+
+    if ( $1 eq '~' ) {
+        return undef;
+    }
+    elsif ( $1 eq '0' ) {
+        return boolean::false;
+    }
+    elsif ( $1 eq '1' ) {
+        return boolean::true;
+    }
+    elsif ( $1 eq 'B' ) {
+        my $len = $2 // croak _msg 'malformed string length at %s';
 
         croak _msg 'unexpected end of string data starting at %s'
           if $len > length() - pos();
 
-        if ($bytes) {
-            my $data = substr $_, pos(), $len;
-            pos() = pos() + $len;
+        my $data = substr $_, pos(), $len;
+        pos() = pos() + $len;
 
-            warn _msg BYTES => "(length $len) at %s", if $DEBUG;
-
-            return $dict_key ? $data : \$data;
-        }
-        else {
-            utf8::decode( my $str = substr $_, pos(), $len );
-            pos() = pos() + $len;
-
-            warn _msg
-              UTF8 => "(length $len)",
-              $len < 200 ? "[$str]" : (), 'at %s'
-              if $DEBUG;
-
-            return $str;
-        }
+        warn _msg BYTES => "(length $len) at %s", if $DEBUG;
+        return $data;
     }
+    elsif ( $1 eq 'U' ) {
+        my $len = $2 // croak _msg 'malformed string length at %s';
 
-    my $pos = pos();
-    if (m/ \G ( B | U ) -? 0? [0-9]+ : /xgc) {
-        pos() = $pos;
-        croak _msg 'malformed string length at %s';
-    }
+        croak _msg 'unexpected end of string data starting at %s'
+          if $len > length() - pos();
 
-    croak _msg 'dict key is not a string at %s' if $dict_key;
-
-    if (m/ \G 1 /xgc) {
-        warn _msg 'TRUE at %s' if $DEBUG;
-        return boolean::true;
-    }
-    elsif (m/ \G 0 /xgc) {
-        warn _msg 'FALSE at %s' if $DEBUG;
-        return boolean::false;
-    }
-    elsif (m/ \G ~ /xgc) {
-        warn _msg 'UNDEF at %s' if $DEBUG;
-        return undef;
-    }
-    elsif (m/ \G I /xgc) {
-        croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
-
-        m/ \G ( 0 | -? [1-9] [0-9]* ) , /xgc
-          or croak _msg 'malformed integer data at %s';
-
-        warn _msg INTEGER => $1, 'at %s' if $DEBUG;
-        return $1;
-    }
-    elsif (m/ \G F /xgc) {
-        croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
-
-        m/ \G (-)? ( 0 | [1-9] [0-9]* )
-        \. ( 0 | [0-9]* [1-9] )
-        e (( 0 | -? [1-9] ) [0-9]*) , /xgc
-          or croak _msg 'malformed float data at %s';
-
-        croak _msg 'malformed float data at %s'
-          if $2 eq '0'
-          and $3 eq '0'
-          and ( $1 or $4 ne '0' );
+        utf8::decode( my $str = substr $_, pos(), $len );
+        pos() = pos() + $len;
 
         warn _msg
-          FLOAT => ( $1 // '' ) . $2 . '.' . $3 . 'e' . $4,
+          UTF8 => "(length $len)",
+          $len < 200 ? "[$str]" : (), 'at %s'
+          if $DEBUG;
+
+        return $str;
+    }
+    elsif ( $1 eq 'I' ) {
+        if ( defined $2 ) {
+            warn _msg INTEGER => $2, 'at %s' if $DEBUG;
+            return $2;
+        }
+        croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
+        croak _msg 'malformed integer data at %s';
+    }
+    elsif ( $1 eq 'F' ) {
+        croak _msg 'malformed float data at %s'
+          if $3 eq '0'
+          and $4 eq '0'
+          and ( $2 or $5 ne '0' );
+
+        warn _msg
+          FLOAT => ( $2 // '' ) . $3 . '.' . $4 . 'e' . $5,
           'at %s'
           if $DEBUG;
-        return ( $1 // '' ) . $2 . '.' . $3 . 'e' . $4;
+        return ( $2 // '' ) . $3 . '.' . $4 . 'e' . $5;
     }
-    elsif (m/ \G \[ /xgc) {
+    elsif ( $1 eq '[' ) {
         warn _msg 'LIST at %s' if $DEBUG;
 
         croak _msg 'nesting depth exceeded at %s'
@@ -113,7 +113,7 @@ sub _decode_bifcode_chunk {
         }
         return \@list;
     }
-    elsif (m/ \G \{ /xgc) {
+    elsif ( $1 eq '{' ) {
         warn _msg 'DICT at %s' if $DEBUG;
 
         croak _msg 'nesting depth exceeded at %s'
@@ -128,7 +128,14 @@ sub _decode_bifcode_chunk {
             croak _msg 'unexpected end of data at %s'
               if m/ \G \z /xgc;
 
-            my $key = do { local $dict_key = 1; _decode_bifcode_chunk() };
+            my $key;
+            if (m/ \G (B|U) /xgc) {
+                pos() = pos() - 1;
+                $key = _decode_bifcode_chunk();
+            }
+            else {
+                croak _msg 'dict key is not a string at %s';
+            }
 
             croak _msg 'duplicate dict key at %s'
               if exists $hash{$key};
@@ -143,11 +150,6 @@ sub _decode_bifcode_chunk {
             $hash{$key} = _decode_bifcode_chunk();
         }
         return \%hash;
-    }
-    else {
-        croak _msg m/ \G \z /xgc
-          ? 'unexpected end of data at %s'
-          : 'garbage at %s';
     }
 }
 
@@ -305,7 +307,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_9 (2017-11-05)
+0.001_10 (2017-11-06)
 
 
 =head1 SYNOPSIS

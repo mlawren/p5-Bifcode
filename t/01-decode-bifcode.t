@@ -65,7 +65,7 @@ subtest UTF8 => sub {
       'U1:' => qr/\Aunexpected end of string data starting at 3\b/,
       'string longer than data';
     error_ok
-      'U35208734823ljdahflajhdf' => qr/\Agarbage at 0/,
+      'U35208734823ljdahflajhdf' => qr/\Amalformed string length at 1/,
       'garbage looking vaguely like a string, with large count';
     error_ok
       'U2:abfdjslhfld' => qr/\Atrailing garbage at 5\b/,
@@ -76,19 +76,19 @@ subtest UTF8 => sub {
     decod_ok 'U3:abc'         => 'abc';
     decod_ok 'U10:1234567890' => '1234567890';
     error_ok
-      'U02:xy' => qr/\Amalformed string length at 0\b/,
+      'U02:xy' => qr/\Amalformed string length at 1\b/,
       'string with extra leading zero in count';
     error_ok
       'U9999:x' => qr/\Aunexpected end of string data starting at 6/,
       'string shorter than count';
     decod_ok "U2:\x0A\x0D" => "\x0A\x0D";
     error_ok
-      'U00:' => qr/\Amalformed string length at 0/,
+      'U00:' => qr/\Amalformed string length at 1/,
       'zero-length string with extra leading zero in count';
 };
 
 subtest BYTES => sub {
-    decod_ok $BYTES => \$bytes;
+    decod_ok $BYTES => $bytes;
 };
 
 subtest LIST => sub {
@@ -108,10 +108,10 @@ subtest LIST => sub {
       '[U0:' => qr/\Aunexpected end of data at 4/,
       'unclosed list with content';
     error_ok
-      '[U01:a]' => qr/\Amalformed string length at 1/,
+      '[U01:a]' => qr/\Amalformed string length at 2/,
       'list with string with leading zero in count';
     error_ok
-      '[U-3:]' => qr/\Amalformed string length at 1/,
+      '[U-3:]' => qr/\Amalformed string length at 2/,
       'list with negative-length string';
 
 };
@@ -123,7 +123,7 @@ subtest DICT => sub {
       'empty dict with trailing garbage';
     decod_ok '{}' => {};
     decod_ok '{' . $BYTES . $UTF8 . '}' => { $bytes => $utf8 };
-    decod_ok '{' . $UTF8 . $BYTES . '}' => { $utf8  => \$bytes };
+    decod_ok '{' . $UTF8 . $BYTES . '}' => { $utf8  => $bytes };
     decod_ok '{U3:ageI25,U4:eyesU4:blueU5:false0U4:true1U5:undef~}' => {
         'age'   => 25,
         'eyes'  => 'blue',
