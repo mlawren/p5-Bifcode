@@ -5,10 +5,11 @@ VERSION
     0.001_10 (yyyy-mm-dd)
 
 SYNOPSIS
+        use boolean;
         use Bifcode qw( encode_bifcode decode_bifcode );
  
         my $bifcode = encode_bifcode {
-            bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+            bools   => [ boolean::false, boolean::true, ],
             bytes   => \pack( 's<',       255 ),
             integer => 25,
             float   => 1.25e-5,
@@ -143,7 +144,7 @@ INTERFACE
 
     *   'undef' maps directly to BIFCODE_UNDEF.
 
-    *   The global package variables $Bifcode::TRUE and $Bifcode::FALSE
+    *   The "true" and "false" functions from the boolean distribution
         encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
     *   Plain scalars are treated as BIFCODE_UTF8 unless:
