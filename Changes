@@ -1,3 +1,13 @@
+0.001_11 (2017-11-08)
+
+    Enhancements:
+        - Document use of BIFCODE_UTF8 only for hash keys
+        - Convert all errors to exception objects
+        - Minor documentation and testing improvements
+
+    Bug Fixes:
+        - Return correct encode_bifcode() result in array context.
+
 0.001_10 (2017-11-06)
 
     API / Behaviour Changes:

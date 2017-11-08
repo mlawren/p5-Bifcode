@@ -9,13 +9,13 @@ use Test::Needs 'Text::Diff';
 use Bifcode 'encode_bifcode', 'diff_bifcode';
 
 eval { diff_bifcode() };
-like $@, qr/usage: diff_bifcode/, 'diff_bifcode not enough arguments';
+isa_ok $@, 'Bifcode::Error::DiffUsage', 'diff_bifcode not enough arguments';
 
 eval { diff_bifcode( 1, 2, 3, 4 ) };
-like $@, qr/usage: diff_bifcode/, 'diff_bifcode too many arguments';
+isa_ok $@, 'Bifcode::Error::DiffUsage', 'diff_bifcode too many arguments';
 
 eval { encode_bifcode( 1, 2, 3 ) };
-like $@, qr/usage: encode_bifcode\(\$arg\)/, 'too many arguments';
+isa_ok $@, 'Bifcode::Error::EncodeUsage', 'too many arguments';
 
 my $a = '[U1:aU1:bU1:c]';
 my $b = '[U1:aU1:B~]';

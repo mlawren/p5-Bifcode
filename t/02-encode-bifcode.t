@@ -23,11 +23,14 @@ subtest 'INTEGER' => sub {
     enc_ok 0                      => 'I0,';
     enc_ok - 10                   => 'I-10,';
     enc_ok '12345678901234567890' => 'I12345678901234567890,';
-    enc_error_ok force_bifcode( '00', 'integer' ) => qr/invalid integer: 00/,
+    enc_error_ok force_bifcode( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
-    enc_error_ok force_bifcode( '00abc', 'integer' ) =>
-      qr/invalid integer: 00abc/,
+    enc_error_ok force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
       'forcing a non-integer as integer';
+
+    my $u = undef;
+    enc_error_ok bless( \$u, 'Bifcode::INTEGER' ) => 'EncodeIntegerUndef',
+      'forcing undef as integer';
 };
 
 subtest 'FLOAT' => sub {
@@ -86,8 +89,12 @@ subtest 'FLOAT' => sub {
     # decimal and exponent leading .0x
     enc_ok force_bifcode( '100.008e0', 'float' ) => 'F100.008e0,';
 
-    enc_error_ok force_bifcode( '00abc', 'float' ) => qr/invalid float/,
+    enc_error_ok force_bifcode( '00abc', 'float' ) => 'EncodeFloat',
       'forcing a non-float as float';
+
+    my $u = undef;
+    enc_error_ok bless( \$u, 'Bifcode::FLOAT' ) => 'EncodeFloatUndef',
+      'forcing undef as float';
 };
 
 subtest 'UTF8' => sub {
@@ -98,11 +105,20 @@ subtest 'UTF8' => sub {
     enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890';
     enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0';
     enc_ok '00' => 'U2:00';
+
+    my $u = undef;
+    enc_error_ok bless( \$u, 'Bifcode::UTF8' ) => 'EncodeUTF8Undef',
+      'forcing undef as utf8';
 };
 
 subtest 'BYTES' => sub {
     enc_ok force_bifcode( $bytes, 'bytes' ) => $BYTES;
     enc_ok \$bytes => $BYTES;
+
+    my $u = undef;
+    enc_error_ok \$u => 'EncodeBytesUndef',
+      enc_error_ok bless( \$u, 'Bifcode::BYTES' ) => 'EncodeBytesUndef',
+      'forcing undef as bytes';
 };
 
 subtest 'LIST' => sub {
@@ -141,9 +157,13 @@ subtest 'DICT' => sub {
       . 'U6:lengthI100000,U5:undef~' . '}}';
 };
 
+my $u = undef;
+enc_error_ok bless( \$u, 'strange' ) => 'EncodeUnhandled',
+  'unknown object type';
+
 eval { encode_bifcode() };
-like $@, qr/usage: encode_bifcode\(\$arg\)/, 'not enough arguments';
+isa_ok $@, 'Bifcode::Error::EncodeUsage', 'not enough arguments';
 eval { encode_bifcode( 1, 2 ) };
-like $@, qr/usage: encode_bifcode\(\$arg\)/, 'too many arguments';
+isa_ok $@, 'Bifcode::Error::EncodeUsage', 'too many arguments';
 
 done_testing;
