@@ -78,10 +78,9 @@ my $match = qr/ \G (?|
 
 sub _decode_bifcode_chunk {
     warn _msg 'decoding at %s' if $DEBUG;
-
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
-    if ( !m/$match/gc ) {
+    unless (m/$match/gc) {
         croak _error m/ \G \z /xgc ? 'DecodeEnd' : 'Decode';
     }
 
@@ -96,7 +95,6 @@ sub _decode_bifcode_chunk {
     }
     elsif ( $1 eq 'B' ) {
         my $len = $2 // croak _error 'DecodeBytes';
-
         croak _error 'DecodeBytesEnd' if $len > length() - pos();
 
         my $data = substr $_, pos(), $len;
@@ -107,7 +105,6 @@ sub _decode_bifcode_chunk {
     }
     elsif ( $1 eq 'U' ) {
         my $len = $2 // croak _error 'DecodeUTF8';
-
         croak _error 'DecodeUTF8End' if $len > length() - pos();
 
         utf8::decode( my $str = substr $_, pos(), $len );
@@ -165,15 +162,10 @@ sub _decode_bifcode_chunk {
               if $DEBUG;
 
             croak _error 'DecodeEnd' if m/ \G \z /xgc;
+            croak _error 'DecodeKey' unless m/ \G (B|U) /xgc;
 
-            my $key;
-            if (m/ \G (B|U) /xgc) {
-                pos() = pos() - 1;
-                $key = _decode_bifcode_chunk();
-            }
-            else {
-                croak _error 'DecodeKey';
-            }
+            pos() = pos() - 1;
+            my $key = _decode_bifcode_chunk();
 
             croak _error 'DecodeKeyDuplicate' if exists $hash{$key};
             croak _error 'DecodeKeySortOrder'
@@ -190,6 +182,7 @@ sub _decode_bifcode_chunk {
 sub decode_bifcode {
     local $_         = shift;
     local $max_depth = shift;
+
     croak _error 'DecodeUsage', 'decode_bifcode: too many arguments' if @_;
     croak _error 'DecodeUsage', 'decode_bifcode: only accepts bytes'
       if utf8::is_utf8($_);
@@ -259,24 +252,19 @@ sub _encode_bifcode {
         }
         elsif ( $type eq 'Bifcode::INTEGER' ) {
             $$_ // croak _error 'EncodeIntegerUndef';
-            if ( $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
-                sprintf 'I%s,', $$_;
-            }
-            else {
-                croak _error 'EncodeInteger', 'invalid integer: ' . $$_;
-            }
+            croak _error 'EncodeInteger', 'invalid integer: ' . $$_
+              unless $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
+            sprintf 'I%s,', $$_;
         }
         elsif ( $type eq 'Bifcode::FLOAT' ) {
             $$_ // croak _error 'EncodeFloatUndef';
-            if ( $$_ =~ $number_qr ) {
-                my $x = 'F' . ( 0 + $1 )    # remove leading zeros
-                  . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
-                $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
-                $x;
-            }
-            else {
-                croak _error 'EncodeFloat', 'invalid float: ' . $$_;
-            }
+            croak _error 'EncodeFloat', 'invalid float: ' . $$_
+              unless $$_ =~ $number_qr;
+
+            my $x = 'F' . ( 0 + $1 )    # remove leading zeros
+              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+            $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
+            $x;
         }
         elsif ( $type eq 'Bifcode::UTF8' ) {
             my $str = $$_ // croak _error 'EncodeUTF8Undef';
