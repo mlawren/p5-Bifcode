@@ -117,10 +117,10 @@ subtest DICT => sub {
       { 'spam.mp3' =>
           { 'author' => 'Alice', 'length' => 100000, 'undef' => undef } };
 
-    error_ok '{~}'      => 'DecodeKey',      'dict key cannot be undef';
+    error_ok '{~}'      => 'DecodeKeyType',  'dict key cannot be undef';
     error_ok '{U3:foo}' => 'DecodeKeyValue', 'dict with odd number of elements';
-    error_ok '{I1,U0:}' => 'DecodeKey',      'dict with integer key';
-    error_ok '{U1:bU0:U1:aU0:}' => 'DecodeKeySortOrder', 'missorted keys';
+    error_ok '{I1,U0:}' => 'DecodeKeyType',  'dict with integer key';
+    error_ok '{U1:bU0:U1:aU0:}' => 'DecodeKeyOrder',     'missorted keys';
     error_ok '{U1:aU0:U1:aU0:}' => 'DecodeKeyDuplicate', 'duplicate keys';
     error_ok '{U0:' => 'DecodeEnd', 'unclosed dict with odd number of elements';
     error_ok '{U0:U0:' => 'DecodeEnd', 'unclosed dict with content';

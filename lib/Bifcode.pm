@@ -38,9 +38,9 @@ sub _error {
         EncodeFloatUndef   => 'Bifcode::FLOAT ref is undefined',
         EncodeInteger      => undef,
         EncodeIntegerUndef => 'Bifcode::INTEGER ref is undefined',
-        DecodeKey          => 'dict key is not BYTES or UTF8 at',
+        DecodeKeyType      => 'dict key is not BYTES or UTF8 at',
         DecodeKeyDuplicate => 'duplicate dict key at',
-        DecodeKeySortOrder => 'dict key not in sort order at',
+        DecodeKeyOrder     => 'dict key not in sort order at',
         DecodeKeyValue     => 'dict key is missing value at',
         EncodeUTF8Undef    => 'Bifcode::UTF8 ref is undefined',
         EncodeUnhandled    => undef,
@@ -141,13 +141,13 @@ sub _decode_bifcode_chunk {
         my %hash;
         until (m/ \G \} /xgc) {
             croak _error 'DecodeEnd' if m/ \G \z /xgc;
-            croak _error 'DecodeKey' unless m/ \G (B|U) /xgc;
+            croak _error 'DecodeKeyType' unless m/ \G (B|U) /xgc;
 
             pos() = pos() - 1;
             my $key = _decode_bifcode_chunk();
 
             croak _error 'DecodeKeyDuplicate' if exists $hash{$key};
-            croak _error 'DecodeKeySortOrder'
+            croak _error 'DecodeKeyOrder'
               if defined $last_key and $key lt $last_key;
             croak _error 'DecodeKeyValue' if m/ \G \} /xgc;
 
@@ -590,7 +590,7 @@ didn't make sense.
 
 Your data contains an integer that is truncated.
 
-=item Bifcode::Error::DecodeKey
+=item Bifcode::Error::DecodeKeyType
 
 Your data violates the I<bifcode> format constaint that all dict keys
 be strings.
@@ -600,7 +600,7 @@ be strings.
 Your data violates the I<bifcode> format constaint that all dict keys
 must be unique.
 
-=item Bifcode::Error::DecodeKeySortOrder
+=item Bifcode::Error::DecodeKeyOrder
 
 Your data violates the I<bifcode> format constaint that dict keys must
 appear in lexical sort order.
