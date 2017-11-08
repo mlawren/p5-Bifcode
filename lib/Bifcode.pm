@@ -21,16 +21,16 @@ sub _error {
     my %messages = (
         Decode             => 'garbage at',
         DecodeBytes        => 'malformed BYTES length at',
-        DecodeBytesEnd     => 'unexpected BYTES end of data at',
+        DecodeBytesTrunc   => 'unexpected BYTES end of data at',
         DecodeDepth        => 'nesting depth exceeded at',
-        DecodeEnd          => 'unexpected end of data at',
+        DecodeTrunc        => 'unexpected end of data at',
         DecodeFloat        => 'malformed FLOAT data at',
-        DecodeFloatEnd     => 'unexpected FLOAT end of data at',
+        DecodeFloatTrunc   => 'unexpected FLOAT end of data at',
         DecodeInteger      => 'malformed INTEGER data at',
-        DecodeIntegerEnd   => 'unexpected INTEGER end of data at',
+        DecodeIntegerTrunc => 'unexpected INTEGER end of data at',
         DecodeTrailing     => 'trailing garbage at',
         DecodeUTF8         => 'malformed UTF8 string length at',
-        DecodeUTF8End      => 'unexpected UTF8 end of data at',
+        DecodeUTF8Trunc    => 'unexpected UTF8 end of data at',
         DecodeUsage        => undef,
         DiffUsage          => 'usage: diff_bifcode($b1, $b2, [$diff_args])',
         EncodeBytesUndef   => 'Bifcode::BYTES ref is undefined',
@@ -78,7 +78,7 @@ sub _decode_bifcode_chunk {
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
     unless (m/$match/gc) {
-        croak _error m/ \G \z /xgc ? 'DecodeEnd' : 'Decode';
+        croak _error m/ \G \z /xgc ? 'DecodeTrunc' : 'Decode';
     }
 
     if ( $1 eq '~' ) {
@@ -92,7 +92,7 @@ sub _decode_bifcode_chunk {
     }
     elsif ( $1 eq 'B' ) {
         my $len = $2 // croak _error 'DecodeBytes';
-        croak _error 'DecodeBytesEnd' if $len > length() - pos();
+        croak _error 'DecodeBytesTrunc' if $len > length() - pos();
 
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
@@ -101,7 +101,7 @@ sub _decode_bifcode_chunk {
     }
     elsif ( $1 eq 'U' ) {
         my $len = $2 // croak _error 'DecodeUTF8';
-        croak _error 'DecodeUTF8End' if $len > length() - pos();
+        croak _error 'DecodeUTF8Trunc' if $len > length() - pos();
 
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
@@ -109,13 +109,13 @@ sub _decode_bifcode_chunk {
     }
     elsif ( $1 eq 'I' ) {
         return $2 if defined $2;
-        croak _error 'DecodeIntegerEnd' if m/ \G \z /xgc;
+        croak _error 'DecodeIntegerTrunc' if m/ \G \z /xgc;
         croak _error 'DecodeInteger';
     }
     elsif ( $1 eq 'F' ) {
         if ( !defined $2 ) {
             ;
-            croak _error 'DecodeFloatEnd' if m/ \G \z /xgc;
+            croak _error 'DecodeFloatTrunc' if m/ \G \z /xgc;
             croak _error 'DecodeFloat';
         }
         croak _error 'DecodeFloat'
@@ -140,7 +140,7 @@ sub _decode_bifcode_chunk {
         my $last_key;
         my %hash;
         until (m/ \G \} /xgc) {
-            croak _error 'DecodeEnd' if m/ \G \z /xgc;
+            croak _error 'DecodeTrunc' if m/ \G \z /xgc;
             croak _error 'DecodeKeyType' unless m/ \G (B|U) /xgc;
 
             pos() = pos() - 1;
@@ -558,7 +558,7 @@ Your data is malformed in a non-identifiable way.
 
 Your data contains a byte string with an invalid length.
 
-=item Bifcode::Error::DecodeBytesEnd
+=item Bifcode::Error::DecodeBytesTrunc
 
 Your data includes a byte string declared to be longer than the
 available data.
@@ -568,7 +568,7 @@ available data.
 Your data contains dicts or lists that are nested deeper than the
 $max_depth passed to C<decode_bifcode()>.
 
-=item Bifcode::Error::DecodeEnd
+=item Bifcode::Error::DecodeTrunc
 
 Your data is truncated.
 
@@ -577,7 +577,7 @@ Your data is truncated.
 Your data contained something that was supposed to be a float but
 didn't make sense.
 
-=item Bifcode::Error::DecodeFloatEnd
+=item Bifcode::Error::DecodeFloatTrunc
 
 Your data contains a float that is truncated.
 
@@ -586,7 +586,7 @@ Your data contains a float that is truncated.
 Your data contained something that was supposed to be an integer but
 didn't make sense.
 
-=item Bifcode::Error::DecodeIntegerEnd
+=item Bifcode::Error::DecodeIntegerTrunc
 
 Your data contains an integer that is truncated.
 
@@ -617,7 +617,7 @@ Your data does not end after the first I<bifcode>-serialised item.
 
 Your data contained a UTF8 string with an invalid length.
 
-=item Bifcode::Error::DecodeUTF8End
+=item Bifcode::Error::DecodeUTF8Trunc
 
 Your data includes a string declared to be longer than the available
 data.

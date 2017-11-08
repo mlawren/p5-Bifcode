@@ -17,29 +17,29 @@ subtest BOOLEAN => sub {
 };
 
 subtest INTEGER => sub {
-    error_ok 'I'           => 'DecodeIntegerEnd', 'aborted integer';
-    error_ok 'I0'          => 'DecodeInteger',    'unterminated integer';
-    error_ok 'I,'          => 'DecodeInteger',    'empty integer';
-    error_ok 'I341foo382,' => 'DecodeInteger',    'malformed integer';
+    error_ok 'I'           => 'DecodeIntegerTrunc', 'aborted integer';
+    error_ok 'I0'          => 'DecodeInteger',      'unterminated integer';
+    error_ok 'I,'          => 'DecodeInteger',      'empty integer';
+    error_ok 'I341foo382,' => 'DecodeInteger',      'malformed integer';
     decod_ok 'I4,'         => 4;
     decod_ok 'I0,'         => 0;
     decod_ok 'I123456789,' => 123456789;
     decod_ok 'I-10,'       => -10;
-    error_ok 'I-0,'        => 'DecodeInteger',    'negative zero integer';
-    error_ok 'I123'        => 'DecodeInteger',    'unterminated integer';
+    error_ok 'I-0,'        => 'DecodeInteger',      'negative zero integer';
+    error_ok 'I123'        => 'DecodeInteger',      'unterminated integer';
     error_ok 'I6,asd' => 'DecodeTrailing', 'integer with trailing garbage';
     error_ok 'I03,'   => 'DecodeInteger',  'integer with leading zero';
     error_ok 'I-03,'  => 'DecodeInteger',  'negative integer with leading zero';
 };
 
 subtest FLOAT => sub {
-    error_ok 'F'     => 'DecodeFloatEnd', 'aborted float';
-    error_ok 'F0'    => 'DecodeFloat',    'aborted float';
-    error_ok 'F0.'   => 'DecodeFloat',    'aborted float';
-    error_ok 'F0.0'  => 'DecodeFloat',    'aborted float';
-    error_ok 'F0.0e' => 'DecodeFloat',    'aborted float';
-    error_ok 'F0.e0' => 'DecodeFloat',    'aborted float';
-    error_ok 'F0e0'  => 'DecodeFloat',    'aborted float';
+    error_ok 'F'     => 'DecodeFloatTrunc', 'aborted float';
+    error_ok 'F0'    => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.'   => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.0'  => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.0e' => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.e0' => 'DecodeFloat',      'aborted float';
+    error_ok 'F0e0'  => 'DecodeFloat',      'aborted float';
     decod_ok 'F0.0e0,'  => '0.0e0';
     decod_ok 'F4.1e-2,' => '4.1e-2';
     error_ok 'F-0.0e0,' => 'DecodeFloat', 'non-zero exponent for 0.0 float';
@@ -50,7 +50,7 @@ subtest UTF8 => sub {
     error_ok
       'U0:U0:' => 'DecodeTrailing',
       'data past end of first correct encode_bifcode\'d string';
-    error_ok 'U1:' => 'DecodeUTF8End', 'string longer than data';
+    error_ok 'U1:' => 'DecodeUTF8Trunc', 'string longer than data';
     error_ok
       'U35208734823ljdahflajhdf' => 'DecodeUTF8',
       'garbage looking vaguely like a string, with large count';
@@ -65,7 +65,7 @@ subtest UTF8 => sub {
     error_ok
       'U02:xy' => 'DecodeUTF8',
       'string with extra leading zero in count';
-    error_ok 'U9999:x' => 'DecodeUTF8End', 'string shorter than count';
+    error_ok 'U9999:x' => 'DecodeUTF8Trunc', 'string shorter than count';
     decod_ok "U2:\x0A\x0D" => "\x0A\x0D";
     error_ok
       'U00:' => 'DecodeUTF8',
@@ -73,14 +73,14 @@ subtest UTF8 => sub {
 };
 
 subtest BYTES => sub {
-    error_ok 'B23'  => 'DecodeBytes',    'incomplete bytes definition';
-    error_ok 'Bxxx' => 'DecodeBytes',    'invalid bytes definition';
-    error_ok 'B2:1' => 'DecodeBytesEnd', 'bytes not long enough';
+    error_ok 'B23'  => 'DecodeBytes',      'incomplete bytes definition';
+    error_ok 'Bxxx' => 'DecodeBytes',      'invalid bytes definition';
+    error_ok 'B2:1' => 'DecodeBytesTrunc', 'bytes not long enough';
     decod_ok $BYTES => $bytes;
 };
 
 subtest LIST => sub {
-    error_ok '[' => 'DecodeEnd', 'unclosed empty list';
+    error_ok '[' => 'DecodeTrunc', 'unclosed empty list';
     decod_ok '[]' => [];
     error_ok
       '[]anfdldjfh' => 'DecodeTrailing',
@@ -92,7 +92,7 @@ subtest LIST => sub {
     decod_ok '[U3:asdU2:xy' . $UTF8 . ']' => [ 'asd', 'xy', $utf8 ];
     decod_ok '[[U5:AliceU3:Bob][I2,I3,~]~]' =>
       [ [ 'Alice', 'Bob' ], [ 2, 3, undef ], undef ];
-    error_ok '[U0:' => 'DecodeEnd', 'unclosed list with content';
+    error_ok '[U0:' => 'DecodeTrunc', 'unclosed list with content';
     error_ok
       '[U01:a]' => 'DecodeUTF8',
       'list with string with leading zero in count';
@@ -101,7 +101,7 @@ subtest LIST => sub {
 };
 
 subtest DICT => sub {
-    error_ok '{'        => 'DecodeEnd',      'unclosed empty dict';
+    error_ok '{'        => 'DecodeTrunc',    'unclosed empty dict';
     error_ok '{}foobar' => 'DecodeTrailing', 'empty dict with trailing garbage';
     decod_ok '{}'       => {};
     decod_ok '{' . $BYTES . $UTF8 . '}' => { $bytes => $utf8 };
@@ -122,8 +122,10 @@ subtest DICT => sub {
     error_ok '{I1,U0:}' => 'DecodeKeyType',  'dict with integer key';
     error_ok '{U1:bU0:U1:aU0:}' => 'DecodeKeyOrder',     'missorted keys';
     error_ok '{U1:aU0:U1:aU0:}' => 'DecodeKeyDuplicate', 'duplicate keys';
-    error_ok '{U0:' => 'DecodeEnd', 'unclosed dict with odd number of elements';
-    error_ok '{U0:U0:' => 'DecodeEnd', 'unclosed dict with content';
+    error_ok
+      '{U0:' => 'DecodeTrunc',
+      'unclosed dict with odd number of elements';
+    error_ok '{U0:U0:' => 'DecodeTrunc', 'unclosed dict with content';
 
 };
 
@@ -165,7 +167,7 @@ subtest nest_limits => sub {
 
 error_ok [ '[U0:]', 0, 'arg3' ] => 'DecodeUsage',
   'decode_bifcode only takes up to 2 args';
-error_ok '' => 'DecodeEnd', 'empty data';
+error_ok '' => 'DecodeTrunc', 'empty data';
 error_ok $utf8 => 'DecodeUsage',
   'check for utf8 flag';
 error_ok 'relwjhrlewjh' => 'Decode', 'complete garbage';
