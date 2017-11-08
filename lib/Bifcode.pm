@@ -192,15 +192,6 @@ sub _encode_bifcode {
                 'U' . length($str) . ':' . $str;
             }
         }
-        elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
-            croak 'Bifcode::BYTES must be defined' unless defined $$_;
-            'B' . length($$_) . ':' . $$_;
-        }
-        elsif ( $type eq 'Bifcode::UTF8' ) {
-            my $str = $$_ // croak 'Bifcode::UTF8 must be defined';
-            utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
-            'U' . length($str) . ':' . $str;
-        }
         elsif ( $type eq 'ARRAY' ) {
             '[' . join( '', map _encode_bifcode($_), @$_ ) . ']';
         }
@@ -223,6 +214,10 @@ sub _encode_bifcode {
                     } _encode_bifcode( @$_{@k} );
                   }
             ) . '}';
+        }
+        elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
+            croak 'Bifcode::BYTES must be defined' unless defined $$_;
+            'B' . length($$_) . ':' . $$_;
         }
         elsif ( $type eq 'boolean' ) {
             $$_ ? '1' : '0';
@@ -247,6 +242,11 @@ sub _encode_bifcode {
             else {
                 croak 'invalid float: ' . $$_;
             }
+        }
+        elsif ( $type eq 'Bifcode::UTF8' ) {
+            my $str = $$_ // croak 'Bifcode::UTF8 must be defined';
+            utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
+            'U' . length($str) . ':' . $str;
         }
         else {
             croak 'unhandled data type: ' . $type;
