@@ -67,9 +67,9 @@ my $match = qr/ \G (?|
     | (1)
     | (B|U) (?: ( 0 | [1-9] [0-9]* ) : )? 
     | (I) (?: ( 0 | -? [1-9] [0-9]* ) , )?
-    | (F) (?: (-)? ( 0 | [1-9] [0-9]* )
+    | (F) (?: ( (-)? ( 0 | [1-9] [0-9]* )
         \. ( 0 | [0-9]* [1-9] )
-        e (( 0 | -? [1-9] ) [0-9]*) , )?
+        e (( 0 | -? [1-9] ) [0-9]*) ) , )?
     | (\[)
     | (\{)
 ) /x;
@@ -113,12 +113,17 @@ sub _decode_bifcode_chunk {
         croak _error 'DecodeInteger';
     }
     elsif ( $1 eq 'F' ) {
+        if ( !defined $2 ) {
+            ;
+            croak _error 'DecodeFloatEnd' if m/ \G \z /xgc;
+            croak _error 'DecodeFloat';
+        }
         croak _error 'DecodeFloat'
-          if $3 eq '0'
-          and $4 eq '0'
-          and ( $2 or $5 ne '0' );
+          if $4 eq '0'     # mantissa A.b
+          and $5 eq '0'    # mantissa a.B
+          and ( $3 or $6 ne '0' );    # sign or exponent
 
-        return ( $2 // '' ) . $3 . '.' . $4 . 'e' . $5;
+        return $2;
     }
     elsif ( $1 eq '[' ) {
         croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;

@@ -33,6 +33,13 @@ subtest INTEGER => sub {
 };
 
 subtest FLOAT => sub {
+    error_ok 'F'     => 'DecodeFloatEnd', 'aborted float';
+    error_ok 'F0'    => 'DecodeFloat',    'aborted float';
+    error_ok 'F0.'   => 'DecodeFloat',    'aborted float';
+    error_ok 'F0.0'  => 'DecodeFloat',    'aborted float';
+    error_ok 'F0.0e' => 'DecodeFloat',    'aborted float';
+    error_ok 'F0.e0' => 'DecodeFloat',    'aborted float';
+    error_ok 'F0e0'  => 'DecodeFloat',    'aborted float';
     decod_ok 'F0.0e0,'  => '0.0e0';
     decod_ok 'F4.1e-2,' => '4.1e-2';
     error_ok 'F-0.0e0,' => 'DecodeFloat', 'non-zero exponent for 0.0 float';
