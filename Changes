@@ -8,6 +8,7 @@
 
     Enhancements:
         - Document use of BIFCODE_UTF8 only for hash keys
+        - Convert all errors to exception objects
 
     Bug Fixes:
         - Return correct encode_bifcode() result in array context.

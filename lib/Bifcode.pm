@@ -2,8 +2,8 @@ package Bifcode;
 use 5.010;
 use strict;
 use warnings;
-use boolean;
-use Carp;
+use boolean ();
+use Carp 'croak';
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -17,6 +17,51 @@ our $VERSION = '0.001_11';
 our ( $DEBUG, $max_depth );
 
 sub _msg { sprintf "@_", pos() || 0 }
+
+sub _error {
+    my $type = shift // croak 'usage: _error($TYPE, [$msg])';
+    my %messages = (
+        Decode             => 'garbage at',
+        DecodeBytes        => 'malformed string length at',
+        DecodeBytesEnd     => 'unexpected end of data at',
+        DecodeDepth        => 'nesting depth exceeded at',
+        DecodeEnd          => 'unexpected end of data at',
+        DecodeFloat        => 'malformed float data at',
+        DecodeFloatEnd     => 'unexpected end of data at',
+        DecodeInteger      => 'malformed integer data at',
+        DecodeIntegerEnd   => 'unexpected end of data at',
+        DecodeTrailing     => 'trailing garbage at',
+        DecodeUTF8         => 'malformed string length at',
+        DecodeUTF8End      => 'unexpected end of string data starting at',
+        DecodeUsage        => undef,
+        DiffUsage          => 'usage: diff_bifcode($b1, $b2, [$diff_args])',
+        EncodeBytesUndef   => 'Bifcode::BYTES ref is undefined',
+        EncodeFloat        => undef,
+        EncodeFloatUndef   => 'Bifcode::FLOAT ref is undefined',
+        EncodeInteger      => undef,
+        EncodeIntegerUndef => 'Bifcode::INTEGER ref is undefined',
+        DecodeKey          => 'dict key is not a string at',
+        DecodeKeyDuplicate => 'duplicate dict key at',
+        DecodeKeySortOrder => 'dict key not in sort order at',
+        DecodeKeyValue     => 'dict key is missing value at',
+        EncodeUTF8Undef    => 'Bifcode::UTF8 ref is undefined',
+        EncodeUnhandled    => undef,
+        EncodeUsage        => 'usage: encode_bifcode($arg)',
+        ForceUsage         => 'ref and type must be defined',
+    );
+
+    my $msg = shift // $messages{$type} // '(no message)';
+    $msg =~ s! at$!' at '. ( pos() // 0 )!e;
+
+    eval qq{
+        package Bifcode::Error::$type;
+        use overload
+          bool => sub { 1 },
+          '""' => sub { \${\$_[0]} . ' (' . ( ref \$_[0] ) . ')' },
+          fallback => 1;
+    };
+    bless \$msg, 'Bifcode::Error::' . $type;
+}
 
 my $match = qr/ \G (?|
       (~)
@@ -37,9 +82,7 @@ sub _decode_bifcode_chunk {
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
     if ( !m/$match/gc ) {
-        croak _msg m/ \G \z /xgc
-          ? 'unexpected end of data at %s'
-          : 'garbage at %s';
+        croak _error m/ \G \z /xgc ? 'DecodeEnd' : 'Decode';
     }
 
     if ( $1 eq '~' ) {
@@ -52,10 +95,9 @@ sub _decode_bifcode_chunk {
         return boolean::true;
     }
     elsif ( $1 eq 'B' ) {
-        my $len = $2 // croak _msg 'malformed string length at %s';
+        my $len = $2 // croak _error 'DecodeBytes';
 
-        croak _msg 'unexpected end of string data starting at %s'
-          if $len > length() - pos();
+        croak _error 'DecodeBytesEnd' if $len > length() - pos();
 
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
@@ -64,10 +106,9 @@ sub _decode_bifcode_chunk {
         return $data;
     }
     elsif ( $1 eq 'U' ) {
-        my $len = $2 // croak _msg 'malformed string length at %s';
+        my $len = $2 // croak _error 'DecodeUTF8';
 
-        croak _msg 'unexpected end of string data starting at %s'
-          if $len > length() - pos();
+        croak _error 'DecodeUTF8End' if $len > length() - pos();
 
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
@@ -84,11 +125,11 @@ sub _decode_bifcode_chunk {
             warn _msg INTEGER => $2, 'at %s' if $DEBUG;
             return $2;
         }
-        croak _msg 'unexpected end of data at %s' if m/ \G \z /xgc;
-        croak _msg 'malformed integer data at %s';
+        croak _error 'DecodeIntegerEnd' if m/ \G \z /xgc;
+        croak _error 'DecodeInteger';
     }
     elsif ( $1 eq 'F' ) {
-        croak _msg 'malformed float data at %s'
+        croak _error 'DecodeFloat'
           if $3 eq '0'
           and $4 eq '0'
           and ( $2 or $5 ne '0' );
@@ -102,8 +143,7 @@ sub _decode_bifcode_chunk {
     elsif ( $1 eq '[' ) {
         warn _msg 'LIST at %s' if $DEBUG;
 
-        croak _msg 'nesting depth exceeded at %s'
-          if defined $max_depth and $max_depth < 0;
+        croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;
 
         my @list;
         until (m/ \G \] /xgc) {
@@ -116,8 +156,7 @@ sub _decode_bifcode_chunk {
     elsif ( $1 eq '{' ) {
         warn _msg 'DICT at %s' if $DEBUG;
 
-        croak _msg 'nesting depth exceeded at %s'
-          if defined $max_depth and $max_depth < 0;
+        croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;
 
         my $last_key;
         my %hash;
@@ -125,8 +164,7 @@ sub _decode_bifcode_chunk {
             warn _msg 'dict not terminated at %s, looking for another pair'
               if $DEBUG;
 
-            croak _msg 'unexpected end of data at %s'
-              if m/ \G \z /xgc;
+            croak _error 'DecodeEnd' if m/ \G \z /xgc;
 
             my $key;
             if (m/ \G (B|U) /xgc) {
@@ -134,17 +172,13 @@ sub _decode_bifcode_chunk {
                 $key = _decode_bifcode_chunk();
             }
             else {
-                croak _msg 'dict key is not a string at %s';
+                croak _error 'DecodeKey';
             }
 
-            croak _msg 'duplicate dict key at %s'
-              if exists $hash{$key};
-
-            croak _msg 'dict key not in sort order at %s'
+            croak _error 'DecodeKeyDuplicate' if exists $hash{$key};
+            croak _error 'DecodeKeySortOrder'
               if defined $last_key and $key lt $last_key;
-
-            croak _msg 'dict key is missing value at %s'
-              if m/ \G \} /xgc;
+            croak _error 'DecodeKeyValue' if m/ \G \} /xgc;
 
             $last_key = $key;
             $hash{$key} = _decode_bifcode_chunk();
@@ -156,11 +190,12 @@ sub _decode_bifcode_chunk {
 sub decode_bifcode {
     local $_         = shift;
     local $max_depth = shift;
-    croak 'decode_bifcode: too many arguments: ' . "@_" if @_;
-    croak 'decode_bifcode: only accepts bytes' if utf8::is_utf8($_);
+    croak _error 'DecodeUsage', 'decode_bifcode: too many arguments' if @_;
+    croak _error 'DecodeUsage', 'decode_bifcode: only accepts bytes'
+      if utf8::is_utf8($_);
 
     my $deserialised_data = _decode_bifcode_chunk();
-    croak _msg 'trailing garbage at %s' if $_ !~ m/ \G \z /xgc;
+    croak _error 'DecodeTrailing' if $_ !~ m/ \G \z /xgc;
     return $deserialised_data;
 }
 
@@ -216,23 +251,23 @@ sub _encode_bifcode {
             ) . '}';
         }
         elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
-            croak 'Bifcode::BYTES must be defined' unless defined $$_;
+            $$_ // croak _error 'EncodeBytesUndef';
             'B' . length($$_) . ':' . $$_;
         }
         elsif ( $type eq 'boolean' ) {
             $$_ ? '1' : '0';
         }
         elsif ( $type eq 'Bifcode::INTEGER' ) {
-            croak 'Bifcode::INTEGER must be defined' unless defined $$_;
+            $$_ // croak _error 'EncodeIntegerUndef';
             if ( $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x ) {
                 sprintf 'I%s,', $$_;
             }
             else {
-                croak 'invalid integer: ' . $$_;
+                croak _error 'EncodeInteger', 'invalid integer: ' . $$_;
             }
         }
         elsif ( $type eq 'Bifcode::FLOAT' ) {
-            croak 'Bifcode::FLOAT must be defined' unless defined $$_;
+            $$_ // croak _error 'EncodeFloatUndef';
             if ( $$_ =~ $number_qr ) {
                 my $x = 'F' . ( 0 + $1 )    # remove leading zeros
                   . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
@@ -240,22 +275,22 @@ sub _encode_bifcode {
                 $x;
             }
             else {
-                croak 'invalid float: ' . $$_;
+                croak _error 'EncodeFloat', 'invalid float: ' . $$_;
             }
         }
         elsif ( $type eq 'Bifcode::UTF8' ) {
-            my $str = $$_ // croak 'Bifcode::UTF8 must be defined';
+            my $str = $$_ // croak _error 'EncodeUTF8Undef';
             utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
             'U' . length($str) . ':' . $str;
         }
         else {
-            croak 'unhandled data type: ' . $type;
+            croak _error 'EncodeUnhandled', 'unhandled data type: ' . $type;
         }
     } @_;
 }
 
 sub encode_bifcode {
-    croak 'usage: encode_bifcode($arg)' if @_ != 1;
+    croak _error 'EncodeUsage' if @_ != 1;
     (&_encode_bifcode)[0];
 }
 
@@ -263,7 +298,7 @@ sub force_bifcode {
     my $ref  = shift;
     my $type = shift;
 
-    croak 'ref and type must be defined' unless defined $ref and defined $type;
+    croak _error 'ForceUsage' unless defined $ref and defined $type;
     bless \$ref, 'Bifcode::' . uc($type);
 }
 
@@ -280,8 +315,7 @@ sub _expand_bifcode {
 }
 
 sub diff_bifcode {
-    croak 'usage: diff_bifcode($b1, $b2, [$diff_args])'
-      unless @_ >= 2 and @_ <= 3;
+    croak _error 'DiffUsage' unless @_ >= 2 and @_ <= 3;
     my $b1        = shift;
     my $b2        = shift;
     my $diff_args = shift || { STYLE => 'Unified' };
@@ -314,7 +348,7 @@ Bifcode - simple serialization format
 
     use boolean;
     use Bifcode qw( encode_bifcode decode_bifcode );
- 
+
     my $bifcode = encode_bifcode {
         bools   => [ boolean::false, boolean::true, ],
         bytes   => \pack( 's<',       255 ),
@@ -550,87 +584,128 @@ Croaks if L<Text::Diff> is not installed.
 
 =head1 DIAGNOSTICS
 
+The following exceptions may be raised by B<Bifcode>:
+
 =over
 
-=item C<trailing garbage at %s>
-
-Your data does not end after the first I<bifcode>-serialised item.
-
-You may also get this error if a malformed item follows.
-
-=item C<garbage at %s>
+=item Bifcode::Error::Decode
 
 Your data is malformed.
 
-=item C<unexpected end of data at %s>
+=item Bifcode::Error::DecodeBytes
 
-Your data is truncated.
+Your data contains a byte string with an invalid length.
 
-=item C<unexpected end of string data starting at %s>
+=item Bifcode::Error::DecodeBytesEnd
 
-Your data includes a string declared to be longer than the available
-data.
+Your data includes a byte string declared to be longer than the
+available data.
 
-=item C<malformed string length at %s>
-
-Your data contained a string with negative length or a length with
-leading zeroes.
-
-=item C<malformed integer data at %s>
-
-Your data contained something that was supposed to be an integer but
-didn't make sense.
-
-=item C<dict key not in sort order at %s>
-
-Your data violates the I<bifcode> format constaint that dict keys must
-appear in lexical sort order.
-
-=item C<duplicate dict key at %s>
-
-Your data violates the I<bifcode> format constaint that all dict keys
-must be unique.
-
-=item C<dict key is not a string at %s>
-
-Your data violates the I<bifcode> format constaint that all dict keys
-be strings.
-
-=item C<dict key is missing value at %s>
-
-Your data contains a dictionary with an odd number of elements.
-
-=item C<nesting depth exceeded at %s>
+=item Bifcode::Error::DecodeDepth
 
 Your data contains dicts or lists that are nested deeper than the
 $max_depth passed to C<decode_bifcode()>.
 
-=item C<unhandled data type>
+=item Bifcode::Error::DecodeEnd
 
-You are trying to serialise a data structure that consists of data
-types other than
+Your data is truncated.
 
-=over
+=item Bifcode::Error::DecodeFloat
 
-=item *
+Your data contained something that was supposed to be a float but
+didn't make sense.
 
-scalars
+=item Bifcode::Error::DecodeFloatEnd
 
-=item *
+Your data contains a float that is truncated.
 
-references to arrays
+=item Bifcode::Error::DecodeInteger
 
-=item *
+Your data contained something that was supposed to be an integer but
+didn't make sense.
 
-references to hashes
+=item Bifcode::Error::DecodeIntegerEnd
 
-=item *
+Your data contains an integer that is truncated.
 
-references to scalars
+=item Bifcode::Error::DecodeKey
 
-=back
+Your data violates the I<bifcode> format constaint that all dict keys
+be strings.
 
-The format does not support this.
+=item Bifcode::Error::DecodeKeyDuplicate
+
+Your data violates the I<bifcode> format constaint that all dict keys
+must be unique.
+
+=item Bifcode::Error::DecodeKeySortOrder
+
+Your data violates the I<bifcode> format constaint that dict keys must
+appear in lexical sort order.
+
+=item Bifcode::Error::DecodeKeyValue
+
+Your data contains a dictionary with an odd number of elements.
+
+=item Bifcode::Error::DecodeTrailing
+
+Your data does not end after the first I<bifcode>-serialised item.
+
+=item Bifcode::Error::DecodeUTF8
+
+Your data contained a UTF8 string with an invalid length.
+
+=item Bifcode::Error::DecodeUTF8End
+
+Your data includes a string declared to be longer than the available
+data.
+
+=item Bifcode::Error::DecodeUsage
+
+You called C<decode_bifcode()> with invalid arguments.
+
+=item Bifcode::Error::DiffUsage
+
+You called C<diff_bifcode()> with invalid arguments.
+
+=item Bifcode::Error::EncodeBytesUndef
+
+You attempted to encode C<undef> as a byte string.
+
+=item Bifcode::Error::EncodeFloat
+
+You attempted to encode something as a float that isn't recognised as
+one.
+
+=item Bifcode::Error::EncodeFloatUndef
+
+You attempted to encode C<undef> as a float.
+
+=item Bifcode::Error::EncodeInteger
+
+You attempted to encode something as an integer that isn't recognised
+as one.
+
+=item Bifcode::Error::EncodeIntegerUndef
+
+You attempted to encode C<undef> as an integer.
+
+=item Bifcode::Error::EncodeUTF8Undef
+
+You attempted to encode C<undef> as a UTF8 string.
+
+=item Bifcode::Error::EncodeUnhandled
+
+You are trying to serialise a data structure that contains a data type
+not supported by the I<bifcode> format.
+
+=item Bifcode::Error::EncodeUsage
+
+You called C<encode_bifcode()> with invalid arguments.
+
+=item Bifcode::Error::ForceUsage
+
+You called C<force_bifcode()> with invalid arguments.
 
 =back
 
