@@ -66,6 +66,9 @@ subtest UTF8 => sub {
 };
 
 subtest BYTES => sub {
+    error_ok 'B23'  => 'DecodeBytes',    'incomplete bytes definition';
+    error_ok 'Bxxx' => 'DecodeBytes',    'invalid bytes definition';
+    error_ok 'B2:1' => 'DecodeBytesEnd', 'bytes not long enough';
     decod_ok $BYTES => $bytes;
 };
 

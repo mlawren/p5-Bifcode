@@ -27,6 +27,10 @@ subtest 'INTEGER' => sub {
       'invalid 00 integer';
     enc_error_ok force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
       'forcing a non-integer as integer';
+
+    my $u = undef;
+    enc_error_ok bless( \$u, 'Bifcode::INTEGER' ) => 'EncodeIntegerUndef',
+      'forcing undef as integer';
 };
 
 subtest 'FLOAT' => sub {
@@ -87,6 +91,10 @@ subtest 'FLOAT' => sub {
 
     enc_error_ok force_bifcode( '00abc', 'float' ) => 'EncodeFloat',
       'forcing a non-float as float';
+
+    my $u = undef;
+    enc_error_ok bless( \$u, 'Bifcode::FLOAT' ) => 'EncodeFloatUndef',
+      'forcing undef as float';
 };
 
 subtest 'UTF8' => sub {
@@ -97,11 +105,20 @@ subtest 'UTF8' => sub {
     enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890';
     enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0';
     enc_ok '00' => 'U2:00';
+
+    my $u = undef;
+    enc_error_ok bless( \$u, 'Bifcode::UTF8' ) => 'EncodeUTF8Undef',
+      'forcing undef as utf8';
 };
 
 subtest 'BYTES' => sub {
     enc_ok force_bifcode( $bytes, 'bytes' ) => $BYTES;
     enc_ok \$bytes => $BYTES;
+
+    my $u = undef;
+    enc_error_ok \$u => 'EncodeBytesUndef',
+      enc_error_ok bless( \$u, 'Bifcode::BYTES' ) => 'EncodeBytesUndef',
+      'forcing undef as bytes';
 };
 
 subtest 'LIST' => sub {
@@ -139,6 +156,10 @@ subtest 'DICT' => sub {
       . $BYTES
       . 'U6:lengthI100000,U5:undef~' . '}}';
 };
+
+my $u = undef;
+enc_error_ok bless( \$u, 'strange' ) => 'EncodeUnhandled',
+  'unknown object type';
 
 eval { encode_bifcode() };
 isa_ok $@, 'Bifcode::Error::EncodeUsage', 'not enough arguments';
