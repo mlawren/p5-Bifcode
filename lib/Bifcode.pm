@@ -14,9 +14,7 @@ use Exporter::Tidy all => [
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
 our $VERSION = '0.001_11';
-our ( $DEBUG, $max_depth );
-
-sub _msg { sprintf "@_", pos() || 0 }
+our $max_depth;
 
 sub _error {
     my $type = shift // croak 'usage: _error($TYPE, [$msg])';
@@ -77,7 +75,6 @@ my $match = qr/ \G (?|
 ) /x;
 
 sub _decode_bifcode_chunk {
-    warn _msg 'decoding at %s' if $DEBUG;
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
     unless (m/$match/gc) {
@@ -100,7 +97,6 @@ sub _decode_bifcode_chunk {
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
 
-        warn _msg BYTES => "(length $len) at %s", if $DEBUG;
         return $data;
     }
     elsif ( $1 eq 'U' ) {
@@ -109,19 +105,10 @@ sub _decode_bifcode_chunk {
 
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
-
-        warn _msg
-          UTF8 => "(length $len)",
-          $len < 200 ? "[$str]" : (), 'at %s'
-          if $DEBUG;
-
         return $str;
     }
     elsif ( $1 eq 'I' ) {
-        if ( defined $2 ) {
-            warn _msg INTEGER => $2, 'at %s' if $DEBUG;
-            return $2;
-        }
+        return $2 if defined $2;
         croak _error 'DecodeIntegerEnd' if m/ \G \z /xgc;
         croak _error 'DecodeInteger';
     }
@@ -131,36 +118,23 @@ sub _decode_bifcode_chunk {
           and $4 eq '0'
           and ( $2 or $5 ne '0' );
 
-        warn _msg
-          FLOAT => ( $2 // '' ) . $3 . '.' . $4 . 'e' . $5,
-          'at %s'
-          if $DEBUG;
         return ( $2 // '' ) . $3 . '.' . $4 . 'e' . $5;
     }
     elsif ( $1 eq '[' ) {
-        warn _msg 'LIST at %s' if $DEBUG;
-
         croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;
 
         my @list;
         until (m/ \G \] /xgc) {
-            warn _msg 'list not terminated at %s, looking for another element'
-              if $DEBUG;
             push @list, _decode_bifcode_chunk();
         }
         return \@list;
     }
     elsif ( $1 eq '{' ) {
-        warn _msg 'DICT at %s' if $DEBUG;
-
         croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;
 
         my $last_key;
         my %hash;
         until (m/ \G \} /xgc) {
-            warn _msg 'dict not terminated at %s, looking for another pair'
-              if $DEBUG;
-
             croak _error 'DecodeEnd' if m/ \G \z /xgc;
             croak _error 'DecodeKey' unless m/ \G (B|U) /xgc;
 
