@@ -640,6 +640,10 @@ Strings and numbers are practically indistinguishable in Perl, so
 C<encode_bifcode()> has to resort to a heuristic to decide how to
 serialise a scalar. This cannot be fixed.
 
+At the moment all Perl hash keys are encoded as BIFCODE_UTF8 as I have
+not yet had the need for BIFCODE_BYTES keys or found a cheap, obvious
+way to distinguish the two.
+
 =head1 SEE ALSO
 
 This distribution includes the L<diff-bifcode> command-line utility for

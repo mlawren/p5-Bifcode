@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - Document use of BIFCODE_UTF8 only for hash keys
 
     Bug Fixes:
         - Return correct encode_bifcode() result in array context.
