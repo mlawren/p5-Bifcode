@@ -1,23 +1,12 @@
-0.001_11 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
+0.001_11 (2017-11-08)
 
     Enhancements:
         - Document use of BIFCODE_UTF8 only for hash keys
         - Convert all errors to exception objects
+        - Minor documentation and testing improvements
 
     Bug Fixes:
         - Return correct encode_bifcode() result in array context.
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
 
 0.001_10 (2017-11-06)
 
