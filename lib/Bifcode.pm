@@ -337,7 +337,7 @@ Bifcode - simple serialization format
 
 =head1 DESCRIPTION
 
-Bifcode implements the I<bifcode> serialisation format, a mixed
+B<Bifcode> implements the I<bifcode> serialisation format, a mixed
 binary/text encoding with support for the following data types:
 
 =over
@@ -377,7 +377,7 @@ is no need to escape special characters in strings. It is not
 considered human readable, but as it is mostly text it can usually be
 visually debugged.
 
-I<Bifcode> can only be constructed canonically; i.e. there is only one
+I<bifcode> can only be constructed canonically; i.e. there is only one
 possible encoding per data structure. This property makes it suitable
 for comparing structures (using cryptographic hashes) across networks.
 
@@ -387,9 +387,9 @@ with the same features.
 
 =head1 MOTIVATION & GOALS
 
-Bifcode was created for a project because none of currently available
-serialization formats (Bencode, JSON, MsgPack, Sereal, YAML, etc) met
-the requirements of:
+I<bifcode> was created for a project because none of currently
+available serialization formats (Bencode, JSON, MsgPack, Sereal, YAML,
+etc) met the requirements of:
 
 =over
 
@@ -406,8 +406,8 @@ the requirements of:
 =back
 
 I have no lofty goals or intentions to promote this outside of my
-specific case, but would appreciate hearing about other uses.
-Constructive discussion is welcome.
+specific case, but would appreciate hearing about other uses or
+implementations.  Constructive discussion is welcome.
 
 =head1 SPECIFICATION
 
@@ -552,7 +552,7 @@ The following exceptions may be raised by B<Bifcode>:
 
 =item Bifcode::Error::Decode
 
-Your data is malformed.
+Your data is malformed in a non-identifiable way.
 
 =item Bifcode::Error::DecodeBytes
 
@@ -593,7 +593,7 @@ Your data contains an integer that is truncated.
 =item Bifcode::Error::DecodeKeyType
 
 Your data violates the I<bifcode> format constaint that all dict keys
-be strings.
+be BIFCODE_BYTES or BIFCODE_UTF8.
 
 =item Bifcode::Error::DecodeKeyDuplicate
 
