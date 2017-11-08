@@ -356,11 +356,6 @@ Bifcode - simple serialization format
 
     my $decoded = decode_bifcode $bifcode;
 
-=head1 STATUS
-
-This module and related encoding format are still under development. Do
-not use it anywhere near production. Input is welcome.
-
 =head1 DESCRIPTION
 
 Bifcode implements the I<bifcode> serialisation format, a mixed
@@ -421,13 +416,13 @@ the requirements of:
 
 =item * Support for undef
 
-=item * Support for UTF8 strings
-
 =item * Support for binary data
 
-=item * Trivial to construct on the fly from within SQLite triggers
+=item * Support for UTF8 strings
 
 =item * Universally-recognized canonical form for hashing
+
+=item * Trivial to construct on the fly from within SQLite triggers
 
 =back
 
