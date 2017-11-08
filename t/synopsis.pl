@@ -5,13 +5,14 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
+use boolean;
 use Data::Dumper;
 use Path::Tiny;
 use Test::Bifcode;
 no warnings 'once';
 
 my $str = q{encode_bifcode {
-    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+    bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
     float   => 1.25e-5,
