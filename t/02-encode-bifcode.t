@@ -23,10 +23,9 @@ subtest 'INTEGER' => sub {
     enc_ok 0                      => 'I0,';
     enc_ok - 10                   => 'I-10,';
     enc_ok '12345678901234567890' => 'I12345678901234567890,';
-    enc_error_ok force_bifcode( '00', 'integer' ) => qr/invalid integer: 00/,
+    enc_error_ok force_bifcode( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
-    enc_error_ok force_bifcode( '00abc', 'integer' ) =>
-      qr/invalid integer: 00abc/,
+    enc_error_ok force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
       'forcing a non-integer as integer';
 };
 
@@ -86,7 +85,7 @@ subtest 'FLOAT' => sub {
     # decimal and exponent leading .0x
     enc_ok force_bifcode( '100.008e0', 'float' ) => 'F100.008e0,';
 
-    enc_error_ok force_bifcode( '00abc', 'float' ) => qr/invalid float/,
+    enc_error_ok force_bifcode( '00abc', 'float' ) => 'EncodeFloat',
       'forcing a non-float as float';
 };
 
@@ -142,8 +141,8 @@ subtest 'DICT' => sub {
 };
 
 eval { encode_bifcode() };
-like $@, qr/usage: encode_bifcode\(\$arg\)/, 'not enough arguments';
+isa_ok $@, 'Bifcode::Error::EncodeUsage', 'not enough arguments';
 eval { encode_bifcode( 1, 2 ) };
-like $@, qr/usage: encode_bifcode\(\$arg\)/, 'too many arguments';
+isa_ok $@, 'Bifcode::Error::EncodeUsage', 'too many arguments';
 
 done_testing;

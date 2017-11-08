@@ -75,11 +75,15 @@ sub enc_ok {
 }
 
 sub enc_error_ok {
-    my ( $data, $error_rx, $kind_of_brokenness ) = @_;
+    my ( $data, $error, $kind_of_brokenness ) = @_;
     local $@;
     eval { encode_bifcode $data };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    like $@, $error_rx, "reject $kind_of_brokenness";
+    my $have = ref $@;
+    my $want = 'Bifcode::Error::' . $error;
+    my $ok   = $have eq $want;
+    ok $ok, "reject $kind_of_brokenness";
+    diag "    wanted:  $want\n    got:     $have" unless $ok;
 }
 
 sub un {
@@ -98,11 +102,15 @@ sub decod_ok {
 }
 
 sub error_ok {
-    my ( $frozen, $error_rx, $kind_of_brokenness ) = @_;
+    my ( $frozen, $error, $kind_of_brokenness ) = @_;
     local $@;
     eval { un $frozen };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    like $@, $error_rx, "reject $kind_of_brokenness";
+    my $have = ref $@;
+    my $want = 'Bifcode::Error::' . $error;
+    my $ok   = $have eq $want;
+    ok $ok, "reject $kind_of_brokenness";
+    diag "    wanted:  $want\n    got:     $have" unless $ok;
 }
 
 1;
