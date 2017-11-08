@@ -13,7 +13,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '0.001_11';
+our $VERSION = '1.0';
 our $max_depth;
 
 sub _error {
@@ -308,7 +308,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-0.001_11 (2017-11-08)
+1.0 (yyyy-mm-dd)
 
 
 =head1 SYNOPSIS
