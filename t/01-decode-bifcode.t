@@ -165,6 +165,7 @@ subtest nest_limits => sub {
       'list in dict when max_depth is 1';
 };
 
+error_ok undef, 'DecodeUsage', 'decode_bifcode needs defined';
 error_ok [ '[U0:]', 0, 'arg3' ] => 'DecodeUsage',
   'decode_bifcode only takes up to 2 args';
 error_ok '' => 'DecodeTrunc', 'empty data';

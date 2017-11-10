@@ -89,9 +89,10 @@ sub enc_error_ok {
 sub un {
     my ($frozen) = @_;
     local $, = ', ';
+    my $frozen_str = $frozen // '*undef*';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen]", decode_bifcode @$frozen )
-      : ( "decode '$frozen'", decode_bifcode $frozen );
+      ? ( "decode [@$frozen_str]", decode_bifcode @$frozen )
+      : ( "decode '$frozen_str'", decode_bifcode $frozen );
 }
 
 sub decod_ok {

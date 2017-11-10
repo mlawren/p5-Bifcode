@@ -159,6 +159,8 @@ sub decode_bifcode {
     local $max_depth = shift;
 
     croak _error 'DecodeUsage', 'decode_bifcode: too many arguments' if @_;
+    croak _error 'DecodeUsage', 'decode_bifcode: input undefined'
+      unless defined $_;
     croak _error 'DecodeUsage', 'decode_bifcode: only accepts bytes'
       if utf8::is_utf8($_);
 
