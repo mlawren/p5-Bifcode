@@ -7,7 +7,7 @@ VERSION
 SYNOPSIS
         use boolean;
         use Bifcode qw( encode_bifcode decode_bifcode );
- 
+
         my $bifcode = encode_bifcode {
             bools   => [ boolean::false, boolean::true, ],
             bytes   => \pack( 's<',       255 ),
@@ -17,19 +17,16 @@ SYNOPSIS
             utf8    => "\x{df}",
         };
 
-        # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
-        # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
-        # ff  0 55 35 3a 66 6c 6f 61 74 46 31    ..U5:floatF1
-        # 2e 32 35 65 2d 35 2c 55 37 3a 69 6e    .25e-5,U7:in
-        # 74 65 67 65 72 49 32 35 2c 55 35 3a    tegerI25,U5:
-        # 75 6e 64 65 66 7e 55 34 3a 75 74 66    undef~U4:utf
-        # 38 55 32 3a c3 9f 7d                   8U2:..}
+        # 7b 55 35 3a 62 6f 6f 6c 73 2c 5b 30    {U5:bools,[0
+        # 31 5d 55 35 3a 62 79 74 65 73 2c 42    1]U5:bytes,B
+        # 32 3a ff  0 2c 55 35 3a 66 6c 6f 61    2:..,U5:floa
+        # 74 2c 46 31 2e 32 35 65 2d 35 2c 55    t,F1.25e-5,U
+        # 37 3a 69 6e 74 65 67 65 72 2c 49 32    7:integer,I2
+        # 35 2c 55 35 3a 75 6e 64 65 66 2c 7e    5,U5:undef,~
+        # 55 34 3a 75 74 66 38 2c 55 32 3a c3    U4:utf8,U2:.
+        # 9f 2c 7d                               .,}
 
         my $decoded = decode_bifcode $bifcode;
-
-STATUS
-    This module and related encoding format are still under development. Do
-    not use it anywhere near production. Input is welcome.
 
 DESCRIPTION
     Bifcode implements the *bifcode* serialisation format, a mixed
@@ -60,7 +57,7 @@ DESCRIPTION
     human readable, but as it is mostly text it can usually be visually
     debugged.
 
-    *Bifcode* can only be constructed canonically; i.e. there is only one
+    *bifcode* can only be constructed canonically; i.e. there is only one
     possible encoding per data structure. This property makes it suitable
     for comparing structures (using cryptographic hashes) across networks.
 
@@ -68,43 +65,44 @@ DESCRIPTION
     speed this module compares well with other pure Perl encoding modules
     with the same features.
 
-MOTIVATION & GOALS
-    Bifcode was created for a project because none of currently available
-    serialization formats (Bencode, JSON, MsgPack, Sereal, YAML, etc) met
-    the requirements of:
+MOTIVATION
+    *bifcode* was created for a project because none of currently available
+    serialization formats (Bencode, JSON, MsgPack, Netstrings, Sereal, YAML,
+    etc) met the requirements of:
 
     *   Support for undef
 
-    *   Support for UTF8 strings
-
     *   Support for binary data
 
-    *   Trivial to construct on the fly from within SQLite triggers
+    *   Support for UTF8 strings
 
     *   Universally-recognized canonical form for hashing
 
+    *   Trivial to construct on the fly from SQLite triggers
+
     I have no lofty goals or intentions to promote this outside of my
-    specific case, but would appreciate hearing about other uses.
-    Constructive discussion is welcome.
+    specific case, but would appreciate hearing about other uses or
+    implementations.
 
 SPECIFICATION
     The encoding is defined as follows:
 
   BIFCODE_UNDEF
-    A null or undefined value correspond to '~'.
+    A null or undefined value correspond to "~".
 
   BIFCODE_TRUE and BIFCODE_FALSE
-    Boolean values are represented by '1' and '0'.
+    Boolean values are represented by "1" and "0".
 
   BIFCODE_UTF8
-    A UTF8 string is 'U' followed by the octet length of the encoded string
-    as a base ten number followed by a colon and the encoded string. For
-    example the Perl string "\x{df}" (ß) corresponds to "U2:\x{c3}\x{9f}".
+    A UTF8 string is "U" followed by the octet length of the encoded string
+    as a base ten number followed by a colon and the encoded string followed
+    by ",". For example the Perl string "\x{df}" (ß) corresponds to
+    "U2:\x{c3}\x{9f},".
 
   BIFCODE_BYTES
     Opaque data is 'B' followed by the octet length of the data as a base
-    ten number followed by a colon and then the data itself. For example a
-    three-byte blob 'xyz' corresponds to 'B3:xyz'.
+    ten number followed by a colon and then the data itself followed by ",".
+    For example a three-byte blob 'xyz' corresponds to 'B3:xyz,'.
 
   BIFCODE_INTEGER
     Integers are represented by an 'I' followed by the number in base 10
@@ -123,16 +121,16 @@ SPECIFICATION
 
   BIFCODE_LIST
     Lists are encoded as a '[' followed by their elements (also *bifcode*
-    encoded) followed by a ']'. For example '[U4:spamU4:eggs]' corresponds
+    encoded) followed by a ']'. For example '[U4:spam,U4:eggs,]' corresponds
     to ['spam', 'eggs'].
 
   BIFCODE_DICT
     Dictionaries are encoded as a '{' followed by a list of alternating keys
     and their corresponding values followed by a '}'. For example,
-    '{U3:cowU3:mooU4:spamU4:eggs}' corresponds to {'cow': 'moo', 'spam':
-    'eggs'} and '{U4:spam[U1:aU1:b]}' corresponds to {'spam': ['a', 'b']}.
-    Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in sorted order
-    (sorted as raw strings, not alphanumerics).
+    '{U3:cow,U3:moo,U4:spam,U4:eggs,}' corresponds to {'cow': 'moo', 'spam':
+    'eggs'} and '{U4:spam,[U1:a,U1:b,]}' corresponds to {'spam': ['a',
+    'b']}. Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in sorted
+    order (sorted as raw strings, not alphanumerics).
 
 INTERFACE
   "encode_bifcode( $datastructure )"
@@ -198,66 +196,114 @@ INTERFACE
     Croaks if Text::Diff is not installed.
 
 DIAGNOSTICS
-    "trailing garbage at %s"
-        Your data does not end after the first *bifcode*-serialised item.
+    The following exceptions may be raised by Bifcode:
 
-        You may also get this error if a malformed item follows.
+    Bifcode::Error::Decode
+        Your data is malformed in a non-identifiable way.
 
-    "garbage at %s"
-        Your data is malformed.
+    Bifcode::Error::DecodeBytes
+        Your data contains a byte string with an invalid length.
 
-    "unexpected end of data at %s"
-        Your data is truncated.
+    Bifcode::Error::DecodeBytesTrunc
+        Your data includes a byte string declared to be longer than the
+        available data.
 
-    "unexpected end of string data starting at %s"
-        Your data includes a string declared to be longer than the available
-        data.
+    Bifcode::Error::DecodeBytesTerm
+        Your data includes a byte string that is missing a "," terminator.
 
-    "malformed string length at %s"
-        Your data contained a string with negative length or a length with
-        leading zeroes.
-
-    "malformed integer data at %s"
-        Your data contained something that was supposed to be an integer but
-        didn't make sense.
-
-    "dict key not in sort order at %s"
-        Your data violates the *bifcode* format constaint that dict keys
-        must appear in lexical sort order.
-
-    "duplicate dict key at %s"
-        Your data violates the *bifcode* format constaint that all dict keys
-        must be unique.
-
-    "dict key is not a string at %s"
-        Your data violates the *bifcode* format constaint that all dict keys
-        be strings.
-
-    "dict key is missing value at %s"
-        Your data contains a dictionary with an odd number of elements.
-
-    "nesting depth exceeded at %s"
+    Bifcode::Error::DecodeDepth
         Your data contains dicts or lists that are nested deeper than the
         $max_depth passed to "decode_bifcode()".
 
-    "unhandled data type"
-        You are trying to serialise a data structure that consists of data
-        types other than
+    Bifcode::Error::DecodeTrunc
+        Your data is truncated.
 
-        *   scalars
+    Bifcode::Error::DecodeFloat
+        Your data contained something that was supposed to be a float but
+        didn't make sense.
 
-        *   references to arrays
+    Bifcode::Error::DecodeFloatTrunc
+        Your data contains a float that is truncated.
 
-        *   references to hashes
+    Bifcode::Error::DecodeInteger
+        Your data contained something that was supposed to be an integer but
+        didn't make sense.
 
-        *   references to scalars
+    Bifcode::Error::DecodeIntegerTrunc
+        Your data contains an integer that is truncated.
 
-        The format does not support this.
+    Bifcode::Error::DecodeKeyType
+        Your data violates the *bifcode* format constaint that all dict keys
+        be BIFCODE_BYTES or BIFCODE_UTF8.
+
+    Bifcode::Error::DecodeKeyDuplicate
+        Your data violates the *bifcode* format constaint that all dict keys
+        must be unique.
+
+    Bifcode::Error::DecodeKeyOrder
+        Your data violates the *bifcode* format constaint that dict keys
+        must appear in lexical sort order.
+
+    Bifcode::Error::DecodeKeyValue
+        Your data contains a dictionary with an odd number of elements.
+
+    Bifcode::Error::DecodeTrailing
+        Your data does not end after the first *bifcode*-serialised item.
+
+    Bifcode::Error::DecodeUTF8
+        Your data contained a UTF8 string with an invalid length.
+
+    Bifcode::Error::DecodeUTF8Trunc
+        Your data includes a string declared to be longer than the available
+        data.
+
+    Bifcode::Error::DecodeUTF8Term
+        Your data includes a UTF8 string that is missing a "," terminator.
+
+    Bifcode::Error::DecodeUsage
+        You called "decode_bifcode()" with invalid arguments.
+
+    Bifcode::Error::DiffUsage
+        You called "diff_bifcode()" with invalid arguments.
+
+    Bifcode::Error::EncodeBytesUndef
+        You attempted to encode "undef" as a byte string.
+
+    Bifcode::Error::EncodeFloat
+        You attempted to encode something as a float that isn't recognised
+        as one.
+
+    Bifcode::Error::EncodeFloatUndef
+        You attempted to encode "undef" as a float.
+
+    Bifcode::Error::EncodeInteger
+        You attempted to encode something as an integer that isn't
+        recognised as one.
+
+    Bifcode::Error::EncodeIntegerUndef
+        You attempted to encode "undef" as an integer.
+
+    Bifcode::Error::EncodeUTF8Undef
+        You attempted to encode "undef" as a UTF8 string.
+
+    Bifcode::Error::EncodeUnhandled
+        You are trying to serialise a data structure that contains a data
+        type not supported by the *bifcode* format.
+
+    Bifcode::Error::EncodeUsage
+        You called "encode_bifcode()" with invalid arguments.
+
+    Bifcode::Error::ForceUsage
+        You called "force_bifcode()" with invalid arguments.
 
 BUGS AND LIMITATIONS
     Strings and numbers are practically indistinguishable in Perl, so
     "encode_bifcode()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
+
+    At the moment all Perl hash keys are encoded as BIFCODE_UTF8 as I have
+    not yet had the need for BIFCODE_BYTES keys or found a cheap, obvious
+    way to distinguish the two.
 
 SEE ALSO
     This distribution includes the diff-bifcode command-line utility for
