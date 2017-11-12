@@ -22,6 +22,7 @@ sub _error {
         Decode             => 'garbage at',
         DecodeBytes        => 'malformed BYTES length at',
         DecodeBytesTrunc   => 'unexpected BYTES end of data at',
+        DecodeBytesTerm    => 'missing BYTES termination at',
         DecodeDepth        => 'nesting depth exceeded at',
         DecodeTrunc        => 'unexpected end of data at',
         DecodeFloat        => 'malformed FLOAT data at',
@@ -31,6 +32,7 @@ sub _error {
         DecodeTrailing     => 'trailing garbage at',
         DecodeUTF8         => 'malformed UTF8 string length at',
         DecodeUTF8Trunc    => 'unexpected UTF8 end of data at',
+        DecodeUTF8Term     => 'missing UTF8 termination at',
         DecodeUsage        => undef,
         DiffUsage          => 'usage: diff_bifcode($b1, $b2, [$diff_args])',
         EncodeBytesUndef   => 'Bifcode::BYTES ref is undefined',
@@ -94,6 +96,7 @@ sub _decode_bifcode_chunk {
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
 
+        croak _error 'DecodeBytesTerm' unless m/ \G , /xgc;
         return $data;
     }
     elsif ( $1 eq 'U' ) {
@@ -102,6 +105,8 @@ sub _decode_bifcode_chunk {
 
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
+
+        croak _error 'DecodeUTF8Term' unless m/ \G , /xgc;
         return $str;
     }
     elsif ( $1 eq 'I' ) {
@@ -194,7 +199,7 @@ sub _encode_bifcode {
             }
             else {
                 utf8::encode( my $str = $_ );
-                'U' . length($str) . ':' . $str;
+                'U' . length($str) . ':' . $str . ',';
             }
         }
         elsif ( $type eq 'ARRAY' ) {
@@ -210,11 +215,11 @@ sub _encode_bifcode {
 
                         # if ( is valid utf8($k) ) {
                         utf8::encode($k);
-                        ( 'U' . length($k) . ':' . $k, $_ );
+                        ( 'U' . length($k) . ':' . $k . ',', $_ );
 
                         # }
                         # else {
-                        #     ('B' . length($k) . ':' . $k, $_);
+                        #     ('B' . length($k) . ':' . $k .',', $_);
                         # }
                     } _encode_bifcode( @$_{@k} );
                   }
@@ -222,7 +227,7 @@ sub _encode_bifcode {
         }
         elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
             $$_ // croak _error 'EncodeBytesUndef';
-            'B' . length($$_) . ':' . $$_;
+            'B' . length($$_) . ':' . $$_ . ',';
         }
         elsif ( $type eq 'boolean' ) {
             $$_ ? '1' : '0';
@@ -246,7 +251,7 @@ sub _encode_bifcode {
         elsif ( $type eq 'Bifcode::UTF8' ) {
             my $str = $$_ // croak _error 'EncodeUTF8Undef';
             utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
-            'U' . length($str) . ':' . $str;
+            'U' . length($str) . ':' . $str . ',';
         }
         else {
             croak _error 'EncodeUnhandled', 'unhandled data type: ' . $type;
@@ -323,13 +328,14 @@ Bifcode - simple serialization format
         utf8    => "\x{df}",
     };
 
-    # 7b 55 35 3a 62 6f 6f 6c 73 5b 30 31    {U5:bools[01
-    # 5d 55 35 3a 62 79 74 65 73 42 32 3a    ]U5:bytesB2:
-    # ff  0 55 35 3a 66 6c 6f 61 74 46 31    ..U5:floatF1
-    # 2e 32 35 65 2d 35 2c 55 37 3a 69 6e    .25e-5,U7:in
-    # 74 65 67 65 72 49 32 35 2c 55 35 3a    tegerI25,U5:
-    # 75 6e 64 65 66 7e 55 34 3a 75 74 66    undef~U4:utf
-    # 38 55 32 3a c3 9f 7d                   8U2:..}
+    # 7b 55 35 3a 62 6f 6f 6c 73 2c 5b 30    {U5:bools,[0
+    # 31 5d 55 35 3a 62 79 74 65 73 2c 42    1]U5:bytes,B
+    # 32 3a ff  0 2c 55 35 3a 66 6c 6f 61    2:..,U5:floa
+    # 74 2c 46 31 2e 32 35 65 2d 35 2c 55    t,F1.25e-5,U
+    # 37 3a 69 6e 74 65 67 65 72 2c 49 32    7:integer,I2
+    # 35 2c 55 35 3a 75 6e 64 65 66 2c 7e    5,U5:undef,~
+    # 55 34 3a 75 74 66 38 2c 55 32 3a c3    U4:utf8,U2:.
+    # 9f 2c 7d                               .,}
 
     my $decoded = decode_bifcode $bifcode;
 
@@ -383,11 +389,11 @@ In terms of size the encoding is similar to minified JSON. In terms of
 speed this module compares well with other pure Perl encoding modules
 with the same features.
 
-=head1 MOTIVATION & GOALS
+=head1 MOTIVATION
 
 I<bifcode> was created for a project because none of currently
-available serialization formats (Bencode, JSON, MsgPack, Sereal, YAML,
-etc) met the requirements of:
+available serialization formats (Bencode, JSON, MsgPack, Netstrings,
+Sereal, YAML, etc) met the requirements of:
 
 =over
 
@@ -399,13 +405,13 @@ etc) met the requirements of:
 
 =item * Universally-recognized canonical form for hashing
 
-=item * Trivial to construct on the fly from within SQLite triggers
+=item * Trivial to construct on the fly from SQLite triggers
 
 =back
 
 I have no lofty goals or intentions to promote this outside of my
 specific case, but would appreciate hearing about other uses or
-implementations.  Constructive discussion is welcome.
+implementations.
 
 =head1 SPECIFICATION
 
@@ -413,23 +419,24 @@ The encoding is defined as follows:
 
 =head2 BIFCODE_UNDEF
 
-A null or undefined value correspond to '~'.
+A null or undefined value correspond to "~".
 
 =head2 BIFCODE_TRUE and BIFCODE_FALSE
 
-Boolean values are represented by '1' and '0'.
+Boolean values are represented by "1" and "0".
 
 =head2 BIFCODE_UTF8
 
-A UTF8 string is 'U' followed by the octet length of the encoded string
-as a base ten number followed by a colon and the encoded string.  For
-example the Perl string "\x{df}" (ß) corresponds to "U2:\x{c3}\x{9f}".
+A UTF8 string is "U" followed by the octet length of the encoded string
+as a base ten number followed by a colon and the encoded string
+followed by ",". For example the Perl string "\x{df}" (ß) corresponds
+to "U2:\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
 
 Opaque data is 'B' followed by the octet length of the data as a base
-ten number followed by a colon and then the data itself. For example a
-three-byte blob 'xyz' corresponds to 'B3:xyz'.
+ten number followed by a colon and then the data itself followed by
+",". For example a three-byte blob 'xyz' corresponds to 'B3:xyz,'.
 
 =head2 BIFCODE_INTEGER
 
@@ -451,17 +458,17 @@ extraneous trailing zero, such as 'F3.10e0,', are invalid.
 =head2 BIFCODE_LIST
 
 Lists are encoded as a '[' followed by their elements (also I<bifcode>
-encoded) followed by a ']'. For example '[U4:spamU4:eggs]' corresponds
-to ['spam', 'eggs'].
+encoded) followed by a ']'. For example '[U4:spam,U4:eggs,]'
+corresponds to ['spam', 'eggs'].
 
 =head2 BIFCODE_DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
-'{U3:cowU3:mooU4:spamU4:eggs}' corresponds to {'cow': 'moo', 'spam':
-'eggs'} and '{U4:spam[U1:aU1:b]}' corresponds to {'spam': ['a', 'b']}.
-Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in sorted order
-(sorted as raw strings, not alphanumerics).
+'{U3:cow,U3:moo,U4:spam,U4:eggs,}' corresponds to {'cow': 'moo',
+'spam': 'eggs'} and '{U4:spam,[U1:a,U1:b,]}' corresponds to {'spam':
+['a', 'b']}. Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in
+sorted order (sorted as raw strings, not alphanumerics).
 
 =head1 INTERFACE
 
@@ -561,6 +568,10 @@ Your data contains a byte string with an invalid length.
 Your data includes a byte string declared to be longer than the
 available data.
 
+=item Bifcode::Error::DecodeBytesTerm
+
+Your data includes a byte string that is missing a "," terminator.
+
 =item Bifcode::Error::DecodeDepth
 
 Your data contains dicts or lists that are nested deeper than the
@@ -619,6 +630,10 @@ Your data contained a UTF8 string with an invalid length.
 
 Your data includes a string declared to be longer than the available
 data.
+
+=item Bifcode::Error::DecodeUTF8Term
+
+Your data includes a UTF8 string that is missing a "," terminator.
 
 =item Bifcode::Error::DecodeUsage
 
