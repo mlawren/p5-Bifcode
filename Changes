@@ -1,4 +1,4 @@
-1.0 (yyyy-mm-dd)
+0.001_12 (yyyy-mm-dd)
 
     API / Behaviour Changes:
         - UTF8 and BYTES strings now encode with a trailing ","
