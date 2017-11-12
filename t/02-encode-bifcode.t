@@ -98,13 +98,13 @@ subtest 'FLOAT' => sub {
 };
 
 subtest 'UTF8' => sub {
-    enc_ok ''    => 'U0:';
+    enc_ok ''    => 'U0:,';
     enc_ok $utf8 => $UTF8;
     ok utf8::is_utf8($utf8), 'still have utf8 flag on source string';
-    enc_ok 'abc' => 'U3:abc';
-    enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890';
-    enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0';
-    enc_ok '00' => 'U2:00';
+    enc_ok 'abc' => 'U3:abc,';
+    enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890,';
+    enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0,';
+    enc_ok '00' => 'U2:00,';
 
     my $u = undef;
     enc_error_ok bless( \$u, 'Bifcode::UTF8' ) => 'EncodeUTF8Undef',
@@ -124,13 +124,13 @@ subtest 'BYTES' => sub {
 subtest 'LIST' => sub {
     enc_ok [] => '[]';
     enc_ok [ 1, 2, undef, $utf8 ] => '[I1,I2,~' . $UTF8 . ']';
-    enc_ok [ [ 'Alice', 'Bob' ], [ 2, 3 ] ] => '[[U5:AliceU3:Bob][I2,I3,]]';
+    enc_ok [ [ 'Alice', 'Bob' ], [ 2, 3 ] ] => '[[U5:Alice,U3:Bob,][I2,I3,]]';
 };
 
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
-    enc_ok { 1 => 'one' } => '{U1:1U3:one}';
-    enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{U5:bytes'
+    enc_ok { 1 => 'one' } => '{U1:1,U3:one,}';
+    enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{U5:bytes,'
       . $BYTES . '}';
 
     enc_ok {
@@ -140,7 +140,7 @@ subtest 'DICT' => sub {
         'true'  => boolean::true,
         'undef' => undef,
         $utf8   => $utf8,
-      } => '{U3:ageI25,U4:eyesU4:blueU5:false0U4:true1U5:undef~'
+      } => '{U3:age,I25,U4:eyes,U4:blue,U5:false,0U4:true,1U5:undef,~'
       . $UTF8
       . $UTF8 . '}';
 
@@ -151,10 +151,10 @@ subtest 'DICT' => sub {
             'length' => 100000,
             'undef'  => undef,
         }
-      } => '{U8:spam.mp3{U6:authorU5:Alice'
-      . 'U5:bytes'
+      } => '{U8:spam.mp3,{U6:author,U5:Alice,'
+      . 'U5:bytes,'
       . $BYTES
-      . 'U6:lengthI100000,U5:undef~' . '}}';
+      . 'U6:length,I100000,U5:undef,~' . '}}';
 };
 
 my $u = undef;
