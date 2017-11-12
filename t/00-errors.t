@@ -7,7 +7,7 @@ use Test::More;
 eval { Bifcode::decode_bifcode(undef) };
 my $err = $@;
 
-isa_ok $err, 'Bifcode::Error::Decode';
-like "$err", qr/garbage at 0/, 'error to string';
+isa_ok $err, 'Bifcode::Error::DecodeUsage';
+like "$err", qr/input undefined/, 'error to string';
 
 done_testing();
