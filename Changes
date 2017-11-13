@@ -23,21 +23,6 @@
     API / Behaviour Changes:
         - UTF8 and BYTES strings now encode with a trailing ","
 
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
-
 0.001_11 (2017-11-08)
 
     Enhancements:
