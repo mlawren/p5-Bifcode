@@ -49,11 +49,11 @@
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "repository" : {
          "url" : "https://github.com/mlawren/p5-Bifcode"
       }
    },
-   "version" : "0.001_12"
+   "version" : "1.0"
 }
