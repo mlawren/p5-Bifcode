@@ -183,7 +183,7 @@ sub _encode_bifcode {
         if ( !defined $_ ) {
             '~';
         }
-        elsif ( ( my $type = ref $_ ) eq '' ) {
+        elsif ( ( my $ref = ref $_ ) eq '' ) {
             if ( $_ =~ $number_qr ) {
                 if ( defined $3 or defined $5 ) {
 
@@ -202,10 +202,10 @@ sub _encode_bifcode {
                 'U' . length($str) . ':' . $str . ',';
             }
         }
-        elsif ( $type eq 'ARRAY' ) {
+        elsif ( $ref eq 'ARRAY' ) {
             '[' . join( '', map _encode_bifcode($_), @$_ ) . ']';
         }
-        elsif ( $type eq 'HASH' ) {
+        elsif ( $ref eq 'HASH' ) {
             '{' . join(
                 '',
                 do {
@@ -225,20 +225,20 @@ sub _encode_bifcode {
                   }
             ) . '}';
         }
-        elsif ( $type eq 'SCALAR' or $type eq 'Bifcode::BYTES' ) {
+        elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::BYTES' ) {
             $$_ // croak _error 'EncodeBytesUndef';
             'B' . length($$_) . ':' . $$_ . ',';
         }
         elsif ( boolean::isBoolean($_) ) {
             $_;
         }
-        elsif ( $type eq 'Bifcode::INTEGER' ) {
+        elsif ( $ref eq 'Bifcode::INTEGER' ) {
             $$_ // croak _error 'EncodeIntegerUndef';
             croak _error 'EncodeInteger', 'invalid integer: ' . $$_
               unless $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
             sprintf 'I%s,', $$_;
         }
-        elsif ( $type eq 'Bifcode::FLOAT' ) {
+        elsif ( $ref eq 'Bifcode::FLOAT' ) {
             $$_ // croak _error 'EncodeFloatUndef';
             croak _error 'EncodeFloat', 'invalid float: ' . $$_
               unless $$_ =~ $number_qr;
@@ -248,13 +248,13 @@ sub _encode_bifcode {
             $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
             $x;
         }
-        elsif ( $type eq 'Bifcode::UTF8' ) {
+        elsif ( $ref eq 'Bifcode::UTF8' ) {
             my $str = $$_ // croak _error 'EncodeUTF8Undef';
             utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
             'U' . length($str) . ':' . $str . ',';
         }
         else {
-            croak _error 'EncodeUnhandled', 'unhandled data type: ' . $type;
+            croak _error 'EncodeUnhandled', 'unhandled data type: ' . $ref;
         }
     } @_;
 }
