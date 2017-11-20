@@ -229,8 +229,8 @@ sub _encode_bifcode {
             $$_ // croak _error 'EncodeBytesUndef';
             'B' . length($$_) . ':' . $$_ . ',';
         }
-        elsif ( $type eq 'boolean' ) {
-            $$_ ? '1' : '0';
+        elsif ( boolean::isBoolean($_) ) {
+            $_;
         }
         elsif ( $type eq 'Bifcode::INTEGER' ) {
             $$_ // croak _error 'EncodeIntegerUndef';

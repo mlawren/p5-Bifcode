@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - Use boolean::isBoolean for tighter true/false detection
 
     Bug Fixes:
         - None.
