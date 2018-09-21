@@ -1,24 +1,9 @@
-1.1_1 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
+1.001_1 (yyyy-mm-dd)
 
     Enhancements:
         - Use boolean::isBoolean for tighter true/false detection
         - Work around Carp::croak's failure to handle exception
           objects
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
 
 1.0 (2017-11-13)
 
