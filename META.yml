@@ -9,7 +9,6 @@ build_requires:
   Text::Diff: '0'
 configure_requires:
   ExtUtils::MakeMaker::CPANfile: '0.08'
-  Pod::Text: '0'
 dynamic_config: 0
 generated_by: 'ExtUtils::MakeMaker version 7.34, CPAN::Meta::Converter version 2.150010'
 license: perl
@@ -33,5 +32,5 @@ requires:
   warnings: '0'
 resources:
   repository: https://github.com/mlawren/p5-Bifcode
-version: 1.001_1
+version: '1.001'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
