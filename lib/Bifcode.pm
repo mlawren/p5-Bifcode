@@ -3,7 +3,7 @@ use 5.010;
 use strict;
 use warnings;
 use boolean ();
-use Carp 'croak';
+use Carp (qw/croak shortmess/);
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -15,8 +15,9 @@ use Exporter::Tidy all => [
 
 our $VERSION = '1.1_1';
 our $max_depth;
+our @CARP_NOT = (__PACKAGE__);
 
-sub _error {
+sub _croak {
     my $type     = shift // croak 'usage: _error($TYPE, [$msg])';
     my %messages = (
         Decode             => 'garbage at',
@@ -50,15 +51,20 @@ sub _error {
         ForceUsage         => 'ref and type must be defined',
     );
 
-    my $msg = shift // $messages{$type} // '(no message)';
-    $msg =~ s! at$!' at '. ( pos() // 0 )!e;
+    my $err   = 'Bifcode::Error::' . $type;
+    my $msg   = shift // $messages{$type} // '(no message)';
+    my $short = shortmess('');
 
-    eval 'package Bifcode::Error::' . $type . q{;
+    $msg =~ s! at$!' at input byte '. ( pos() // 0 )!e;
+
+    eval 'package ' . $err . qq[;
         use overload
           bool => sub { 1 },
-          '""' => sub { ${ $_[0] } . ' (' . ( ref $_[0] ) . ')' },
-          fallback => 1; };
-    bless \$msg, 'Bifcode::Error::' . $type;
+          '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
+          fallback => 1; 
+        1; ];
+
+    die bless \$msg, $err;
 }
 
 my $match = qr/ \G (?|
@@ -77,7 +83,7 @@ sub _decode_bifcode_chunk {
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
     unless (m/$match/gc) {
-        croak _error m/ \G \z /xgc ? 'DecodeTrunc' : 'Decode';
+        _croak m/ \G \z /xgc ? 'DecodeTrunc' : 'Decode';
     }
 
     if ( $1 eq '~' ) {
@@ -90,36 +96,36 @@ sub _decode_bifcode_chunk {
         return boolean::true;
     }
     elsif ( $1 eq 'B' ) {
-        my $len = $2 // croak _error 'DecodeBytes';
-        croak _error 'DecodeBytesTrunc' if $len > length() - pos();
+        my $len = $2 // _croak 'DecodeBytes';
+        _croak 'DecodeBytesTrunc' if $len > length() - pos();
 
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
 
-        croak _error 'DecodeBytesTerm' unless m/ \G , /xgc;
+        _croak 'DecodeBytesTerm' unless m/ \G , /xgc;
         return $data;
     }
     elsif ( $1 eq 'U' ) {
-        my $len = $2 // croak _error 'DecodeUTF8';
-        croak _error 'DecodeUTF8Trunc' if $len > length() - pos();
+        my $len = $2 // _croak 'DecodeUTF8';
+        _croak 'DecodeUTF8Trunc' if $len > length() - pos();
 
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
 
-        croak _error 'DecodeUTF8Term' unless m/ \G , /xgc;
+        _croak 'DecodeUTF8Term' unless m/ \G , /xgc;
         return $str;
     }
     elsif ( $1 eq 'I' ) {
         return $2 if defined $2;
-        croak _error 'DecodeIntegerTrunc' if m/ \G \z /xgc;
-        croak _error 'DecodeInteger';
+        _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
+        _croak 'DecodeInteger';
     }
     elsif ( $1 eq 'F' ) {
         if ( !defined $2 ) {
-            croak _error 'DecodeFloatTrunc' if m/ \G \z /xgc;
-            croak _error 'DecodeFloat';
+            _croak 'DecodeFloatTrunc' if m/ \G \z /xgc;
+            _croak 'DecodeFloat';
         }
-        croak _error 'DecodeFloat'
+        _croak 'DecodeFloat'
           if $2 eq '0'      # mantissa 0.
           and $3 eq '0'     # mantissa 0.0
           and $4 ne '0';    # sign or exponent 0.0e0
@@ -127,7 +133,7 @@ sub _decode_bifcode_chunk {
         return $2 . '.' . $3 . 'e' . $4;
     }
     elsif ( $1 eq '[' ) {
-        croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;
+        _croak 'DecodeDepth' if defined $max_depth and $max_depth < 0;
 
         my @list;
         until (m/ \G \] /xgc) {
@@ -136,21 +142,21 @@ sub _decode_bifcode_chunk {
         return \@list;
     }
     elsif ( $1 eq '{' ) {
-        croak _error 'DecodeDepth' if defined $max_depth and $max_depth < 0;
+        _croak 'DecodeDepth' if defined $max_depth and $max_depth < 0;
 
         my $last_key;
         my %hash;
         until (m/ \G \} /xgc) {
-            croak _error 'DecodeTrunc' if m/ \G \z /xgc;
-            croak _error 'DecodeKeyType' unless m/ \G (B|U) /xgc;
+            _croak 'DecodeTrunc' if m/ \G \z /xgc;
+            _croak 'DecodeKeyType' unless m/ \G (B|U) /xgc;
 
             pos() = pos() - 1;
             my $key = _decode_bifcode_chunk();
 
-            croak _error 'DecodeKeyDuplicate' if exists $hash{$key};
-            croak _error 'DecodeKeyOrder'
+            _croak 'DecodeKeyDuplicate' if exists $hash{$key};
+            _croak 'DecodeKeyOrder'
               if defined $last_key and $key lt $last_key;
-            croak _error 'DecodeKeyValue' if m/ \G \} /xgc;
+            _croak 'DecodeKeyValue' if m/ \G \} /xgc;
 
             $last_key = $key;
             $hash{$key} = _decode_bifcode_chunk();
@@ -163,14 +169,14 @@ sub decode_bifcode {
     local $_         = shift;
     local $max_depth = shift;
 
-    croak _error 'DecodeUsage', 'decode_bifcode: too many arguments' if @_;
-    croak _error 'DecodeUsage', 'decode_bifcode: input undefined'
+    _croak 'DecodeUsage', 'decode_bifcode: too many arguments' if @_;
+    _croak 'DecodeUsage', 'decode_bifcode: input undefined'
       unless defined $_;
-    croak _error 'DecodeUsage', 'decode_bifcode: only accepts bytes'
+    _croak 'DecodeUsage', 'decode_bifcode: only accepts bytes'
       if utf8::is_utf8($_);
 
     my $deserialised_data = _decode_bifcode_chunk();
-    croak _error 'DecodeTrailing' if $_ !~ m/ \G \z /xgc;
+    _croak 'DecodeTrailing' if $_ !~ m/ \G \z /xgc;
     return $deserialised_data;
 }
 
@@ -226,21 +232,21 @@ sub _encode_bifcode {
             ) . '}';
         }
         elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::BYTES' ) {
-            $$_ // croak _error 'EncodeBytesUndef';
+            $$_ // _croak 'EncodeBytesUndef';
             'B' . length($$_) . ':' . $$_ . ',';
         }
         elsif ( boolean::isBoolean($_) ) {
             $_;
         }
         elsif ( $ref eq 'Bifcode::INTEGER' ) {
-            $$_ // croak _error 'EncodeIntegerUndef';
-            croak _error 'EncodeInteger', 'invalid integer: ' . $$_
+            $$_ // _croak 'EncodeIntegerUndef';
+            _croak 'EncodeInteger', 'invalid integer: ' . $$_
               unless $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
             sprintf 'I%s,', $$_;
         }
         elsif ( $ref eq 'Bifcode::FLOAT' ) {
-            $$_ // croak _error 'EncodeFloatUndef';
-            croak _error 'EncodeFloat', 'invalid float: ' . $$_
+            $$_ // _croak 'EncodeFloatUndef';
+            _croak 'EncodeFloat', 'invalid float: ' . $$_
               unless $$_ =~ $number_qr;
 
             my $x = 'F' . ( 0 + $1 )    # remove leading zeros
@@ -249,18 +255,18 @@ sub _encode_bifcode {
             $x;
         }
         elsif ( $ref eq 'Bifcode::UTF8' ) {
-            my $str = $$_ // croak _error 'EncodeUTF8Undef';
+            my $str = $$_ // _croak 'EncodeUTF8Undef';
             utf8::encode($str);    #, sub { croak 'invalid Bifcode::UTF8' } );
             'U' . length($str) . ':' . $str . ',';
         }
         else {
-            croak _error 'EncodeUnhandled', 'unhandled data type: ' . $ref;
+            _croak 'EncodeUnhandled', 'unhandled data type: ' . $ref;
         }
     } @_;
 }
 
 sub encode_bifcode {
-    croak _error 'EncodeUsage' if @_ != 1;
+    _croak 'EncodeUsage' if @_ != 1;
     (&_encode_bifcode)[0];
 }
 
@@ -268,7 +274,7 @@ sub force_bifcode {
     my $ref  = shift;
     my $type = shift;
 
-    croak _error 'ForceUsage' unless defined $ref and defined $type;
+    _croak 'ForceUsage' unless defined $ref and defined $type;
     bless \$ref, 'Bifcode::' . uc($type);
 }
 
@@ -285,7 +291,7 @@ sub _expand_bifcode {
 }
 
 sub diff_bifcode {
-    croak _error 'DiffUsage' unless @_ >= 2 and @_ <= 3;
+    _croak 'DiffUsage' unless @_ >= 2 and @_ <= 3;
     my $b1        = shift;
     my $b2        = shift;
     my $diff_args = shift || { STYLE => 'Unified' };
