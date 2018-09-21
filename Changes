@@ -16,7 +16,8 @@
         - None.
 
     Packaging:
-        - None.
+        - Generate README file using githook-perltidy's .readme_from
+          support.
 
 1.001_1 (2018-09-21)
 
