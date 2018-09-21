@@ -17,7 +17,7 @@ our $VERSION = '1.1_1';
 our $max_depth;
 
 sub _error {
-    my $type = shift // croak 'usage: _error($TYPE, [$msg])';
+    my $type     = shift // croak 'usage: _error($TYPE, [$msg])';
     my %messages = (
         Decode             => 'garbage at',
         DecodeBytes        => 'malformed BYTES length at',
@@ -712,7 +712,7 @@ This software is copyright (c):
 
 =item * 2015 by Aristotle Pagaltzis
 
-=item * 2017 by Mark Lawrence.
+=item * 2017-2018 by Mark Lawrence.
 
 =back
 
