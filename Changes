@@ -8,6 +8,8 @@
 
     Enhancements:
         - Use boolean::isBoolean for tighter true/false detection
+        - Work around Carp::croak's failure to handle exception
+          objects
 
     Bug Fixes:
         - None.
