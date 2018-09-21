@@ -1,22 +1,18 @@
+1.1_1 (2018-09-21)
+
+    Enhancements:
+        - Use boolean::isBoolean for tighter true/false detection
+        - Work around Carp::croak's failure to handle exception
+          objtects
+
+1.0 (2017-11-13)
+
+    First stable release.
+
 0.001_12 (2017-11-12)
 
     API / Behaviour Changes:
         - UTF8 and BYTES strings now encode with a trailing ","
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
 
 0.001_11 (2017-11-08)
 

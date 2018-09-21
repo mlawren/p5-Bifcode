@@ -4,7 +4,7 @@
       "Mark Lawrencde <nomad@null.net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "ExtUtils::MakeMaker version 7.0401, CPAN::Meta::Converter version 2.142690",
+   "generated_by" : "ExtUtils::MakeMaker version 7.34, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -25,10 +25,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0",
-            "Test::More" : "0.88",
-            "Test::Needs" : "0",
-            "Text::Diff" : "0"
+            "ExtUtils::MakeMaker" : "0"
          }
       },
       "configure" : {
@@ -47,13 +44,21 @@
             "utf8" : "0",
             "warnings" : "0"
          }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0.88",
+            "Test::Needs" : "0",
+            "Text::Diff" : "0"
+         }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "unstable",
    "resources" : {
       "repository" : {
          "url" : "https://github.com/mlawren/p5-Bifcode"
       }
    },
-   "version" : "0.001_12"
+   "version" : "1.1_1",
+   "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }
