@@ -1,19 +1,4 @@
-1.001 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
+1.001 (2018-09-21)
 
     Packaging:
         - Generate README file using githook-perltidy's .readme_from
