@@ -1,4 +1,4 @@
-1.001_1 (yyyy-mm-dd)
+1.001_1 (2018-09-21)
 
     Enhancements:
         - Use boolean::isBoolean for tighter true/false detection
