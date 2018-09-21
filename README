@@ -2,7 +2,7 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    1.0 (2017-11-13)
+    1.001_1 (2018-09-21)
 
 SYNOPSIS
         use boolean;
@@ -318,7 +318,7 @@ COPYRIGHT AND LICENSE
 
     *   2015 by Aristotle Pagaltzis
 
-    *   2017 by Mark Lawrence.
+    *   2017-2018 by Mark Lawrence.
 
     This is free software; you can redistribute it and/or modify it under
     the same terms as the Perl 5 programming language system itself.

@@ -1,3 +1,10 @@
+1.001_1 (2018-09-21)
+
+    Enhancements:
+        - Use boolean::isBoolean for tighter true/false detection
+        - Work around Carp::croak's failure to handle exception
+          objects
+
 1.0 (2017-11-13)
 
     First stable release.
