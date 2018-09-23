@@ -1,19 +1,4 @@
-1.002_1 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
+1.002 (yyyy-mm-dd)
 
     Packaging:
         - Remove ".readme_from" file from distribution
