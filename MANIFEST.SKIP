@@ -3,6 +3,7 @@
 \.git
 \.perltidyrc
 \.podtidy-opts
+\.readme_from
 ^blib
 ^Bifcode-*
 Makefile$

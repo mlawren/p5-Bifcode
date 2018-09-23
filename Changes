@@ -16,7 +16,7 @@
         - None.
 
     Packaging:
-        - None.
+        - Remove ".readme_from" file from distribution
 
 1.001 (2018-09-21)
 
