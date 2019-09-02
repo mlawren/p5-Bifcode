@@ -1,7 +1,7 @@
-2.000_1 (yyyy-mm-dd)
+2.000_1 (2019-09-02)
 
     API / Behaviour Changes:
-        - None.
+        - Implements bifcode version 2, incompatible with version 1.
 
     New Features:
         - None.
