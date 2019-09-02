@@ -61,7 +61,7 @@ sub _croak {
         use overload
           bool => sub { 1 },
           '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
-          fallback => 1; 
+          fallback => 1;
         1; ];
 
     die bless \$msg, $err;
@@ -71,7 +71,7 @@ my $match = qr/ \G (?|
       (~)
     | (0)
     | (1)
-    | (B|U) (?: ( 0 | [1-9] [0-9]* ) : )? 
+    | (B|U) (?: ( 0 | [1-9] [0-9]* ) : )?
     | (I)   (?: ( 0 | -? [1-9] [0-9]* ) , )?
     | (F)   (?: ( 0 | -? [1-9] [0-9]* ) \. ( 0 | [0-9]* [1-9] ) e
                 ( (?: 0 | -? [1-9] ) [0-9]* ) , )?
@@ -282,9 +282,9 @@ sub _expand_bifcode {
     my $bifcode = shift;
     $bifcode =~ s/ (
             [~\[\]\{\}]
-            | (U|B) [0-9]+ :  
-            | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,  
-            | I [0-9]+ ,  
+            | (U|B) [0-9]+ :
+            | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,
+            | I [0-9]+ ,
         ) /\n$1/gmx;
     $bifcode =~ s/ \A \n //mx;
     $bifcode . "\n";
@@ -497,7 +497,7 @@ distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
 =over
 
-=item 
+=item
 
 They look like canonically represented integers in which case they are
 mapped to BIFCODE_INTEGER; or
