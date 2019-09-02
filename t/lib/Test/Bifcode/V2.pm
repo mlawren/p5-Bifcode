@@ -1,10 +1,10 @@
-package Test::Bifcode;
+package Test::Bifcode::V2;
 use bytes;
 use strict;
 use warnings;
 
 use utf8;
-use Bifcode qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
+use Bifcode::V2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES
@@ -23,14 +23,14 @@ our $utf8 = "\x{100}\x{df}";
 #'ฉันกินกระจกได้ แต่มันไม่ทำให้ฉันเจ็บ';
 utf8::encode( my $utf8_bytes = $utf8 );
 my $utf8_length = bytes::length($utf8_bytes);
-our $UTF8 = 'U' . $utf8_length . ':' . $utf8_bytes . ',';
+our $UTF8 = 'u' . $utf8_length . '.' . $utf8_bytes . ',';
 
 our $bytes = pack( 's<', 255 );
 my $bytes_length = bytes::length($bytes);
-our $BYTES = 'B' . $bytes_length . ':' . $bytes . ',';
+our $BYTES = 'b' . $bytes_length . '.' . $bytes . ',';
 
 our $data1 = {
-    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+    bools   => [ $Bifcode::V2::FALSE, $Bifcode::V2::TRUE, ],
     bytes   => \$bytes,
     integer => 25,
     float   => -1.25e-9,
@@ -39,15 +39,15 @@ our $data1 = {
 };
 
 our $DATA1 = '{'
-  . ( 'U5:bools,' . '[01]' )
-  . ( 'U5:bytes,' . $BYTES )
-  . ( 'U5:float,' . 'F-1.25e-9,' )
-  . ( 'U7:integer,' . 'I25,' )
-  . ( 'U5:undef,' . '~' )
-  . ( 'U4:utf8,' . $UTF8 ) . '}';
+  . ( 'u5.bools,' . '[f,t,]' )
+  . ( 'u5.bytes,' . $BYTES )
+  . ( 'u5.float,' . 'r-1.25e-9,' )
+  . ( 'u7.integer,' . 'i25,' )
+  . ( 'u5.undef,' . '~,' )
+  . ( 'u4.utf8,' . $UTF8 ) . '}';
 
 our $data2 = {
-    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+    bools   => [ $Bifcode::V2::FALSE, $Bifcode::V2::TRUE, ],
     bytes   => \$bytes,
     integer => 24,
     float   => 1.25e-9,
@@ -56,12 +56,12 @@ our $data2 = {
 };
 
 our $DATA2 = '{'
-  . ( 'U5:bools,' . '[01]' )
-  . ( 'U5:bytes,' . $BYTES )
-  . ( 'U5:float,' . 'F1.25e-9,' )
-  . ( 'U7:integer,' . 'I24,' )
-  . ( 'U5:undef,' . '~' )
-  . ( 'U4:utf8,' . $UTF8 ) . '}';
+  . ( 'u5.bools,' . '[f,t,]' )
+  . ( 'u5.bytes,' . $BYTES )
+  . ( 'u5.float,' . 'r1.25e-9,' )
+  . ( 'u7.integer,' . 'i24,' )
+  . ( 'u5.undef,' . '~,' )
+  . ( 'u4.utf8,' . $UTF8 ) . '}';
 
 sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
@@ -80,7 +80,7 @@ sub enc_error_ok {
     eval { encode_bifcode $data };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
-    my $want = 'Bifcode::Error::' . $error;
+    my $want = 'Bifcode::V2::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
@@ -108,7 +108,7 @@ sub error_ok {
     eval { un $frozen };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
-    my $want = 'Bifcode::Error::' . $error;
+    my $want = 'Bifcode::V2::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
