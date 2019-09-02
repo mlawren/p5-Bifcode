@@ -1,12 +1,13 @@
 NAME
-    Bifcode - simple serialization format
+    Bifcode::V2 - simple serialization format (version 2)
 
 VERSION
-    1.002 (2018-09-23)
+    2.000_1 (2019-09-02)
 
 SYNOPSIS
+        use utf8;
         use boolean;
-        use Bifcode qw( encode_bifcode decode_bifcode );
+        use Bifcode::V2 qw( encode_bifcode decode_bifcode );
 
         my $bifcode = encode_bifcode {
             bools   => [ boolean::false, boolean::true, ],
@@ -14,23 +15,25 @@ SYNOPSIS
             integer => 25,
             float   => 1.25e-5,
             undef   => undef,
-            utf8    => "\x{df}",
+            utf8    => "Ελύτη",
         };
 
-        # 7b 55 35 3a 62 6f 6f 6c 73 2c 5b 30    {U5:bools,[0
-        # 31 5d 55 35 3a 62 79 74 65 73 2c 42    1]U5:bytes,B
-        # 32 3a ff  0 2c 55 35 3a 66 6c 6f 61    2:..,U5:floa
-        # 74 2c 46 31 2e 32 35 65 2d 35 2c 55    t,F1.25e-5,U
-        # 37 3a 69 6e 74 65 67 65 72 2c 49 32    7:integer,I2
-        # 35 2c 55 35 3a 75 6e 64 65 66 2c 7e    5,U5:undef,~
-        # 55 34 3a 75 74 66 38 2c 55 32 3a c3    U4:utf8,U2:.
-        # 9f 2c 7d                               .,}
+        # 7b 75 35 2e 62 6f 6f 6c 73 2c 5b 66    {u5.bools,[f
+        # 2c 74 2c 5d 75 35 2e 62 79 74 65 73    ,t,]u5.bytes
+        # 2c 62 32 2e ff  0 2c 75 35 2e 66 6c    ,b2...,u5.fl
+        # 6f 61 74 2c 72 31 2e 32 35 65 2d 35    oat,r1.25e-5
+        # 2c 75 37 2e 69 6e 74 65 67 65 72 2c    ,u7.integer,
+        # 69 32 35 2c 75 35 2e 75 6e 64 65 66    i25,u5.undef
+        # 2c 7e 2c 75 34 2e 75 74 66 38 2c 75    ,~,u4.utf8,u
+        # 31 30 2e ce 95 ce bb cf 8d cf 84 ce    10..........
+        # b7 2c 7d                               .,}
 
         my $decoded = decode_bifcode $bifcode;
 
 DESCRIPTION
-    Bifcode implements the *bifcode* serialisation format, a mixed
-    binary/text encoding with support for the following data types:
+    Bifcode::V2 implements the *bifcode version 2* serialisation format,
+    a mixed binary/text encoding with support for the following data
+    types:
 
     *   Primitive:
 
@@ -40,7 +43,7 @@ DESCRIPTION
 
         *   Integer numbers
 
-        *   Floating point numbers
+        *   Real numbers
 
         *   UTF8 strings
 
@@ -89,48 +92,49 @@ SPECIFICATION
     The encoding is defined as follows:
 
   BIFCODE_UNDEF
-    A null or undefined value correspond to "~".
+    A null or undefined value correspond to "~,".
 
   BIFCODE_TRUE and BIFCODE_FALSE
-    Boolean values are represented by "1" and "0".
+    Boolean values are represented by "t," and "f,".
 
   BIFCODE_UTF8
-    A UTF8 string is "U" followed by the octet length of the encoded
-    string as a base ten number followed by a colon and the encoded
-    string followed by ",". For example the Perl string "\x{df}" (ß)
-    corresponds to "U2:\x{c3}\x{9f},".
+    A UTF8 string is "u" followed by the octet length of the encoded
+    string as a base ten number followed by a "." and the encoded string
+    followed by ",". For example the Perl string "\x{df}" (ß)
+    corresponds to "u2.\x{c3}\x{9f},".
 
   BIFCODE_BYTES
-    Opaque data is 'B' followed by the octet length of the data as a
-    base ten number followed by a colon and then the data itself
-    followed by ",". For example a three-byte blob 'xyz' corresponds to
-    'B3:xyz,'.
+    Opaque data is 'b' followed by the octet length of the data as a
+    base ten number followed by a "." and then the data itself followed
+    by ",". For example a three-byte blob 'xyz' corresponds to
+    'b3.xyz,'.
 
   BIFCODE_INTEGER
-    Integers are represented by an 'I' followed by the number in base 10
-    followed by a ','. For example 'I3,' corresponds to 3 and 'I-3,'
-    corresponds to -3. Integers have no size limitation. 'I-0,' is
-    invalid. All encodings with a leading zero, such as 'I03,', are
-    invalid, other than 'I0,', which of course corresponds to 0.
+    Integers are represented by an 'i' followed by the number in base 10
+    followed by a ','. For example 'i3,' corresponds to 3 and 'i-3,'
+    corresponds to -3. Integers have no size limitation. 'i-0,' is
+    invalid. All encodings with a leading zero, such as 'i03,', are
+    invalid, other than 'i0,', which of course corresponds to 0.
 
-  BIFCODE_FLOAT
-    Floats are represented by an 'F' followed by a decimal number in
-    base 10 followed by a 'e' followed by an exponent followed by a ','.
-    For example 'F3.0e-1,' corresponds to 0.3 and 'F-0.1e0,' corresponds
-    to -0.1. Floats have no size limitation. 'F-0.0e0,' is invalid. All
-    encodings with an extraneous leading zero, such as 'F03.0e0,', or an
-    extraneous trailing zero, such as 'F3.10e0,', are invalid.
+  BIFCODE_REAL
+    Real numbers are represented by an 'r' followed by a decimal number
+    in base 10 followed by a 'e' followed by an exponent followed by a
+    ','. For example 'r3.0e-1,' corresponds to 0.3 and 'r-0.1e0,'
+    corresponds to -0.1. Reals have no size limitation. 'r-0.0e0,' is
+    invalid. All encodings with an extraneous leading zero, such as
+    'r03.0e0,', or an extraneous trailing zero, such as 'r3.10e0,', are
+    invalid.
 
   BIFCODE_LIST
     Lists are encoded as a '[' followed by their elements (also
     *bifcode* encoded) followed by a ']'. For example
-    '[U4:spam,U4:eggs,]' corresponds to ['spam', 'eggs'].
+    '[u4.spam,u4.eggs,]' corresponds to ['spam', 'eggs'].
 
   BIFCODE_DICT
     Dictionaries are encoded as a '{' followed by a list of alternating
     keys and their corresponding values followed by a '}'. For example,
-    '{U3:cow,U3:moo,U4:spam,U4:eggs,}' corresponds to {'cow': 'moo',
-    'spam': 'eggs'} and '{U4:spam,[U1:a,U1:b,]}' corresponds to {'spam':
+    '{u3.cow,u3.moo,u4.spam,u4.eggs,}' corresponds to {'cow': 'moo',
+    'spam': 'eggs'} and '{u4.spam,[u1.a,u1.b,]}' corresponds to {'spam'.
     ['a', 'b']}. Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear
     in sorted order (sorted as raw strings, not alphanumerics).
 
@@ -144,7 +148,7 @@ INTERFACE
 
     *   'undef' maps directly to BIFCODE_UNDEF.
 
-    *   The "true" and "false" functions from the boolean distribution
+    *   The "true" and "false" values from the boolean distribution
         encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
     *   Plain scalars are treated as BIFCODE_UTF8 unless:
@@ -152,8 +156,8 @@ INTERFACE
         *   They look like canonically represented integers in which
             case they are mapped to BIFCODE_INTEGER; or
 
-        *   They look like floats in which case they are mapped to
-            BIFCODE_FLOAT.
+        *   They look like reals in which case they are mapped to
+            BIFCODE_REAL.
 
     *   SCALAR references become BIFCODE_BYTES.
 
@@ -162,9 +166,10 @@ INTERFACE
     *   HASH references become BIFCODE_DICT.
 
     You can force scalars to be encoded a particular way by passing a
-    reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER,
-    Bifcode::FLOAT or Bifcode::UTF8. The "force_bifcode" function below
-    can help with creating such references.
+    reference to them blessed as Bifcode::V2::BYTES,
+    Bifcode::V2::INTEGER, Bifcode::V2::REAL or Bifcode::V2::UTF8. The
+    "force_bifcode" function below can help with creating such
+    references.
 
     This subroutine croaks on unhandled data types.
 
@@ -184,121 +189,121 @@ INTERFACE
     Croaks on malformed data.
 
   "force_bifcode( $scalar, $type )"
-    Returns a reference to $scalar blessed as Bifcode::$TYPE. The value
-    of $type is not checked, but the "encode_bifcode" function will only
-    accept the resulting reference where $type is one of 'bytes',
-    'float', 'integer' or 'utf8'.
+    Returns a reference to $scalar blessed as Bifcode::V2::$TYPE. The
+    value of $type is not checked, but the "encode_bifcode" function
+    will only accept the resulting reference where $type is one of
+    'bytes', 'real', 'integer' or 'utf8'.
 
   "diff_bifcode( $bc1, $bc2, [$diff_args] )"
     Returns a string representing the difference between two bifcodes.
-    The inputs do not need to be valid Bifcode; they are only expanded
-    with a very simple regex before the diff is done. The third argument
-    ($diff_args) is passed directly to Text::Diff.
+    The inputs do not need to be valid Bifcode::V2; they are only
+    expanded with a very simple regex before the diff is done. The third
+    argument ($diff_args) is passed directly to Text::Diff.
 
     Croaks if Text::Diff is not installed.
 
 DIAGNOSTICS
-    The following exceptions may be raised by Bifcode:
+    The following exceptions may be raised by Bifcode::V2:
 
-    Bifcode::Error::Decode
+    Bifcode::V2::Error::Decode
         Your data is malformed in a non-identifiable way.
 
-    Bifcode::Error::DecodeBytes
+    Bifcode::V2::Error::DecodeBytes
         Your data contains a byte string with an invalid length.
 
-    Bifcode::Error::DecodeBytesTrunc
+    Bifcode::V2::Error::DecodeBytesTrunc
         Your data includes a byte string declared to be longer than the
         available data.
 
-    Bifcode::Error::DecodeBytesTerm
+    Bifcode::V2::Error::DecodeBytesTerm
         Your data includes a byte string that is missing a ","
         terminator.
 
-    Bifcode::Error::DecodeDepth
+    Bifcode::V2::Error::DecodeDepth
         Your data contains dicts or lists that are nested deeper than
         the $max_depth passed to "decode_bifcode()".
 
-    Bifcode::Error::DecodeTrunc
+    Bifcode::V2::Error::DecodeTrunc
         Your data is truncated.
 
-    Bifcode::Error::DecodeFloat
-        Your data contained something that was supposed to be a float
-        but didn't make sense.
+    Bifcode::V2::Error::DecodeReal
+        Your data contained something that was supposed to be a real but
+        didn't make sense.
 
-    Bifcode::Error::DecodeFloatTrunc
-        Your data contains a float that is truncated.
+    Bifcode::V2::Error::DecodeRealTrunc
+        Your data contains a real that is truncated.
 
-    Bifcode::Error::DecodeInteger
+    Bifcode::V2::Error::DecodeInteger
         Your data contained something that was supposed to be an integer
         but didn't make sense.
 
-    Bifcode::Error::DecodeIntegerTrunc
+    Bifcode::V2::Error::DecodeIntegerTrunc
         Your data contains an integer that is truncated.
 
-    Bifcode::Error::DecodeKeyType
+    Bifcode::V2::Error::DecodeKeyType
         Your data violates the *bifcode* format constaint that all dict
         keys be BIFCODE_BYTES or BIFCODE_UTF8.
 
-    Bifcode::Error::DecodeKeyDuplicate
+    Bifcode::V2::Error::DecodeKeyDuplicate
         Your data violates the *bifcode* format constaint that all dict
         keys must be unique.
 
-    Bifcode::Error::DecodeKeyOrder
+    Bifcode::V2::Error::DecodeKeyOrder
         Your data violates the *bifcode* format constaint that dict keys
         must appear in lexical sort order.
 
-    Bifcode::Error::DecodeKeyValue
+    Bifcode::V2::Error::DecodeKeyValue
         Your data contains a dictionary with an odd number of elements.
 
-    Bifcode::Error::DecodeTrailing
+    Bifcode::V2::Error::DecodeTrailing
         Your data does not end after the first *bifcode*-serialised
         item.
 
-    Bifcode::Error::DecodeUTF8
+    Bifcode::V2::Error::DecodeUTF8
         Your data contained a UTF8 string with an invalid length.
 
-    Bifcode::Error::DecodeUTF8Trunc
+    Bifcode::V2::Error::DecodeUTF8Trunc
         Your data includes a string declared to be longer than the
         available data.
 
-    Bifcode::Error::DecodeUTF8Term
+    Bifcode::V2::Error::DecodeUTF8Term
         Your data includes a UTF8 string that is missing a ","
         terminator.
 
-    Bifcode::Error::DecodeUsage
+    Bifcode::V2::Error::DecodeUsage
         You called "decode_bifcode()" with invalid arguments.
 
-    Bifcode::Error::DiffUsage
+    Bifcode::V2::Error::DiffUsage
         You called "diff_bifcode()" with invalid arguments.
 
-    Bifcode::Error::EncodeBytesUndef
+    Bifcode::V2::Error::EncodeBytesUndef
         You attempted to encode "undef" as a byte string.
 
-    Bifcode::Error::EncodeFloat
-        You attempted to encode something as a float that isn't
+    Bifcode::V2::Error::EncodeReal
+        You attempted to encode something as a real that isn't
         recognised as one.
 
-    Bifcode::Error::EncodeFloatUndef
-        You attempted to encode "undef" as a float.
+    Bifcode::V2::Error::EncodeRealUndef
+        You attempted to encode "undef" as a real.
 
-    Bifcode::Error::EncodeInteger
+    Bifcode::V2::Error::EncodeInteger
         You attempted to encode something as an integer that isn't
         recognised as one.
 
-    Bifcode::Error::EncodeIntegerUndef
+    Bifcode::V2::Error::EncodeIntegerUndef
         You attempted to encode "undef" as an integer.
 
-    Bifcode::Error::EncodeUTF8Undef
+    Bifcode::V2::Error::EncodeUTF8Undef
         You attempted to encode "undef" as a UTF8 string.
 
-    Bifcode::Error::EncodeUnhandled
+    Bifcode::V2::Error::EncodeUnhandled
         You are trying to serialise a data structure that contains a
         data type not supported by the *bifcode* format.
 
-    Bifcode::Error::EncodeUsage
+    Bifcode::V2::Error::EncodeUsage
         You called "encode_bifcode()" with invalid arguments.
 
-    Bifcode::Error::ForceUsage
+    Bifcode::V2::Error::ForceUsage
         You called "force_bifcode()" with invalid arguments.
 
 BUGS AND LIMITATIONS

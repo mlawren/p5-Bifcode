@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Bifcode;
+use Bifcode::V2;
 use Test::More;
 
-eval { Bifcode::decode_bifcode(undef) };
+eval { Bifcode::V2::decode_bifcode(undef) };
 my $err = $@;
 
-isa_ok $err, 'Bifcode::Error::DecodeUsage';
+isa_ok $err, 'Bifcode::V2::Error::DecodeUsage';
 like "$err", qr/input undefined/, 'error to string';
 
 done_testing();

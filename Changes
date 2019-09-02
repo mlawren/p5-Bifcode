@@ -1,3 +1,23 @@
+2.000_1 (2019-09-02)
+
+    API / Behaviour Changes:
+        - Implements bifcode version 2, incompatible with version 1.
+
+    New Features:
+        - None.
+
+    Enhancements:
+        - None.
+
+    Bug Fixes:
+        - None.
+
+    Dependencies:
+        - None.
+
+    Packaging:
+        - None.
+
 1.002 (2018-09-23)
 
     Packaging:

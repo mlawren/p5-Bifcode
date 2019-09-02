@@ -12,14 +12,11 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "Bifcode",
+   "name" : "Bifcode-V2",
    "no_index" : {
       "directory" : [
          "t",
          "inc"
-      ],
-      "package" : [
-         "Bifcode::Boolean"
       ]
    },
    "prereqs" : {
@@ -52,12 +49,12 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "unstable",
    "resources" : {
       "repository" : {
          "url" : "https://github.com/mlawren/p5-Bifcode"
       }
    },
-   "version" : "1.002",
+   "version" : "2.000_1",
    "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

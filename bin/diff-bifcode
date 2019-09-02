@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Bifcode ':all';
+use Bifcode::V2 ':all';
 use OptArgs2;
 
 arg file1 => (
@@ -55,14 +55,14 @@ my $bc1 = _slurp( $opts->{file1} );
 my $bc2 = _slurp( $opts->{file2} );
 
 foreach my $pair ( [ $opts->{file1}, $bc1 ], [ $opts->{file2}, $bc2 ] ) {
-    if ( !eval { Bifcode::decode_bifcode( $pair->[1] ) } ) {
+    if ( !eval { Bifcode::V2::decode_bifcode( $pair->[1] ) } ) {
         my $err = $@;
         $err =~ s/^/  /mg;
         warn sprintf "warning: invalid Bifcode in file '%s'\n$err", $pair->[0];
     }
 }
 
-print my $diff = Bifcode::diff_bifcode( $bc1, $bc2 );
+print my $diff = Bifcode::V2::diff_bifcode( $bc1, $bc2 );
 exit length($diff) ? 1 : 0;
 
 __END__
