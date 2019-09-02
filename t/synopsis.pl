@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use lib 'lib';
+use utf8;
 use FindBin qw($RealBin);
+use lib "$RealBin/../lib";
 use lib "$RealBin/lib";
 use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
 use boolean;
@@ -17,13 +18,15 @@ my $str = q{encode_bifcode {
     integer => 25,
     float   => 1.25e-5,
     undef   => undef,
-    utf8    => "\x{df}",
+    utf8    => "Ελύτη",
 };
 };
 
+binmode STDOUT, ':utf8';
 print 'my $bifcode = ' . $str;
 my $bifcode = eval $str;
 
+binmode STDOUT;
 print $bifcode, "\n\n";
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
