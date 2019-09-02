@@ -16,9 +16,4 @@ WriteMakefile(
             repository => 'https://github.com/mlawren/p5-Bifcode',
         }
     },
-    META_MERGE => {
-        no_index => {
-            package => [qw(Bifcode::Boolean)],
-        },
-    },
 );
