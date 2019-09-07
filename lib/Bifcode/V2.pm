@@ -79,6 +79,8 @@ my $match = qr/ \G (?|
     | (\{)
 ) /x;
 
+my $decode_key = 0;
+
 sub _decode_bifcode_chunk {
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
@@ -102,7 +104,8 @@ sub _decode_bifcode_chunk {
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
 
-        _croak 'DecodeBytesTerm' unless m/ \G , /xgc;
+        _croak 'DecodeBytesTerm'
+          unless $decode_key ? m/ \G : /xgc : m/ \G , /xgc;
         return $data;
     }
     elsif ( $1 eq 'u' ) {
@@ -112,7 +115,8 @@ sub _decode_bifcode_chunk {
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
 
-        _croak 'DecodeUTF8Term' unless m/ \G , /xgc;
+        _croak 'DecodeUTF8Term'
+          unless $decode_key ? m/ \G : /xgc : m/ \G , /xgc;
         return $str;
     }
     elsif ( $1 eq 'i' ) {
@@ -151,7 +155,9 @@ sub _decode_bifcode_chunk {
             _croak 'DecodeKeyType' unless m/ \G (b|u) /xgc;
 
             pos() = pos() - 1;
+            $decode_key = 1;
             my $key = _decode_bifcode_chunk();
+            $decode_key = 0;
 
             _croak 'DecodeKeyDuplicate' if exists $hash{$key};
             _croak 'DecodeKeyOrder'
@@ -221,11 +227,11 @@ sub _encode_bifcode {
 
                         # if ( is valid utf8($k) ) {
                         utf8::encode($k);
-                        ( 'u' . length($k) . '.' . $k . ',', $_ );
+                        ( 'u' . length($k) . '.' . $k . ':', $_ );
 
                         # }
                         # else {
-                        #     ('b' . length($k) . '.' . $k .',', $_);
+                        #     ('b' . length($k) . '.' . $k .':', $_);
                         # }
                     } _encode_bifcode( @$_{@k} );
                   }
@@ -335,13 +341,13 @@ Bifcode::V2 - simple serialization format (version 2)
         utf8    => "Ελύτη",
     };
 
-    # 7b 75 35 2e 62 6f 6f 6c 73 2c 5b 66    {u5.bools,[f
+    # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66    {u5.bools:[f
     # 2c 74 2c 5d 75 35 2e 62 79 74 65 73    ,t,]u5.bytes
-    # 2c 62 32 2e ff  0 2c 75 35 2e 66 6c    ,b2...,u5.fl
-    # 6f 61 74 2c 72 31 2e 32 35 65 2d 35    oat,r1.25e-5
-    # 2c 75 37 2e 69 6e 74 65 67 65 72 2c    ,u7.integer,
+    # 3a 62 32 2e ff  0 2c 75 35 2e 66 6c    :b2...,u5.fl
+    # 6f 61 74 3a 72 31 2e 32 35 65 2d 35    oat:r1.25e-5
+    # 2c 75 37 2e 69 6e 74 65 67 65 72 3a    ,u7.integer:
     # 69 32 35 2c 75 35 2e 75 6e 64 65 66    i25,u5.undef
-    # 2c 7e 2c 75 34 2e 75 74 66 38 2c 75    ,~,u4.utf8,u
+    # 3a 7e 2c 75 34 2e 75 74 66 38 3a 75    :~,u4.utf8:u
     # 31 30 2e ce 95 ce bb cf 8d cf 84 ce    10..........
     # b7 2c 7d                               .,}
 
@@ -439,13 +445,16 @@ Boolean values are represented by "t," and "f,".
 A UTF8 string is "u" followed by the octet length of the encoded string
 as a base ten number followed by a "." and the encoded string followed
 by ",". For example the Perl string "\x{df}" (ß) corresponds to
-"u2.\x{c3}\x{9f},".
+"u2.\x{c3}\x{9f},". However, if a UTF8 string is encoded as a hash/dict
+key then the final character becomes ":" instead of ",".
 
 =head2 BIFCODE_BYTES
 
 Opaque data is 'b' followed by the octet length of the data as a base
 ten number followed by a "." and then the data itself followed by ",".
-For example a three-byte blob 'xyz' corresponds to 'b3.xyz,'.
+For example a three-byte blob 'xyz' corresponds to 'b3.xyz,'. However,
+if a bytes are to be encoded as a hash/dict key then the final
+character becomes ":" instead of ",".
 
 =head2 BIFCODE_INTEGER
 
@@ -474,8 +483,8 @@ corresponds to ['spam', 'eggs'].
 
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. For example,
-'{u3.cow,u3.moo,u4.spam,u4.eggs,}' corresponds to {'cow': 'moo',
-'spam': 'eggs'} and '{u4.spam,[u1.a,u1.b,]}' corresponds to {'spam'.
+'{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow': 'moo',
+'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}' corresponds to {'spam'.
 ['a', 'b']}. Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in
 sorted order (sorted as raw strings, not alphanumerics).
 

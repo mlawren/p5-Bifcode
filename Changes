@@ -1,7 +1,7 @@
 2.000_2 (yyyy-mm-dd)
 
     API / Behaviour Changes:
-        - None.
+        - Use ":" to separate DICT/HASH keys from values.
 
     New Features:
         - None.
