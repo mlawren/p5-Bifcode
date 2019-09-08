@@ -120,7 +120,7 @@ sub _decode_bifcode_chunk {
         return $str;
     }
     elsif ( $1 eq 'i' ) {
-        return $2 if defined $2;
+        return 0 + $2 if defined $2;
         _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
         _croak 'DecodeInteger';
     }
@@ -134,7 +134,7 @@ sub _decode_bifcode_chunk {
           and $3 eq '0'     # mantissa 0.0
           and $4 ne '0';    # sign or exponent 0.0e0
 
-        return $2 . '.' . $3 . 'e' . $4;
+        return 0.0 + $2 . '.' . $3 . 'e' . $4;
     }
     elsif ( $1 eq '[' ) {
         _croak 'DecodeDepth' if defined $max_depth and $max_depth < 0;

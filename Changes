@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - Inflate numbers as Perl IV and NV values.
 
     Bug Fixes:
         - None.
