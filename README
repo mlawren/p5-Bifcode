@@ -2,7 +2,7 @@ NAME
     Bifcode::V2 - simple serialization format (version 2)
 
 VERSION
-    2.000_2 (yyyy-mm-dd)
+    2.000_2 (2019-09-08)
 
 SYNOPSIS
         use utf8;

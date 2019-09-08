@@ -327,7 +327,7 @@ Bifcode::V2 - simple serialization format (version 2)
 
 =head1 VERSION
 
-2.000_2 (yyyy-mm-dd)
+2.000_2 (2019-09-08)
 
 =head1 SYNOPSIS
 
