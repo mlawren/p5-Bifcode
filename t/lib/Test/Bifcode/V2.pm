@@ -7,8 +7,8 @@ use utf8;
 use Bifcode::V2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
 use Carp;
 use Exporter::Tidy default => [
-    qw($bytes $BYTES
-      $utf8 $UTF8
+    qw($bytes $BYTES $BYTES_KEY
+      $utf8 $UTF8 $UTF8_KEY
       $data1 $DATA1
       $data2 $DATA2
       enc_ok
@@ -23,11 +23,13 @@ our $utf8 = "\x{100}\x{df}";
 #'ฉันกินกระจกได้ แต่มันไม่ทำให้ฉันเจ็บ';
 utf8::encode( my $utf8_bytes = $utf8 );
 my $utf8_length = bytes::length($utf8_bytes);
-our $UTF8 = 'u' . $utf8_length . '.' . $utf8_bytes . ',';
+our $UTF8     = 'u' . $utf8_length . '.' . $utf8_bytes . ',';
+our $UTF8_KEY = 'u' . $utf8_length . '.' . $utf8_bytes . ':';
 
 our $bytes = pack( 's<', 255 );
 my $bytes_length = bytes::length($bytes);
-our $BYTES = 'b' . $bytes_length . '.' . $bytes . ',';
+our $BYTES     = 'b' . $bytes_length . '.' . $bytes . ',';
+our $BYTES_KEY = 'b' . $bytes_length . '.' . $bytes . ':';
 
 our $data1 = {
     bools   => [ $Bifcode::V2::FALSE, $Bifcode::V2::TRUE, ],
@@ -39,11 +41,11 @@ our $data1 = {
 };
 
 our $DATA1 = '{'
-  . ( 'u5.bools,' . '[f,t,]' )
-  . ( 'u5.bytes,' . $BYTES )
-  . ( 'u5.float,' . 'r-1.25e-9,' )
-  . ( 'u7.integer,' . 'i25,' )
-  . ( 'u5.undef,' . '~,' )
+  . ( 'u5.bools:' . '[f,t,]' )
+  . ( 'u5.bytes:' . $BYTES )
+  . ( 'u5.float:' . 'r-1.25e-9,' )
+  . ( 'u7.integer:' . 'i25,' )
+  . ( 'u5.undef:' . '~,' )
   . ( 'u4.utf8,' . $UTF8 ) . '}';
 
 our $data2 = {
@@ -56,12 +58,12 @@ our $data2 = {
 };
 
 our $DATA2 = '{'
-  . ( 'u5.bools,' . '[f,t,]' )
-  . ( 'u5.bytes,' . $BYTES )
-  . ( 'u5.float,' . 'r1.25e-9,' )
-  . ( 'u7.integer,' . 'i24,' )
-  . ( 'u5.undef,' . '~,' )
-  . ( 'u4.utf8,' . $UTF8 ) . '}';
+  . ( 'u5.bools:' . '[f,t,]' )
+  . ( 'u5.bytes:' . $BYTES )
+  . ( 'u5.float:' . 'r1.25e-9,' )
+  . ( 'u7.integer:' . 'i24,' )
+  . ( 'u5.undef:' . '~,' )
+  . ( 'u4.utf8:' . $UTF8 ) . '}';
 
 sub enc_ok {
     croak 'usage: enc_ok($1,$2)'

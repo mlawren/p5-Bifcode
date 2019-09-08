@@ -129,8 +129,9 @@ subtest 'LIST' => sub {
 
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
-    enc_ok { 1 => 'one' } => '{u1.1,u3.one,}';
-    enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{u5.bytes,'
+    enc_ok { 1 => 'one' } => '{i1:u3.one,}';
+    enc_ok { 1.5 => 'one' } => '{r1.5e0:u3.one,}';
+    enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{u5.bytes:'
       . $BYTES . '}';
 
     enc_ok {
@@ -140,8 +141,8 @@ subtest 'DICT' => sub {
         'true'  => boolean::true,
         'undef' => undef,
         $utf8   => $utf8,
-      } => '{u3.age,i25,u4.eyes,u4.blue,u5.false,f,u4.true,t,u5.undef,~,'
-      . $UTF8
+      } => '{u3.age:i25,u4.eyes:u4.blue,u5.false:f,u4.true:t,u5.undef:~,'
+      . $UTF8_KEY
       . $UTF8 . '}';
 
     enc_ok {
@@ -151,10 +152,10 @@ subtest 'DICT' => sub {
             'length' => 100000,
             'undef'  => undef,
         }
-      } => '{u8.spam.mp3,{u6.author,u5.Alice,'
-      . 'u5.bytes,'
+      } => '{u8.spam.mp3:{u6.author:u5.Alice,'
+      . 'u5.bytes:'
       . $BYTES
-      . 'u6.length,i100000,u5.undef,~,' . '}}';
+      . 'u6.length:i100000,u5.undef:~,' . '}}';
 };
 
 my $u = undef;

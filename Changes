@@ -1,3 +1,13 @@
+2.000_2 (2019-09-08)
+
+    API / Behaviour Changes:
+        - Use ":" to separate hash keys from values.
+        - Allow hash keys to be of any type.
+
+    Enhancements:
+        - Inflate numbers as Perl IV and NV values.
+        - Better automatic UTF8/BYTES detection.
+
 2.000_1 (2019-09-02)
 
     API / Behaviour Changes:

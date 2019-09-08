@@ -16,8 +16,8 @@ my $str = q{encode_bifcode {
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
-    float   => 1.25e-5,
-    undef   => undef,
+    real    => 1.25e-5,
+    null    => undef,
     utf8    => "Ελύτη",
 };
 };
@@ -31,7 +31,7 @@ print $bifcode, "\n\n";
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 
-my $format      = '12/1 " %2x"' . "\n" . '"    " "%_p"' . "\n" . '"\n"' . "\n";
+my $format      = '15/1 " %2x"' . "\n" . '"    " "%_p"' . "\n" . '"\n"' . "\n";
 my $format_file = Path::Tiny->tempfile;
 $format_file->spew($format);
 system( 'hexdump', '-f', $format_file, $bifcode_file );

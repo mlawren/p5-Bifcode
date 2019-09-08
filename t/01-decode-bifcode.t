@@ -106,9 +106,9 @@ subtest DICT => sub {
     error_ok '{'        => 'DecodeTrunc',    'unclosed empty dict';
     error_ok '{}foobar' => 'DecodeTrailing', 'empty dict with trailing garbage';
     decod_ok '{}'       => {};
-    decod_ok '{' . $BYTES . $UTF8 . '}' => { $bytes => $utf8 };
-    decod_ok '{' . $UTF8 . $BYTES . '}' => { $utf8  => $bytes };
-    decod_ok '{u3.age,i25,u4.eyes,u4.blue,u5.false,f,u4.true,t,u5.undef,~,}' =>
+    decod_ok '{' . $BYTES_KEY . $UTF8 . '}' => { $bytes => $utf8 };
+    decod_ok '{' . $UTF8_KEY . $BYTES . '}' => { $utf8  => $bytes };
+    decod_ok '{u3.age:i25,u4.eyes:u4.blue,u5.false:f,u4.true:t,u5.undef:~,}' =>
       {
         'age'   => 25,
         'eyes'  => 'blue',
@@ -117,21 +117,21 @@ subtest DICT => sub {
         false   => boolean::false,
       };
     decod_ok
-      '{u8.spam.mp3,{u6.author,u5.Alice,u6.length,i100000,u5.undef,~,}}' =>
+      '{u8.spam.mp3:{u6.author:u5.Alice,u6.length:i100000,u5.undef:~,}}' =>
       { 'spam.mp3' =>
           { 'author' => 'Alice', 'length' => 100000, 'undef' => undef } };
 
     error_ok '{~,}' => 'DecodeKeyType', 'dict key cannot be undef';
     error_ok
-      '{u3.foo,}' => 'DecodeKeyValue',
+      '{u3.foo:}' => 'DecodeKeyValue',
       'dict with odd number of elements';
-    error_ok '{I1,u0.,}' => 'DecodeKeyType', 'dict with integer key';
-    error_ok '{u1.b,u0.,u1.a,u0.,}' => 'DecodeKeyOrder',     'missorted keys';
-    error_ok '{u1.a,u0.,u1.a,u0.,}' => 'DecodeKeyDuplicate', 'duplicate keys';
+    error_ok '{I1:u0.,}' => 'DecodeKeyType', 'dict with integer key';
+    error_ok '{u1.b:u0.,u1.a:u0.,}' => 'DecodeKeyOrder',     'missorted keys';
+    error_ok '{u1.a:u0.,u1.a:u0.,}' => 'DecodeKeyDuplicate', 'duplicate keys';
     error_ok
-      '{u0.,' => 'DecodeTrunc',
+      '{u0.:' => 'DecodeTrunc',
       'unclosed dict with odd number of elements';
-    error_ok '{u0.,u0.,' => 'DecodeTrunc', 'unclosed dict with content';
+    error_ok '{u0.:u0.,' => 'DecodeTrunc', 'unclosed dict with content';
 
 };
 
@@ -146,29 +146,29 @@ subtest nest_limits => sub {
       'nested list when max_depth is 1';
 
     # Accept list containing dict when max_depth is 2
-    decod_ok [ '[{u1.a,u0.,}]', 2 ] => [ { 'a' => '' } ];
+    decod_ok [ '[{u1.a:u0.,}]', 2 ] => [ { 'a' => '' } ];
 
-    error_ok [ '[{u1.a,u0.,}]', 1 ] => 'DecodeDepth',
+    error_ok [ '[{u1.a:u0.,}]', 1 ] => 'DecodeDepth',
       'dict in list when max_depth is 1';
 
     # Accept single dict when max_depth is 1
-    decod_ok [ '{u1.a,u0.,}', 1 ] => { a => '' };
-    error_ok [ '{u1.a,u0.,}', 0 ] => 'DecodeDepth',
+    decod_ok [ '{u1.a:u0.,}', 1 ] => { a => '' };
+    error_ok [ '{u1.a:u0.,}', 0 ] => 'DecodeDepth',
       'single dict when max_depth is 0';
 
     # Accept a nested dict when max_depth is 2
-    decod_ok [ '{u1.a,{u1.a,u0.,}}', 2 ] => { a => { a => '' } };
-    error_ok [ '{u1.a,{u1.a,u0.,}}', 1 ] => 'DecodeDepth',
+    decod_ok [ '{u1.a:{u1.a:u0.,}}', 2 ] => { a => { a => '' } };
+    error_ok [ '{u1.a:{u1.a:u0.,}}', 1 ] => 'DecodeDepth',
       'nested dict when max_depth is 1';
 
     # Accept dict containing list when max_depth is 2
-    decod_ok [ '{u1.a,[u0.,]}', 2 ] => { a => [''] };
-    error_ok [ '{u1.a,[u0.,]}', 1 ] => 'DecodeDepth',
+    decod_ok [ '{u1.a:[u0.,]}', 2 ] => { a => [''] };
+    error_ok [ '{u1.a:[u0.,]}', 1 ] => 'DecodeDepth',
       'list in dict when max_depth is 1';
 
     # Accept dict containing list when max_depth is 2
-    decod_ok [ '{u1.a,u0.,u1.b,[u0.,]}', 2 ] => { a => '', b => [''] };
-    error_ok [ '{u1.a,u0.,u1.b,[u0.,]}', 1 ] => 'DecodeDepth',
+    decod_ok [ '{u1.a:u0.,u1.b:[u0.,]}', 2 ] => { a => '', b => [''] };
+    error_ok [ '{u1.a:u0.,u1.b:[u0.,]}', 1 ] => 'DecodeDepth',
       'list in dict when max_depth is 1';
 };
 
