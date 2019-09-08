@@ -101,16 +101,13 @@ SPECIFICATION
     A UTF8 string is "u" followed by the octet length of the encoded
     string as a base ten number followed by a "." and the encoded string
     followed by ",". For example the Perl string "\x{df}" (ß)
-    corresponds to "u2.\x{c3}\x{9f},". However, if a UTF8 string is
-    encoded as a hash/dict key then the final character becomes ":"
-    instead of ",".
+    corresponds to "u2.\x{c3}\x{9f},".
 
   BIFCODE_BYTES
     Opaque data is 'b' followed by the octet length of the data as a
     base ten number followed by a "." and then the data itself followed
     by ",". For example a three-byte blob 'xyz' corresponds to
-    'b3.xyz,'. However, if a bytes are to be encoded as a hash/dict key
-    then the final character becomes ":" instead of ",".
+    'b3.xyz,'.
 
   BIFCODE_INTEGER
     Integers are represented by an 'i' followed by the number in base 10
@@ -135,11 +132,13 @@ SPECIFICATION
 
   BIFCODE_DICT
     Dictionaries are encoded as a '{' followed by a list of alternating
-    keys and their corresponding values followed by a '}'. For example,
-    '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow': 'moo',
-    'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}' corresponds to {'spam'.
-    ['a', 'b']}. Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear
-    in sorted order (sorted as raw strings, not alphanumerics).
+    keys and their corresponding values followed by a '}'. Keys are
+    encoded with a ":" as the last character instead of ",".
+
+    For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to
+    {'cow': 'moo', 'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}'
+    corresponds to {'spam'. ['a', 'b']}. Keys must appear in sorted
+    order (sorted as raw strings, not alphanumerics).
 
 INTERFACE
   "encode_bifcode( $datastructure )"
@@ -154,25 +153,30 @@ INTERFACE
     *   The "true" and "false" values from the boolean distribution
         encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
-    *   Plain scalars are treated as BIFCODE_UTF8 unless:
+    *   A plain scalar is treated as follows:
 
-        *   They look like canonically represented integers in which
-            case they are mapped to BIFCODE_INTEGER; or
+        *   BIFCODE_UTF8 if "utf8::is_utf8" returns true; or
 
-        *   They look like reals in which case they are mapped to
-            BIFCODE_REAL.
+        *   BIFCODE_INTEGER if it looks like a canonically represented
+            integer; or
+
+        *   BIFCODE_REAL if it looks like a real number; or
+
+        *   BIFCODE_UTF8 if it only contains ASCII characters; or
+
+        *   BIFCODE_BYTES when none of the above applies.
+
+        You can force scalars to be encoded a particular way by passing
+        a reference to them blessed as Bifcode::V2::BYTES,
+        Bifcode::V2::INTEGER, Bifcode::V2::REAL or Bifcode::V2::UTF8.
+        The "force_bifcode" function below can help with creating such
+        references.
 
     *   SCALAR references become BIFCODE_BYTES.
 
     *   ARRAY references become BIFCODE_LIST.
 
     *   HASH references become BIFCODE_DICT.
-
-    You can force scalars to be encoded a particular way by passing a
-    reference to them blessed as Bifcode::V2::BYTES,
-    Bifcode::V2::INTEGER, Bifcode::V2::REAL or Bifcode::V2::UTF8. The
-    "force_bifcode" function below can help with creating such
-    references.
 
     This subroutine croaks on unhandled data types.
 
@@ -185,9 +189,9 @@ INTERFACE
     prevent DoS attacks using maliciously crafted input.
 
     *bifcode* types are mapped back to Perl in the reverse way to the
-    "encode_bifcode" function, with the exception that any scalars which
-    were "forced" to a particular type (using blessed references) will
-    decode as unblessed scalars.
+    "encode_bifcode" function, except that any scalars which were
+    "forced" to a particular type (using blessed references) will decode
+    as plain scalars.
 
     Croaks on malformed data.
 
@@ -314,9 +318,10 @@ BUGS AND LIMITATIONS
     "encode_bifcode()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
 
-    At the moment all Perl hash keys are encoded as BIFCODE_UTF8 as I
-    have not yet had the need for BIFCODE_BYTES keys or found a cheap,
-    obvious way to distinguish the two.
+    Perl hash keys are always encoded according to the plain scalar
+    rules with no possibility to override. That means for example that
+    there is no way to force "{"10" =" "ten"}> to become
+    "{u2.10:u3.ten,}" instead of "{i10:u3.ten,}".
 
 SEE ALSO
     This distribution includes the diff-bifcode command-line utility for

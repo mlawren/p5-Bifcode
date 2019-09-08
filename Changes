@@ -1,13 +1,15 @@
 2.000_2 (yyyy-mm-dd)
 
     API / Behaviour Changes:
-        - Use ":" to separate DICT/HASH keys from values.
+        - Use ":" to separate hash keys from values.
+        - Allow hash keys to be of any type.
 
     New Features:
         - None.
 
     Enhancements:
         - Inflate numbers as Perl IV and NV values.
+        - Better automatic UTF8/BYTES detection.
 
     Bug Fixes:
         - None.

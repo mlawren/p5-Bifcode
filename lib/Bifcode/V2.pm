@@ -190,28 +190,36 @@ my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( \. ( [0-9]+? ) 0* )?
                     ( e ( -? [0-9]+ ) )? \z/xi;
 
+our $_CHECK = ',';
+
 sub _encode_bifcode {
     map {
         if ( !defined $_ ) {
-            '~,';
+            '~' . $_CHECK;
         }
         elsif ( ( my $ref = ref $_ ) eq '' ) {
-            if ( $_ =~ $number_qr ) {
+            if ( utf8::is_utf8($_) ) {
+                utf8::encode( my $str = $_ );
+                'u' . length($str) . '.' . $str . $_CHECK;
+            }
+            elsif ( $_ =~ $number_qr ) {
                 if ( defined $3 or defined $5 ) {
 
                     # normalize to BIFCODE_REAL standards
                     my $x = 'r' . ( 0 + $1 )    # remove leading zeros
-                      . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+                      . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . $_CHECK;
                     $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
                     $x;
                 }
                 else {
-                    'i' . $_ . ',';
+                    'i' . $_ . $_CHECK;
                 }
             }
+            elsif ( $_ =~ m/[^\x{20}-\x{7E}]/ ) {
+                'b' . length($_) . '.' . $_ . $_CHECK;
+            }
             else {
-                utf8::encode( my $str = $_ );
-                'u' . length($str) . '.' . $str . ',';
+                'u' . length($_) . '.' . $_ . $_CHECK;
             }
         }
         elsif ( $ref eq 'ARRAY' ) {
@@ -221,28 +229,23 @@ sub _encode_bifcode {
             '{' . join(
                 '',
                 do {
+                    my $k;
                     my @k = sort keys %$_;
+
                     map {
-                        my $k = shift @k;
-
-                        # if ( is valid utf8($k) ) {
-                        utf8::encode($k);
-                        ( 'u' . length($k) . '.' . $k . ':', $_ );
-
-                        # }
-                        # else {
-                        #     ('b' . length($k) . '.' . $k .':', $_);
-                        # }
+                        local $_CHECK = ':';
+                        $k = shift @k;
+                        ( _encode_bifcode($k), $_ );
                     } _encode_bifcode( @$_{@k} );
                   }
             ) . '}';
         }
         elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::V2::BYTES' ) {
             $$_ // _croak 'EncodeBytesUndef';
-            'b' . length($$_) . '.' . $$_ . ',';
+            'b' . length($$_) . '.' . $$_ . $_CHECK;
         }
         elsif ( boolean::isBoolean($_) ) {
-            $_ ? 't,' : 'f,';
+            ( $_ ? 't' : 'f' ) . $_CHECK;
         }
         elsif ( $ref eq 'Bifcode::V2::INTEGER' ) {
             $$_ // _croak 'EncodeIntegerUndef';
@@ -256,14 +259,14 @@ sub _encode_bifcode {
               unless $$_ =~ $number_qr;
 
             my $x = 'r' . ( 0 + $1 )    # remove leading zeros
-              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
+              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . $_CHECK;
             $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
             $x;
         }
         elsif ( $ref eq 'Bifcode::V2::UTF8' ) {
             my $str = $$_ // _croak 'EncodeUTF8Undef';
-            utf8::encode($str);  #, sub { croak 'invalid Bifcode::V2::UTF8' } );
-            'u' . length($str) . '.' . $str . ',';
+            utf8::encode($str);
+            'u' . length($str) . '.' . $str . $_CHECK;
         }
         else {
             _croak 'EncodeUnhandled', 'unhandled data type: ' . $ref;
@@ -445,16 +448,13 @@ Boolean values are represented by "t," and "f,".
 A UTF8 string is "u" followed by the octet length of the encoded string
 as a base ten number followed by a "." and the encoded string followed
 by ",". For example the Perl string "\x{df}" (ß) corresponds to
-"u2.\x{c3}\x{9f},". However, if a UTF8 string is encoded as a hash/dict
-key then the final character becomes ":" instead of ",".
+"u2.\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
 
 Opaque data is 'b' followed by the octet length of the data as a base
 ten number followed by a "." and then the data itself followed by ",".
-For example a three-byte blob 'xyz' corresponds to 'b3.xyz,'. However,
-if a bytes are to be encoded as a hash/dict key then the final
-character becomes ":" instead of ",".
+For example a three-byte blob 'xyz' corresponds to 'b3.xyz,'.
 
 =head2 BIFCODE_INTEGER
 
@@ -482,11 +482,13 @@ corresponds to ['spam', 'eggs'].
 =head2 BIFCODE_DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
-keys and their corresponding values followed by a '}'. For example,
-'{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow': 'moo',
-'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}' corresponds to {'spam'.
-['a', 'b']}. Keys must be BIFCODE_UTF8 or BIFCODE_BYTES and appear in
-sorted order (sorted as raw strings, not alphanumerics).
+keys and their corresponding values followed by a '}'. Keys are encoded
+with a ":" as the last character instead of ",".
+
+For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow':
+'moo', 'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}' corresponds to
+{'spam'.  ['a', 'b']}. Keys must appear in sorted order (sorted as raw
+strings, not alphanumerics).
 
 =head1 INTERFACE
 
@@ -505,20 +507,36 @@ The mapping from Perl to I<bifcode> is as follows:
 =item * The C<true> and C<false> values from the L<boolean>
 distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
-=item * Plain scalars are treated as BIFCODE_UTF8 unless:
+=item * A plain scalar is treated as follows:
 
 =over
 
 =item
 
-They look like canonically represented integers in which case they are
-mapped to BIFCODE_INTEGER; or
+BIFCODE_UTF8 if C<utf8::is_utf8> returns true; or
 
 =item
 
-They look like reals in which case they are mapped to BIFCODE_REAL.
+BIFCODE_INTEGER if it looks like a canonically represented integer; or
+
+=item
+
+BIFCODE_REAL if it looks like a real number; or
+
+=item
+
+BIFCODE_UTF8 if it only contains ASCII characters; or
+
+=item
+
+BIFCODE_BYTES when none of the above applies.
 
 =back
+
+You can force scalars to be encoded a particular way by passing a
+reference to them blessed as Bifcode::V2::BYTES, Bifcode::V2::INTEGER,
+Bifcode::V2::REAL or Bifcode::V2::UTF8. The C<force_bifcode> function
+below can help with creating such references.
 
 =item * SCALAR references become BIFCODE_BYTES.
 
@@ -527,11 +545,6 @@ They look like reals in which case they are mapped to BIFCODE_REAL.
 =item * HASH references become BIFCODE_DICT.
 
 =back
-
-You can force scalars to be encoded a particular way by passing a
-reference to them blessed as Bifcode::V2::BYTES, Bifcode::V2::INTEGER,
-Bifcode::V2::REAL or Bifcode::V2::UTF8. The C<force_bifcode> function
-below can help with creating such references.
 
 This subroutine croaks on unhandled data types.
 
@@ -545,9 +558,9 @@ attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
 I<bifcode> types are mapped back to Perl in the reverse way to the
-C<encode_bifcode> function, with the exception that any scalars which
-were "forced" to a particular type (using blessed references) will
-decode as unblessed scalars.
+C<encode_bifcode> function, except that any scalars which were "forced"
+to a particular type (using blessed references) will decode as plain
+scalars.
 
 Croaks on malformed data.
 
@@ -708,9 +721,10 @@ Strings and numbers are practically indistinguishable in Perl, so
 C<encode_bifcode()> has to resort to a heuristic to decide how to
 serialise a scalar. This cannot be fixed.
 
-At the moment all Perl hash keys are encoded as BIFCODE_UTF8 as I have
-not yet had the need for BIFCODE_BYTES keys or found a cheap, obvious
-way to distinguish the two.
+Perl hash keys are always encoded according to the plain scalar rules
+with no possibility to override.  That means for example that there is
+no way to force C<{"10" => "ten"}> to become C<{u2.10:u3.ten,}> instead
+of C<{i10:u3.ten,}>.
 
 =head1 SEE ALSO
 

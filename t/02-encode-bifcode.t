@@ -129,7 +129,8 @@ subtest 'LIST' => sub {
 
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
-    enc_ok { 1 => 'one' } => '{u1.1:u3.one,}';
+    enc_ok { 1 => 'one' } => '{i1:u3.one,}';
+    enc_ok { 1.5 => 'one' } => '{r1.5e0:u3.one,}';
     enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{u5.bytes:'
       . $BYTES . '}';
 
