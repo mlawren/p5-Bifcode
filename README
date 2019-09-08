@@ -220,6 +220,20 @@ INTERFACE
 
     Croaks if Text::Diff is not installed.
 
+  AnyEvent::Handle Support
+    Bifcode::V2 implements the AnyEvent::Handle "anyevent_read_type" and
+    "anyevent_write_type" functions which allow you to do this:
+
+        $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
+
+        $handle->push_read(
+            'Bifcode::V2' => sub {
+                my ( $hdl, $ref ) = @_;
+                # do stuff with $ref
+            },
+                    $maxdepth       # passed straight to decode_bifcode()
+        );
+
 DIAGNOSTICS
     The following exceptions may be raised by Bifcode::V2:
 

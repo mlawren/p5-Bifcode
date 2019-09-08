@@ -5,7 +5,7 @@
           network connection.
 
     New Features:
-        - None.
+        - Support AnyEvent::Handle integration.
 
     Enhancements:
         - None.

@@ -329,6 +329,32 @@ sub diff_bifcode {
     return Text::Diff::diff( \$b1, \$b2, $diff_args );
 }
 
+sub anyevent_read_type {
+    my ( $handle, $cb, $maxdepth ) = @_;
+
+    sub {
+        return unless defined $_[0]{rbuf};
+        unless ( $handle->{rbuf} =~ m/^(B(0|[1-9][0-9]*)\.)/ ) {
+            $handle->_error( Errno::EBADMSG() );
+            return;
+        }
+
+        $handle->unshift_read(
+            chunk => length($1) + $2 + 1,
+            sub {
+                $cb->( $_[0], decode_bifcode( $_[1], $maxdepth ) );
+            }
+        );
+
+        1;
+    };
+}
+
+sub anyevent_write_type {
+    my ( $handle, $ref ) = @_;
+    encode_bifcode( encode_bifcode($ref) );
+}
+
 1;
 
 package Bifcode::V2::BIFCODE;
@@ -620,6 +646,21 @@ a very simple regex before the diff is done. The third argument
 (C<$diff_args>) is passed directly to L<Text::Diff>.
 
 Croaks if L<Text::Diff> is not installed.
+
+=head2 AnyEvent::Handle Support
+
+B<Bifcode::V2> implements the L<AnyEvent::Handle> C<anyevent_read_type>
+and C<anyevent_write_type> functions which allow you to do this:
+
+    $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
+
+    $handle->push_read(
+        'Bifcode::V2' => sub {
+            my ( $hdl, $ref ) = @_;
+            # do stuff with $ref
+        },
+		$maxdepth 	# passed straight to decode_bifcode()
+    );
 
 =head1 DIAGNOSTICS
 
