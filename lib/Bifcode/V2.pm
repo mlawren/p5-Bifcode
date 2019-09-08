@@ -339,20 +339,18 @@ Bifcode::V2 - simple serialization format (version 2)
         bools   => [ boolean::false, boolean::true, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
-        float   => 1.25e-5,
-        undef   => undef,
+        real    => 1.25e-5,
+        null    => undef,
         utf8    => "Ελύτη",
     };
 
-    # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66    {u5.bools:[f
-    # 2c 74 2c 5d 75 35 2e 62 79 74 65 73    ,t,]u5.bytes
-    # 3a 62 32 2e ff  0 2c 75 35 2e 66 6c    :b2...,u5.fl
-    # 6f 61 74 3a 72 31 2e 32 35 65 2d 35    oat:r1.25e-5
-    # 2c 75 37 2e 69 6e 74 65 67 65 72 3a    ,u7.integer:
-    # 69 32 35 2c 75 35 2e 75 6e 64 65 66    i25,u5.undef
-    # 3a 7e 2c 75 34 2e 75 74 66 38 3a 75    :~,u4.utf8:u
-    # 31 30 2e ce 95 ce bb cf 8d cf 84 ce    10..........
-    # b7 2c 7d                               .,}
+    # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66 2c 74 2c    {u5.bools:[f,t,
+    # 5d 75 35 2e 62 79 74 65 73 3a 62 32 2e ff  0    ]u5.bytes:b2...
+    # 2c 75 37 2e 69 6e 74 65 67 65 72 3a 69 32 35    ,u7.integer:i25
+    # 2c 75 34 2e 6e 75 6c 6c 3a 7e 2c 75 34 2e 72    ,u4.null:~,u4.r
+    # 65 61 6c 3a 72 31 2e 32 35 65 2d 35 2c 75 34    eal:r1.25e-5,u4
+    # 2e 75 74 66 38 3a 75 31 30 2e ce 95 ce bb cf    .utf8:u10......
+    # 8d cf 84 ce b7 2c 7d                            .....,}
 
     my $decoded = decode_bifcode $bifcode;
 
