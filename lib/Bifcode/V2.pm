@@ -71,10 +71,10 @@ my $match = qr/ \G (?|
       (~,)
     | (f,)
     | (t,)
-    | (b|u) (?: ( 0 | [1-9] [0-9]* ) \. )?
-    | (i)   (?: ( 0 | -? [1-9] [0-9]* ) , )?
-    | (r)   (?: ( 0 | -? [1-9] [0-9]* ) \. ( 0 | [0-9]* [1-9] ) e
-                ( (?: 0 | -? [1-9] ) [0-9]* ) , )?
+    | (B|b|u) (?: ( 0 | [1-9] [0-9]* ) \. )?
+    | (i)     (?: ( 0 | -? [1-9] [0-9]* ) , )?
+    | (r)     (?: ( 0 | -? [1-9] [0-9]* ) \. ( 0 | [0-9]* [1-9] ) e
+                  ( (?: 0 | -? [1-9] ) [0-9]* ) , )?
     | (\[)
     | (\{)
 ) /x;
@@ -168,6 +168,18 @@ sub _decode_bifcode_chunk {
             $hash{$key} = _decode_bifcode_chunk();
         }
         return \%hash;
+    }
+    elsif ( $1 eq 'B' ) {
+        _croak 'DecodeBifcodeKey' if $decode_key;
+
+        my $len = $2 // _croak 'DecodeBifcode';
+        _croak 'DecodeBifcodeTrunc' if $len > length() - pos();
+
+        my $data = substr $_, pos(), $len;
+        pos() = pos() + $len;
+
+        _croak 'DecodeBifcodeTerm' unless m/ \G , /xgc;
+        return decode_bifcode( $data, $max_depth );
     }
 }
 
@@ -268,6 +280,10 @@ sub _encode_bifcode {
             utf8::encode($str);
             'u' . length($str) . '.' . $str . $_CHECK;
         }
+        elsif ( $ref eq 'Bifcode::V2::BIFCODE' ) {
+            my $str = $$_ // _croak 'EncodeBifcodeUndef';
+            'B' . length($str) . '.' . $str . $_CHECK;
+        }
         else {
             _croak 'EncodeUnhandled', 'unhandled data type: ' . $ref;
         }
@@ -276,7 +292,7 @@ sub _encode_bifcode {
 
 sub encode_bifcode {
     _croak 'EncodeUsage' if @_ != 1;
-    (&_encode_bifcode)[0];
+    bless \(&_encode_bifcode)[0], __PACKAGE__ . '::BIFCODE';
 }
 
 sub force_bifcode {
@@ -292,7 +308,7 @@ sub _expand_bifcode {
     $bifcode =~ s/ (
             [\[\]\{\}]
             | ~,
-            | (u|b) [0-9]+ \.
+            | (B|u|b) [0-9]+ \.
             | r -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,
             | i [0-9]+ ,
         ) /\n$1/gmx;
@@ -312,6 +328,14 @@ sub diff_bifcode {
     $b2 = _expand_bifcode($b2);
     return Text::Diff::diff( \$b1, \$b2, $diff_args );
 }
+
+1;
+
+package Bifcode::V2::BIFCODE;
+use overload
+  bool     => sub { 1 },
+  '""'     => sub { ${ $_[0] } },
+  fallback => 1;
 
 1;
 
@@ -488,13 +512,21 @@ For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow':
 {'spam'.  ['a', 'b']}. Keys must appear in sorted order (sorted as raw
 strings, not alphanumerics).
 
+=head2 BIFCODE_BIFCODE
+
+A Bifcode string is "B" followed by the octet length of the encoded
+string as a base ten number followed by a "." and the encoded string
+followed by ",". This is typically used to frame Bifcode structures
+over a network.
+
 =head1 INTERFACE
 
 =head2 C<encode_bifcode( $datastructure )>
 
 Takes a single argument which may be a scalar, or may be a reference to
-either a scalar, an array or a hash. Arrays and hashes may in turn
-contain values of these same types. Returns a byte string.
+either a scalar, an array, a hash or a Bifcode::V2::BIFCODE object.
+Arrays and hashes may in turn contain values of these same types.
+Returns a byte string blessed as C<Bifcode::V2::BIFCODE>.
 
 The mapping from Perl to I<bifcode> is as follows:
 
@@ -542,6 +574,8 @@ below can help with creating such references.
 
 =item * HASH references become BIFCODE_DICT.
 
+=item * Bifcode::V2::BIFCODE references become BIFCODE_BIFCODE.
+
 =back
 
 This subroutine croaks on unhandled data types.
@@ -556,9 +590,18 @@ attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
 I<bifcode> types are mapped back to Perl in the reverse way to the
-C<encode_bifcode> function, except that any scalars which were "forced"
+C<encode_bifcode> function, except for:
+
+=over
+
+=item * Any scalars which were "forced"
 to a particular type (using blessed references) will decode as plain
 scalars.
+
+=item * BIFCODE_BIFCODE types are fully inflated into the underlying
+Perl object, and not the intermediate Bifcode string.
+
+=back
 
 Croaks on malformed data.
 

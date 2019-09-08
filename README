@@ -138,11 +138,18 @@ SPECIFICATION
     corresponds to {'spam'. ['a', 'b']}. Keys must appear in sorted
     order (sorted as raw strings, not alphanumerics).
 
+  BIFCODE_BIFCODE
+    A Bifcode string is "B" followed by the octet length of the encoded
+    string as a base ten number followed by a "." and the encoded string
+    followed by ",". This is typically used to frame Bifcode structures
+    over a network.
+
 INTERFACE
   "encode_bifcode( $datastructure )"
     Takes a single argument which may be a scalar, or may be a reference
-    to either a scalar, an array or a hash. Arrays and hashes may in
-    turn contain values of these same types. Returns a byte string.
+    to either a scalar, an array, a hash or a Bifcode::V2::BIFCODE
+    object. Arrays and hashes may in turn contain values of these same
+    types. Returns a byte string blessed as "Bifcode::V2::BIFCODE".
 
     The mapping from Perl to *bifcode* is as follows:
 
@@ -176,6 +183,8 @@ INTERFACE
 
     *   HASH references become BIFCODE_DICT.
 
+    *   Bifcode::V2::BIFCODE references become BIFCODE_BIFCODE.
+
     This subroutine croaks on unhandled data types.
 
   "decode_bifcode( $string [, $max_depth ] )"
@@ -187,9 +196,13 @@ INTERFACE
     prevent DoS attacks using maliciously crafted input.
 
     *bifcode* types are mapped back to Perl in the reverse way to the
-    "encode_bifcode" function, except that any scalars which were
-    "forced" to a particular type (using blessed references) will decode
-    as plain scalars.
+    "encode_bifcode" function, except for:
+
+    *   Any scalars which were "forced" to a particular type (using
+        blessed references) will decode as plain scalars.
+
+    *   BIFCODE_BIFCODE types are fully inflated into the underlying
+        Perl object, and not the intermediate Bifcode string.
 
     Croaks on malformed data.
 

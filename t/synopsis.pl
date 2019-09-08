@@ -28,6 +28,7 @@ my $bifcode = eval $str;
 
 binmode STDOUT;
 print $bifcode, "\n\n";
+print encode_bifcode($bifcode), "\n\n";
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 

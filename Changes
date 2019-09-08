@@ -1,7 +1,8 @@
 2.000_3 (yyyy-mm-dd)
 
     API / Behaviour Changes:
-        - None.
+        - New BIFCODE_BIFCODE type for framing Bifcodes across a
+          network connection.
 
     New Features:
         - None.
