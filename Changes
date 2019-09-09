@@ -3,6 +3,8 @@
     API / Behaviour Changes:
         - New BIFCODE_BIFCODE type for framing Bifcodes across a
           network connection.
+        - Re-introduce requirement for BIFCODE_DICT keys to be
+          BIFCODE_UTF8 or BIFCODE_BYTES.
 
     New Features:
         - Support AnyEvent::Handle integration.

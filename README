@@ -130,8 +130,9 @@ SPECIFICATION
 
   BIFCODE_DICT
     Dictionaries are encoded as a '{' followed by a list of alternating
-    keys and their corresponding values followed by a '}'. Keys are
-    encoded with a ":" as the last character instead of ",".
+    keys and their corresponding values followed by a '}'. Keys must be
+    of type BIFCODE_UTF8 or BIFCODE_BYTES and are encoded with a ":" as
+    the last character instead of ",".
 
     For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to
     {'cow': 'moo', 'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}'
@@ -201,8 +202,8 @@ INTERFACE
     *   Any scalars which were "forced" to a particular type (using
         blessed references) will decode as plain scalars.
 
-    *   BIFCODE_BIFCODE types are fully inflated into the underlying
-        Perl object, and not the intermediate Bifcode string.
+    *   BIFCODE_BIFCODE types are fully inflated into Perl structures,
+        and not the intermediate Bifcode string.
 
     Croaks on malformed data.
 
