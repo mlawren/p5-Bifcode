@@ -11,9 +11,24 @@ WriteMakefile(
     VERSION_FROM => 'lib/Bifcode/V2.pm',
     LICENSE      => 'perl_5',
     EXE_FILES    => ['bin/diff-bifcode'],
-    META_ADD     => {
+    META_MERGE   => {
+        'meta-spec' => { version => 2 },
+        no_index    => {
+            package => [
+                qw(
+                  Bifcode::V2::BIFCODE
+                  )
+            ],
+        },
         resources => {
-            repository => 'https://github.com/mlawren/p5-Bifcode',
-        }
+            bugtracker =>
+              { web => 'https//github.com/mlawren/p5-Bifcode/issues', },
+            homepage   => 'https//github.com/mlawren/p5-Bifcode',
+            repository => {
+                type => 'git',
+                url  => 'ssh://git@github.com/mlawren/p5-Bifcode.git',
+                web  => 'https//github.com/mlawren/p5-Bifcode',
+            }
+        },
     },
 );
