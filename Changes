@@ -1,3 +1,20 @@
+2.000_3 (2019-09-09)
+
+    API / Behaviour Changes:
+        - Re-introduce requirement for BIFCODE_DICT keys to be
+          BIFCODE_UTF8 or BIFCODE_BYTES.
+
+    New Features:
+        - New BIFCODE_BIFCODE type for framing Bifcodes across a
+          network connection.
+        - Support AnyEvent::Handle integration.
+
+    Enhancements:
+        - Only load Carp when we actually need to croak
+
+    Packaging:
+        - Add some missing (bugtracker, repo) META data.
+
 2.000_2 (2019-09-08)
 
     API / Behaviour Changes:
@@ -12,21 +29,6 @@
 
     API / Behaviour Changes:
         - Implements bifcode version 2, incompatible with version 1.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
 
 1.002 (2018-09-23)
 

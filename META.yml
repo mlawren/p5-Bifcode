@@ -20,6 +20,8 @@ no_index:
   directory:
     - t
     - inc
+  package:
+    - Bifcode::V2::BIFCODE
 requires:
   Carp: '0'
   Exporter::Tidy: '0'
@@ -29,6 +31,6 @@ requires:
   utf8: '0'
   warnings: '0'
 resources:
-  repository: https://github.com/mlawren/p5-Bifcode
-version: 2.000_2
+  repository: ssh://git@github.com/mlawren/p5-Bifcode.git
+version: 2.000_3
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

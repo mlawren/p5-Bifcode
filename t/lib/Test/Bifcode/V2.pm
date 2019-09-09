@@ -78,6 +78,7 @@ sub enc_ok {
 
 sub enc_error_ok {
     my ( $data, $error, $kind_of_brokenness ) = @_;
+    $kind_of_brokenness // Carp::croak 'enc_error_ok needs $kind_of_brokenness';
     local $@;
     eval { encode_bifcode $data };
     local $Test::Builder::Level = $Test::Builder::Level + 1;

@@ -121,11 +121,14 @@ subtest DICT => sub {
       { 'spam.mp3' =>
           { 'author' => 'Alice', 'length' => 100000, 'undef' => undef } };
 
-    error_ok '{~,}' => 'DecodeKeyType', 'dict key cannot be undef';
+    error_ok '{~,}'      => 'DecodeKeyType', 'dict key must be UTF8 or BYTES';
+    error_ok '{~:}'      => 'DecodeKeyType', 'dict key must be UTF8 or BYTES';
+    error_ok '{i1,u0.,}' => 'DecodeKeyType', 'dict key must be UTF8 or BYTES';
+    error_ok '{i1:u0.,}' => 'DecodeKeyType', 'dict key must be UTF8 or BYTES';
+
     error_ok
       '{u3.foo:}' => 'DecodeKeyValue',
       'dict with odd number of elements';
-    error_ok '{I1:u0.,}' => 'DecodeKeyType', 'dict with integer key';
     error_ok '{u1.b:u0.,u1.a:u0.,}' => 'DecodeKeyOrder',     'missorted keys';
     error_ok '{u1.a:u0.,u1.a:u0.,}' => 'DecodeKeyDuplicate', 'duplicate keys';
     error_ok

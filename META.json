@@ -17,6 +17,9 @@
       "directory" : [
          "t",
          "inc"
+      ],
+      "package" : [
+         "Bifcode::V2::BIFCODE"
       ]
    },
    "prereqs" : {
@@ -51,10 +54,12 @@
    },
    "release_status" : "unstable",
    "resources" : {
+      "bugtracker" : {},
       "repository" : {
-         "url" : "https://github.com/mlawren/p5-Bifcode"
+         "type" : "git",
+         "url" : "ssh://git@github.com/mlawren/p5-Bifcode.git"
       }
    },
-   "version" : "2.000_2",
+   "version" : "2.000_3",
    "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

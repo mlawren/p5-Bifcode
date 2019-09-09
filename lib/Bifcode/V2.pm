@@ -3,7 +3,6 @@ use 5.010;
 use strict;
 use warnings;
 use boolean ();
-use Carp (qw/croak shortmess/);
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -13,12 +12,13 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '2.000_2';
+our $VERSION = '2.000_3';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
 sub _croak {
-    my $type     = shift // croak 'usage: _error($TYPE, [$msg])';
+    require Carp;
+    my $type     = shift // Carp::croak('usage: _croak($TYPE, [$msg])');
     my %messages = (
         Decode             => 'garbage at',
         DecodeBytes        => 'malformed BYTES length at',
@@ -52,39 +52,69 @@ sub _croak {
     );
 
     my $err   = 'Bifcode::V2::Error::' . $type;
-    my $msg   = shift // $messages{$type} // '(no message)';
-    my $short = shortmess('');
+    my $msg   = shift // $messages{$type} // die '_error (no message)';
+    my $short = Carp::shortmess('');
 
     $msg =~ s! at$!' at input byte '. ( pos() // 0 )!e;
 
-    eval 'package ' . $err . qq[;
-        use overload
-          bool => sub { 1 },
-          '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
-          fallback => 1;
-        1; ];
+    eval qq[
+        package $err {
+            use overload
+              bool => sub { 1 },
+              '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
+              fallback => 1;
+            1;
+        }];
 
     die bless \$msg, $err;
 }
 
-my $match = qr/ \G (?|
+my $chunk = qr/ \G (?|
       (~,)
     | (f,)
     | (t,)
-    | (b|u) (?: ( 0 | [1-9] [0-9]* ) \. )?
-    | (i)   (?: ( 0 | -? [1-9] [0-9]* ) , )?
-    | (r)   (?: ( 0 | -? [1-9] [0-9]* ) \. ( 0 | [0-9]* [1-9] ) e
-                ( (?: 0 | -? [1-9] ) [0-9]* ) , )?
+    | (B|b|u) (?:     ( 0 |    [1-9]   [0-9]* ) \. )?
+    | (i)     (?:     ( 0 | -? [1-9]   [0-9]* ) ,  )?
+    | (r)     (?:     ( 0 | -? [1-9]   [0-9]* )
+                \.    ( 0 |    [0-9]*  [1-9]  )
+                e ( (?: 0 | -? [1-9] ) [0-9]* ) , 
+                                                   )?
     | (\[)
     | (\{)
 ) /x;
 
-my $decode_key = 0;
+sub _decode_bifcode_key {
+
+    unless (m/ \G (b|u) (?: ( 0 | [1-9] [0-9]* ) \. )? /gcx) {
+        _croak m/ \G \z /xgc ? 'DecodeTrunc' : 'DecodeKeyType';
+    }
+
+    if ( $1 eq 'b' ) {
+        my $len = $2 // _croak 'DecodeBytes';
+        _croak 'DecodeBytesTrunc' if $len > length() - pos();
+
+        my $data = substr $_, pos(), $len;
+        pos() = pos() + $len;
+
+        _croak 'DecodeBytesTerm' unless m/ \G : /xgc;
+        return $data;
+    }
+    elsif ( $1 eq 'u' ) {
+        my $len = $2 // _croak 'DecodeUTF8';
+        _croak 'DecodeUTF8Trunc' if $len > length() - pos();
+
+        utf8::decode( my $str = substr $_, pos(), $len );
+        pos() = pos() + $len;
+
+        _croak 'DecodeUTF8Term' unless m/ \G : /xgc;
+        return $str;
+    }
+}
 
 sub _decode_bifcode_chunk {
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
-    unless (m/$match/gc) {
+    unless (m/$chunk/gc) {
         _croak m/ \G \z /xgc ? 'DecodeTrunc' : 'Decode';
     }
 
@@ -104,8 +134,7 @@ sub _decode_bifcode_chunk {
         my $data = substr $_, pos(), $len;
         pos() = pos() + $len;
 
-        _croak 'DecodeBytesTerm'
-          unless $decode_key ? m/ \G : /xgc : m/ \G , /xgc;
+        _croak 'DecodeBytesTerm' unless m/ \G , /xgc;
         return $data;
     }
     elsif ( $1 eq 'u' ) {
@@ -115,8 +144,7 @@ sub _decode_bifcode_chunk {
         utf8::decode( my $str = substr $_, pos(), $len );
         pos() = pos() + $len;
 
-        _croak 'DecodeUTF8Term'
-          unless $decode_key ? m/ \G : /xgc : m/ \G , /xgc;
+        _croak 'DecodeUTF8Term' unless m/ \G , /xgc;
         return $str;
     }
     elsif ( $1 eq 'i' ) {
@@ -152,12 +180,8 @@ sub _decode_bifcode_chunk {
         my %hash;
         until (m/ \G \} /xgc) {
             _croak 'DecodeTrunc' if m/ \G \z /xgc;
-            _croak 'DecodeKeyType' unless m/ \G (b|u) /xgc;
 
-            pos() = pos() - 1;
-            $decode_key = 1;
-            my $key = _decode_bifcode_chunk();
-            $decode_key = 0;
+            my $key = _decode_bifcode_key();
 
             _croak 'DecodeKeyDuplicate' if exists $hash{$key};
             _croak 'DecodeKeyOrder'
@@ -168,6 +192,16 @@ sub _decode_bifcode_chunk {
             $hash{$key} = _decode_bifcode_chunk();
         }
         return \%hash;
+    }
+    elsif ( $1 eq 'B' ) {
+        my $len = $2 // _croak 'DecodeBifcode';
+        _croak 'DecodeBifcodeTrunc' if $len > length() - pos();
+
+        my $data = substr $_, pos(), $len;
+        pos() = pos() + $len;
+
+        _croak 'DecodeBifcodeTerm' unless m/ \G , /xgc;
+        return decode_bifcode( $data, $max_depth );
     }
 }
 
@@ -190,36 +224,34 @@ my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( \. ( [0-9]+? ) 0* )?
                     ( e ( -? [0-9]+ ) )? \z/xi;
 
-our $_CHECK = ',';
-
 sub _encode_bifcode {
     map {
         if ( !defined $_ ) {
-            '~' . $_CHECK;
+            '~' . ',';
         }
         elsif ( ( my $ref = ref $_ ) eq '' ) {
             if ( utf8::is_utf8($_) ) {
                 utf8::encode( my $str = $_ );
-                'u' . length($str) . '.' . $str . $_CHECK;
+                'u' . length($str) . '.' . $str . ',';
             }
             elsif ( $_ =~ $number_qr ) {
                 if ( defined $3 or defined $5 ) {
 
                     # normalize to BIFCODE_REAL standards
                     my $x = 'r' . ( 0 + $1 )    # remove leading zeros
-                      . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . $_CHECK;
+                      . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
                     $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
                     $x;
                 }
                 else {
-                    'i' . $_ . $_CHECK;
+                    'i' . $_ . ',';
                 }
             }
             elsif ( $_ =~ m/[^\x{20}-\x{7E}]/ ) {
-                'b' . length($_) . '.' . $_ . $_CHECK;
+                'b' . length($_) . '.' . $_ . ',';
             }
             else {
-                'u' . length($_) . '.' . $_ . $_CHECK;
+                'u' . length($_) . '.' . $_ . ',';
             }
         }
         elsif ( $ref eq 'ARRAY' ) {
@@ -233,19 +265,28 @@ sub _encode_bifcode {
                     my @k = sort keys %$_;
 
                     map {
-                        local $_CHECK = ':';
                         $k = shift @k;
-                        ( _encode_bifcode($k), $_ );
+
+                        if ( utf8::is_utf8($k) ) {
+                            utf8::encode($k);
+                            ( 'u' . length($k) . '.' . $k . ':', $_ );
+                        }
+                        elsif ( $k =~ m/[^\x{20}-\x{7E}]/ ) {
+                            ( 'b' . length($k) . '.' . $k . ':', $_ );
+                        }
+                        else {
+                            ( 'u' . length($k) . '.' . $k . ':', $_ );
+                        }
                     } _encode_bifcode( @$_{@k} );
                   }
             ) . '}';
         }
         elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::V2::BYTES' ) {
             $$_ // _croak 'EncodeBytesUndef';
-            'b' . length($$_) . '.' . $$_ . $_CHECK;
+            'b' . length($$_) . '.' . $$_ . ',';
         }
         elsif ( boolean::isBoolean($_) ) {
-            ( $_ ? 't' : 'f' ) . $_CHECK;
+            ( $_ ? 't' : 'f' ) . ',';
         }
         elsif ( $ref eq 'Bifcode::V2::INTEGER' ) {
             $$_ // _croak 'EncodeIntegerUndef';
@@ -259,14 +300,18 @@ sub _encode_bifcode {
               unless $$_ =~ $number_qr;
 
             my $x = 'r' . ( 0 + $1 )    # remove leading zeros
-              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . $_CHECK;
+              . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
             $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
             $x;
         }
         elsif ( $ref eq 'Bifcode::V2::UTF8' ) {
             my $str = $$_ // _croak 'EncodeUTF8Undef';
             utf8::encode($str);
-            'u' . length($str) . '.' . $str . $_CHECK;
+            'u' . length($str) . '.' . $str . ',';
+        }
+        elsif ( $ref eq 'Bifcode::V2::BIFCODE' ) {
+            my $str = $$_ // _croak 'EncodeBifcodeUndef';
+            'B' . length($str) . '.' . $str . ',';
         }
         else {
             _croak 'EncodeUnhandled', 'unhandled data type: ' . $ref;
@@ -276,7 +321,7 @@ sub _encode_bifcode {
 
 sub encode_bifcode {
     _croak 'EncodeUsage' if @_ != 1;
-    (&_encode_bifcode)[0];
+    bless \(&_encode_bifcode)[0], __PACKAGE__ . '::BIFCODE';
 }
 
 sub force_bifcode {
@@ -292,7 +337,7 @@ sub _expand_bifcode {
     $bifcode =~ s/ (
             [\[\]\{\}]
             | ~,
-            | (u|b) [0-9]+ \.
+            | (B|u|b) [0-9]+ \.
             | r -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,
             | i [0-9]+ ,
         ) /\n$1/gmx;
@@ -313,6 +358,40 @@ sub diff_bifcode {
     return Text::Diff::diff( \$b1, \$b2, $diff_args );
 }
 
+sub anyevent_read_type {
+    my ( $handle, $cb, $maxdepth ) = @_;
+
+    sub {
+        return unless defined $_[0]{rbuf};
+        unless ( $handle->{rbuf} =~ m/^(B(0|[1-9][0-9]*)\.)/ ) {
+            $handle->_error( Errno::EBADMSG() );
+            return;
+        }
+
+        $handle->unshift_read(
+            chunk => length($1) + $2 + 1,
+            sub {
+                $cb->( $_[0], decode_bifcode( $_[1], $maxdepth ) );
+            }
+        );
+
+        1;
+    };
+}
+
+sub anyevent_write_type {
+    my ( $handle, $ref ) = @_;
+    encode_bifcode( encode_bifcode($ref) );
+}
+
+1;
+
+package Bifcode::V2::BIFCODE;
+use overload
+  bool     => sub { 1 },
+  '""'     => sub { ${ $_[0] } },
+  fallback => 1;
+
 1;
 
 __END__
@@ -327,7 +406,7 @@ Bifcode::V2 - simple serialization format (version 2)
 
 =head1 VERSION
 
-2.000_2 (2019-09-08)
+2.000_3 (2019-09-09)
 
 =head1 SYNOPSIS
 
@@ -480,21 +559,30 @@ corresponds to ['spam', 'eggs'].
 =head2 BIFCODE_DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
-keys and their corresponding values followed by a '}'. Keys are encoded
-with a ":" as the last character instead of ",".
+keys and their corresponding values followed by a '}'. Keys must be of
+type BIFCODE_UTF8 or BIFCODE_BYTES and are encoded with a ":" as the
+last character instead of ",".
 
 For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow':
 'moo', 'spam': 'eggs'} and '{u4.spam:[u1.a,u1.b,]}' corresponds to
 {'spam'.  ['a', 'b']}. Keys must appear in sorted order (sorted as raw
 strings, not alphanumerics).
 
+=head2 BIFCODE_BIFCODE
+
+A Bifcode string is "B" followed by the octet length of the encoded
+string as a base ten number followed by a "." and the encoded string
+followed by ",". This is typically used to frame Bifcode structures
+over a network.
+
 =head1 INTERFACE
 
 =head2 C<encode_bifcode( $datastructure )>
 
 Takes a single argument which may be a scalar, or may be a reference to
-either a scalar, an array or a hash. Arrays and hashes may in turn
-contain values of these same types. Returns a byte string.
+either a scalar, an array, a hash or a Bifcode::V2::BIFCODE object.
+Arrays and hashes may in turn contain values of these same types.
+Returns a byte string blessed as C<Bifcode::V2::BIFCODE>.
 
 The mapping from Perl to I<bifcode> is as follows:
 
@@ -542,6 +630,8 @@ below can help with creating such references.
 
 =item * HASH references become BIFCODE_DICT.
 
+=item * Bifcode::V2::BIFCODE references become BIFCODE_BIFCODE.
+
 =back
 
 This subroutine croaks on unhandled data types.
@@ -556,9 +646,18 @@ attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
 I<bifcode> types are mapped back to Perl in the reverse way to the
-C<encode_bifcode> function, except that any scalars which were "forced"
+C<encode_bifcode> function, except for:
+
+=over
+
+=item * Any scalars which were "forced"
 to a particular type (using blessed references) will decode as plain
 scalars.
+
+=item * BIFCODE_BIFCODE types are fully inflated into 
+Perl structures, and not the intermediate Bifcode string.
+
+=back
 
 Croaks on malformed data.
 
@@ -577,6 +676,21 @@ a very simple regex before the diff is done. The third argument
 (C<$diff_args>) is passed directly to L<Text::Diff>.
 
 Croaks if L<Text::Diff> is not installed.
+
+=head2 AnyEvent::Handle Support
+
+B<Bifcode::V2> implements the L<AnyEvent::Handle> C<anyevent_read_type>
+and C<anyevent_write_type> functions which allow you to do this:
+
+    $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
+
+    $handle->push_read(
+        'Bifcode::V2' => sub {
+            my ( $hdl, $ref ) = @_;
+            # do stuff with $ref
+        },
+		$maxdepth 	# passed straight to decode_bifcode()
+    );
 
 =head1 DIAGNOSTICS
 
@@ -718,11 +832,6 @@ You called C<force_bifcode()> with invalid arguments.
 Strings and numbers are practically indistinguishable in Perl, so
 C<encode_bifcode()> has to resort to a heuristic to decide how to
 serialise a scalar. This cannot be fixed.
-
-Perl hash keys are always encoded according to the plain scalar rules
-with no possibility to override.  That means for example that there is
-no way to force C<{"10" => "ten"}> to become C<{u2.10:u3.ten,}> instead
-of C<{i10:u3.ten,}>.
 
 =head1 SEE ALSO
 
