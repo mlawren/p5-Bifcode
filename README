@@ -2,7 +2,7 @@ NAME
     Bifcode::V2 - simple serialization format (version 2)
 
 VERSION
-    2.000_3 (2019-09-09)
+    2.000_4 (yyyy-mm-dd)
 
 SYNOPSIS
         use utf8;
@@ -343,11 +343,6 @@ BUGS AND LIMITATIONS
     Strings and numbers are practically indistinguishable in Perl, so
     "encode_bifcode()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
-
-    Perl hash keys are always encoded according to the plain scalar
-    rules with no possibility to override. That means for example that
-    there is no way to force "{"10" =" "ten"}> to become
-    "{u2.10:u3.ten,}" instead of "{i10:u3.ten,}".
 
 SEE ALSO
     This distribution includes the diff-bifcode command-line utility for
