@@ -8,7 +8,7 @@
         - Support AnyEvent::Handle integration.
 
     Enhancements:
-        - None.
+        - Only load Carp when we actually need to croak
 
     Bug Fixes:
         - None.

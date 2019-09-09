@@ -3,7 +3,6 @@ use 5.010;
 use strict;
 use warnings;
 use boolean ();
-use Carp (qw/croak shortmess/);
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -18,7 +17,8 @@ our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
 sub _croak {
-    my $type     = shift // croak 'usage: _error($TYPE, [$msg])';
+    require Carp;
+    my $type     = shift // Carp::croak('usage: _croak($TYPE, [$msg])');
     my %messages = (
         Decode             => 'garbage at',
         DecodeBytes        => 'malformed BYTES length at',
@@ -52,17 +52,19 @@ sub _croak {
     );
 
     my $err   = 'Bifcode::V2::Error::' . $type;
-    my $msg   = shift // $messages{$type} // '(no message)';
-    my $short = shortmess('');
+    my $msg   = shift // $messages{$type} // die '_error (no message)';
+    my $short = Carp::shortmess('');
 
     $msg =~ s! at$!' at input byte '. ( pos() // 0 )!e;
 
-    eval 'package ' . $err . qq[;
-        use overload
-          bool => sub { 1 },
-          '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
-          fallback => 1;
-        1; ];
+    eval qq[
+        package $err {
+            use overload
+              bool => sub { 1 },
+              '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
+              fallback => 1;
+            1;
+        }];
 
     die bless \$msg, $err;
 }
