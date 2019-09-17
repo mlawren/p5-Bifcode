@@ -5,14 +5,14 @@ use utf8;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib";
 use lib "$RealBin/lib";
-use Bifcode::V2 qw( encode_bifcode decode_bifcode force_bifcode );
+use Bifcode::V2 qw( encode_bifcode2 decode_bifcode2 force_bifcode2 );
 use boolean;
 use Data::Dumper;
 use Path::Tiny;
 use Test::Bifcode::V2;
 no warnings 'once';
 
-my $str = q{encode_bifcode {
+my $str = q{encode_bifcode2 {
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
@@ -28,7 +28,7 @@ my $bifcode = eval $str;
 
 binmode STDOUT;
 print $bifcode, "\n\n";
-print encode_bifcode($bifcode), "\n\n";
+print encode_bifcode2($bifcode), "\n\n";
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 

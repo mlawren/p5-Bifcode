@@ -1,7 +1,7 @@
 2.000_4 (yyyy-mm-dd)
 
     API / Behaviour Changes:
-        - None.
+        - Rename *_bifcode() functions to *_bifcode2()
 
     New Features:
         - None.

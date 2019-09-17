@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use utf8;
-use Bifcode::V2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
+use Bifcode::V2
+  qw/decode_bifcode2 encode_bifcode2 force_bifcode2 diff_bifcode2/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
@@ -70,7 +71,7 @@ sub enc_ok {
       unless 2 == @_;
     my ( $thawed, $frozen ) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    my $diff = diff_bifcode( encode_bifcode($thawed), $frozen );
+    my $diff = diff_bifcode2( encode_bifcode2($thawed), $frozen );
     length($diff)
       ? ok 0, "encode $frozen:\n$diff"
       : ok 1, "encode $frozen";
@@ -80,7 +81,7 @@ sub encode_err {
     my ( $data, $error, $kind_of_brokenness ) = @_;
     $kind_of_brokenness // Carp::croak 'encode_err needs $kind_of_brokenness';
     local $@;
-    eval { encode_bifcode $data };
+    eval { encode_bifcode2 $data };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
     my $want = 'Bifcode::V2::Error::' . $error;
@@ -94,8 +95,8 @@ sub un {
     local $, = ', ';
     my $frozen_str = $frozen // '*undef*';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen_str]", decode_bifcode @$frozen )
-      : ( "decode '$frozen_str'", decode_bifcode $frozen );
+      ? ( "decode [@$frozen_str]", decode_bifcode2 @$frozen )
+      : ( "decode '$frozen_str'", decode_bifcode2 $frozen );
 }
 
 sub decode_ok {

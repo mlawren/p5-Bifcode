@@ -4,7 +4,7 @@ use warnings;
 use Bifcode::V2;
 use Test::More;
 
-eval { Bifcode::V2::decode_bifcode(undef) };
+eval { Bifcode::V2::decode_bifcode2(undef) };
 my $err = $@;
 
 isa_ok $err, 'Bifcode::V2::Error::DecodeUsage';

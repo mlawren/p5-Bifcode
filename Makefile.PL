@@ -16,7 +16,7 @@ WriteMakefile(
         no_index    => {
             package => [
                 qw(
-                  Bifcode::V2::BIFCODE
+                  Bifcode::V2::BIFCODE2
                   )
             ],
         },

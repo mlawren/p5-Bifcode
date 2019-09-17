@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use boolean ();
 use Exporter::Tidy all => [
-    qw( encode_bifcode
-      decode_bifcode
-      force_bifcode
-      diff_bifcode)
+    qw( encode_bifcode2
+      decode_bifcode2
+      force_bifcode2
+      diff_bifcode2)
 ];
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
@@ -35,7 +35,7 @@ sub _croak {
         DecodeUTF8Trunc    => 'unexpected UTF8 end of data at',
         DecodeUTF8Term     => 'missing UTF8 termination at',
         DecodeUsage        => undef,
-        DiffUsage          => 'usage: diff_bifcode($b1, $b2, [$diff_args])',
+        DiffUsage          => 'usage: diff_bifcode2($b1, $b2, [$diff_args])',
         EncodeBytesUndef   => 'Bifcode::V2::BYTES ref is undefined',
         EncodeReal         => undef,
         EncodeRealUndef    => 'Bifcode::V2::REAL ref is undefined',
@@ -47,7 +47,7 @@ sub _croak {
         DecodeKeyValue     => 'dict key is missing value at',
         EncodeUTF8Undef    => 'Bifcode::V2::UTF8 ref is undefined',
         EncodeUnhandled    => undef,
-        EncodeUsage        => 'usage: encode_bifcode($arg)',
+        EncodeUsage        => 'usage: encode_bifcode2($arg)',
         ForceUsage         => 'ref and type must be defined',
     );
 
@@ -83,7 +83,7 @@ my $chunk = qr/ \G (?|
     | (\{)
 ) /x;
 
-sub _decode_bifcode_key {
+sub _decode_bifcode2_key {
 
     unless (m/ \G (b|u) (?: ( 0 | [1-9] [0-9]* ) \. )? /gcx) {
         _croak m/ \G \z /xgc ? 'DecodeTrunc' : 'DecodeKeyType';
@@ -111,7 +111,7 @@ sub _decode_bifcode_key {
     }
 }
 
-sub _decode_bifcode_chunk {
+sub _decode_bifcode2_chunk {
     local $max_depth = $max_depth - 1 if defined $max_depth;
 
     unless (m/$chunk/gc) {
@@ -169,7 +169,7 @@ sub _decode_bifcode_chunk {
 
         my @list;
         until (m/ \G \] /xgc) {
-            push @list, _decode_bifcode_chunk();
+            push @list, _decode_bifcode2_chunk();
         }
         return \@list;
     }
@@ -181,7 +181,7 @@ sub _decode_bifcode_chunk {
         until (m/ \G \} /xgc) {
             _croak 'DecodeTrunc' if m/ \G \z /xgc;
 
-            my $key = _decode_bifcode_key();
+            my $key = _decode_bifcode2_key();
 
             _croak 'DecodeKeyDuplicate' if exists $hash{$key};
             _croak 'DecodeKeyOrder'
@@ -189,7 +189,7 @@ sub _decode_bifcode_chunk {
             _croak 'DecodeKeyValue' if m/ \G \} /xgc;
 
             $last_key = $key;
-            $hash{$key} = _decode_bifcode_chunk();
+            $hash{$key} = _decode_bifcode2_chunk();
         }
         return \%hash;
     }
@@ -201,21 +201,21 @@ sub _decode_bifcode_chunk {
         pos() = pos() + $len;
 
         _croak 'DecodeBifcodeTerm' unless m/ \G , /xgc;
-        return decode_bifcode( $data, $max_depth );
+        return decode_bifcode2( $data, $max_depth );
     }
 }
 
-sub decode_bifcode {
+sub decode_bifcode2 {
     local $_         = shift;
     local $max_depth = shift;
 
-    _croak 'DecodeUsage', 'decode_bifcode: too many arguments' if @_;
-    _croak 'DecodeUsage', 'decode_bifcode: input undefined'
+    _croak 'DecodeUsage', 'decode_bifcode2: too many arguments' if @_;
+    _croak 'DecodeUsage', 'decode_bifcode2: input undefined'
       unless defined $_;
-    _croak 'DecodeUsage', 'decode_bifcode: only accepts bytes'
+    _croak 'DecodeUsage', 'decode_bifcode2: only accepts bytes'
       if utf8::is_utf8($_);
 
-    my $deserialised_data = _decode_bifcode_chunk();
+    my $deserialised_data = _decode_bifcode2_chunk();
     _croak 'DecodeTrailing' if $_ !~ m/ \G \z /xgc;
     return $deserialised_data;
 }
@@ -224,7 +224,7 @@ my $number_qr = qr/\A ( 0 | -? [1-9] [0-9]* )
                     ( \. ( [0-9]+? ) 0* )?
                     ( e ( -? [0-9]+ ) )? \z/xi;
 
-sub _encode_bifcode {
+sub _encode_bifcode2 {
     map {
         if ( !defined $_ ) {
             '~' . ',';
@@ -237,7 +237,7 @@ sub _encode_bifcode {
             elsif ( $_ =~ $number_qr ) {
                 if ( defined $3 or defined $5 ) {
 
-                    # normalize to BIFCODE_REAL standards
+                    # normalize to BIFCODE2_REAL standards
                     my $x = 'r' . ( 0 + $1 )    # remove leading zeros
                       . '.' . ( $3 // 0 ) . 'e' . ( 0 + ( $5 // 0 ) ) . ',';
                     $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
@@ -255,7 +255,7 @@ sub _encode_bifcode {
             }
         }
         elsif ( $ref eq 'ARRAY' ) {
-            '[' . join( '', map _encode_bifcode($_), @$_ ) . ']';
+            '[' . join( '', map _encode_bifcode2($_), @$_ ) . ']';
         }
         elsif ( $ref eq 'HASH' ) {
             '{' . join(
@@ -277,7 +277,7 @@ sub _encode_bifcode {
                         else {
                             ( 'u' . length($k) . '.' . $k . ':', $_ );
                         }
-                    } _encode_bifcode( @$_{@k} );
+                    } _encode_bifcode2( @$_{@k} );
                   }
             ) . '}';
         }
@@ -309,7 +309,7 @@ sub _encode_bifcode {
             utf8::encode($str);
             'u' . length($str) . '.' . $str . ',';
         }
-        elsif ( $ref eq 'Bifcode::V2::BIFCODE' ) {
+        elsif ( $ref eq 'Bifcode::V2::BIFCODE2' ) {
             my $str = $$_ // _croak 'EncodeBifcodeUndef';
             'B' . length($str) . '.' . $str . ',';
         }
@@ -319,12 +319,12 @@ sub _encode_bifcode {
     } @_;
 }
 
-sub encode_bifcode {
+sub encode_bifcode2 {
     _croak 'EncodeUsage' if @_ != 1;
-    bless \(&_encode_bifcode)[0], __PACKAGE__ . '::BIFCODE';
+    bless \(&_encode_bifcode2)[0], __PACKAGE__ . '::BIFCODE2';
 }
 
-sub force_bifcode {
+sub force_bifcode2 {
     my $ref  = shift;
     my $type = shift;
 
@@ -345,7 +345,7 @@ sub _expand_bifcode {
     $bifcode . "\n";
 }
 
-sub diff_bifcode {
+sub diff_bifcode2 {
     _croak 'DiffUsage' unless @_ >= 2 and @_ <= 3;
     my $b1        = shift;
     my $b2        = shift;
@@ -371,7 +371,7 @@ sub anyevent_read_type {
         $handle->unshift_read(
             chunk => length($1) + $2 + 1,
             sub {
-                $cb->( $_[0], decode_bifcode( $_[1], $maxdepth ) );
+                $cb->( $_[0], decode_bifcode2( $_[1], $maxdepth ) );
             }
         );
 
@@ -381,12 +381,12 @@ sub anyevent_read_type {
 
 sub anyevent_write_type {
     my ( $handle, $ref ) = @_;
-    encode_bifcode( encode_bifcode($ref) );
+    encode_bifcode2( encode_bifcode2($ref) );
 }
 
 1;
 
-package Bifcode::V2::BIFCODE;
+package Bifcode::V2::BIFCODE2;
 use overload
   bool     => sub { 1 },
   '""'     => sub { ${ $_[0] } },
@@ -412,9 +412,9 @@ Bifcode::V2 - simple serialization format (version 2)
 
     use utf8;
     use boolean;
-    use Bifcode::V2 qw( encode_bifcode decode_bifcode );
+    use Bifcode::V2 qw( encode_bifcode2 decode_bifcode2 );
 
-    my $bifcode = encode_bifcode {
+    my $bifcode = encode_bifcode2 {
         bools   => [ boolean::false, boolean::true, ],
         bytes   => \pack( 's<',       255 ),
         integer => 25,
@@ -431,13 +431,12 @@ Bifcode::V2 - simple serialization format (version 2)
     # 2e 75 74 66 38 3a 75 31 30 2e ce 95 ce bb cf    .utf8:u10......
     # 8d cf 84 ce b7 2c 7d                            .....,}
 
-    my $decoded = decode_bifcode $bifcode;
+    my $decoded = decode_bifcode2 $bifcode;
 
 =head1 DESCRIPTION
 
-B<Bifcode::V2> implements the I<bifcode version 2> serialisation
-format, a mixed binary/text encoding with support for the following
-data types:
+B<Bifcode::V2> implements the I<BIFCODE2> serialisation format, a mixed
+binary/text encoding with support for the following data types:
 
 =over
 
@@ -476,7 +475,7 @@ is no need to escape special characters in strings. It is not
 considered human readable, but as it is mostly text it can usually be
 visually debugged.
 
-I<bifcode> can only be constructed canonically; i.e. there is only one
+I<BIFCODE2> can only be constructed canonically; i.e. there is only one
 possible encoding per data structure. This property makes it suitable
 for comparing structures (using cryptographic hashes) across networks.
 
@@ -486,7 +485,7 @@ with the same features.
 
 =head1 MOTIVATION
 
-I<bifcode> was created for a project because none of currently
+I<BIFCODE2> was created for a project because none of currently
 available serialization formats (Bencode, JSON, MsgPack, Netstrings,
 Sereal, YAML, etc) met the requirements of:
 
@@ -512,28 +511,28 @@ implementations.
 
 The encoding is defined as follows:
 
-=head2 BIFCODE_UNDEF
+=head2 BIFCODE2_UNDEF
 
 A null or undefined value correspond to "~,".
 
-=head2 BIFCODE_TRUE and BIFCODE_FALSE
+=head2 BIFCODE2_TRUE and BIFCODE2_FALSE
 
 Boolean values are represented by "t," and "f,".
 
-=head2 BIFCODE_UTF8
+=head2 BIFCODE2_UTF8
 
 A UTF8 string is "u" followed by the octet length of the encoded string
 as a base ten number followed by a "." and the encoded string followed
 by ",". For example the Perl string "\x{df}" (ß) corresponds to
 "u2.\x{c3}\x{9f},".
 
-=head2 BIFCODE_BYTES
+=head2 BIFCODE2_BYTES
 
 Opaque data is 'b' followed by the octet length of the data as a base
 ten number followed by a "." and then the data itself followed by ",".
 For example a three-byte blob 'xyz' corresponds to 'b3.xyz,'.
 
-=head2 BIFCODE_INTEGER
+=head2 BIFCODE2_INTEGER
 
 Integers are represented by an 'i' followed by the number in base 10
 followed by a ','. For example 'i3,' corresponds to 3 and 'i-3,'
@@ -541,7 +540,7 @@ corresponds to -3. Integers have no size limitation. 'i-0,' is invalid.
 All encodings with a leading zero, such as 'i03,', are invalid, other
 than 'i0,', which of course corresponds to 0.
 
-=head2 BIFCODE_REAL
+=head2 BIFCODE2_REAL
 
 Real numbers are represented by an 'r' followed by a decimal number in
 base 10 followed by a 'e' followed by an exponent followed by a ','.
@@ -550,17 +549,17 @@ For example 'r3.0e-1,' corresponds to 0.3 and 'r-0.1e0,' corresponds to
 encodings with an extraneous leading zero, such as 'r03.0e0,', or an
 extraneous trailing zero, such as 'r3.10e0,', are invalid.
 
-=head2 BIFCODE_LIST
+=head2 BIFCODE2_LIST
 
-Lists are encoded as a '[' followed by their elements (also I<bifcode>
+Lists are encoded as a '[' followed by their elements (also I<BIFCODE2>
 encoded) followed by a ']'. For example '[u4.spam,u4.eggs,]'
 corresponds to ['spam', 'eggs'].
 
-=head2 BIFCODE_DICT
+=head2 BIFCODE2_DICT
 
 Dictionaries are encoded as a '{' followed by a list of alternating
 keys and their corresponding values followed by a '}'. Keys must be of
-type BIFCODE_UTF8 or BIFCODE_BYTES and are encoded with a ":" as the
+type BIFCODE2_UTF8 or BIFCODE2_BYTES and are encoded with a ":" as the
 last character instead of ",".
 
 For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow':
@@ -568,7 +567,7 @@ For example, '{u3.cow:u3.moo,u4.spam:u4.eggs,}' corresponds to {'cow':
 {'spam'.  ['a', 'b']}. Keys must appear in sorted order (sorted as raw
 strings, not alphanumerics).
 
-=head2 BIFCODE_BIFCODE
+=head2 BIFCODE2_BIFCODE2
 
 A Bifcode string is "B" followed by the octet length of the encoded
 string as a base ten number followed by a "." and the encoded string
@@ -577,21 +576,21 @@ over a network.
 
 =head1 INTERFACE
 
-=head2 C<encode_bifcode( $datastructure )>
+=head2 C<encode_bifcode2( $datastructure )>
 
 Takes a single argument which may be a scalar, or may be a reference to
 either a scalar, an array, a hash or a Bifcode::V2::BIFCODE object.
 Arrays and hashes may in turn contain values of these same types.
 Returns a byte string blessed as C<Bifcode::V2::BIFCODE>.
 
-The mapping from Perl to I<bifcode> is as follows:
+The mapping from Perl to I<BIFCODE2> is as follows:
 
 =over
 
-=item * 'undef' maps directly to BIFCODE_UNDEF.
+=item * 'undef' maps directly to BIFCODE2_UNDEF.
 
 =item * The C<true> and C<false> values from the L<boolean>
-distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
+distribution encode to BIFCODE2_TRUE and BIFCODE2_FALSE.
 
 =item * A plain scalar is treated as follows:
 
@@ -599,44 +598,44 @@ distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
 =item
 
-BIFCODE_UTF8 if C<utf8::is_utf8> returns true; or
+BIFCODE2_UTF8 if C<utf8::is_utf8> returns true; or
 
 =item
 
-BIFCODE_INTEGER if it looks like a canonically represented integer; or
+BIFCODE2_INTEGER if it looks like a canonically represented integer; or
 
 =item
 
-BIFCODE_REAL if it looks like a real number; or
+BIFCODE2_REAL if it looks like a real number; or
 
 =item
 
-BIFCODE_UTF8 if it only contains ASCII characters; or
+BIFCODE2_UTF8 if it only contains ASCII characters; or
 
 =item
 
-BIFCODE_BYTES when none of the above applies.
+BIFCODE2_BYTES when none of the above applies.
 
 =back
 
 You can force scalars to be encoded a particular way by passing a
 reference to them blessed as Bifcode::V2::BYTES, Bifcode::V2::INTEGER,
-Bifcode::V2::REAL or Bifcode::V2::UTF8. The C<force_bifcode> function
+Bifcode::V2::REAL or Bifcode::V2::UTF8. The C<force_bifcode2> function
 below can help with creating such references.
 
-=item * SCALAR references become BIFCODE_BYTES.
+=item * SCALAR references become BIFCODE2_BYTES.
 
-=item * ARRAY references become BIFCODE_LIST.
+=item * ARRAY references become BIFCODE2_LIST.
 
-=item * HASH references become BIFCODE_DICT.
+=item * HASH references become BIFCODE2_DICT.
 
-=item * Bifcode::V2::BIFCODE references become BIFCODE_BIFCODE.
+=item * Bifcode::V2::BIFCODE references become BIFCODE2_BIFCODE2.
 
 =back
 
 This subroutine croaks on unhandled data types.
 
-=head2 C<decode_bifcode( $string [, $max_depth ] )>
+=head2 C<decode_bifcode2( $string [, $max_depth ] )>
 
 Takes a byte string and returns the corresponding deserialised data
 structure.
@@ -645,8 +644,8 @@ If you pass an integer for the second option, it will croak when
 attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
-I<bifcode> types are mapped back to Perl in the reverse way to the
-C<encode_bifcode> function, except for:
+I<BIFCODE2> types are mapped back to Perl in the reverse way to the
+C<encode_bifcode2> function, except for:
 
 =over
 
@@ -654,21 +653,21 @@ C<encode_bifcode> function, except for:
 to a particular type (using blessed references) will decode as plain
 scalars.
 
-=item * BIFCODE_BIFCODE types are fully inflated into 
+=item * BIFCODE2_BIFCODE2 types are fully inflated into 
 Perl structures, and not the intermediate Bifcode string.
 
 =back
 
 Croaks on malformed data.
 
-=head2 C<force_bifcode( $scalar, $type )>
+=head2 C<force_bifcode2( $scalar, $type )>
 
 Returns a reference to $scalar blessed as Bifcode::V2::$TYPE. The value
-of $type is not checked, but the C<encode_bifcode> function will only
+of $type is not checked, but the C<encode_bifcode2> function will only
 accept the resulting reference where $type is one of 'bytes', 'real',
 'integer' or 'utf8'.
 
-=head2 C<diff_bifcode( $bc1, $bc2, [$diff_args] )>
+=head2 C<diff_bifcode2( $bc1, $bc2, [$diff_args] )>
 
 Returns a string representing the difference between two bifcodes. The
 inputs do not need to be valid Bifcode::V2; they are only expanded with
@@ -689,7 +688,7 @@ and C<anyevent_write_type> functions which allow you to do this:
             my ( $hdl, $ref ) = @_;
             # do stuff with $ref
         },
-        $maxdepth   # passed straight to decode_bifcode()
+        $maxdepth   # passed straight to decode_bifcode2()
     );
 
 =head1 DIAGNOSTICS
@@ -718,7 +717,7 @@ Your data includes a byte string that is missing a "," terminator.
 =item Bifcode::V2::Error::DecodeDepth
 
 Your data contains dicts or lists that are nested deeper than the
-$max_depth passed to C<decode_bifcode()>.
+$max_depth passed to C<decode_bifcode2()>.
 
 =item Bifcode::V2::Error::DecodeTrunc
 
@@ -745,7 +744,7 @@ Your data contains an integer that is truncated.
 =item Bifcode::V2::Error::DecodeKeyType
 
 Your data violates the I<bifcode> format constaint that all dict keys
-be BIFCODE_BYTES or BIFCODE_UTF8.
+be BIFCODE2_BYTES or BIFCODE2_UTF8.
 
 =item Bifcode::V2::Error::DecodeKeyDuplicate
 
@@ -780,11 +779,11 @@ Your data includes a UTF8 string that is missing a "," terminator.
 
 =item Bifcode::V2::Error::DecodeUsage
 
-You called C<decode_bifcode()> with invalid arguments.
+You called C<decode_bifcode2()> with invalid arguments.
 
 =item Bifcode::V2::Error::DiffUsage
 
-You called C<diff_bifcode()> with invalid arguments.
+You called C<diff_bifcode2()> with invalid arguments.
 
 =item Bifcode::V2::Error::EncodeBytesUndef
 
@@ -819,18 +818,18 @@ not supported by the I<bifcode> format.
 
 =item Bifcode::V2::Error::EncodeUsage
 
-You called C<encode_bifcode()> with invalid arguments.
+You called C<encode_bifcode2()> with invalid arguments.
 
 =item Bifcode::V2::Error::ForceUsage
 
-You called C<force_bifcode()> with invalid arguments.
+You called C<force_bifcode2()> with invalid arguments.
 
 =back
 
 =head1 BUGS AND LIMITATIONS
 
 Strings and numbers are practically indistinguishable in Perl, so
-C<encode_bifcode()> has to resort to a heuristic to decide how to
+C<encode_bifcode2()> has to resort to a heuristic to decide how to
 serialise a scalar. This cannot be fixed.
 
 =head1 SEE ALSO
