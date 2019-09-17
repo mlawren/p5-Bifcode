@@ -23,13 +23,13 @@ subtest 'INTEGER' => sub {
     enc_ok 0                      => 'i0,';
     enc_ok - 10                   => 'i-10,';
     enc_ok '12345678901234567890' => 'i12345678901234567890,';
-    enc_error_ok force_bifcode( '00', 'integer' ) => 'EncodeInteger',
+    encode_err force_bifcode( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
-    enc_error_ok force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
+    encode_err force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
       'forcing a non-integer as integer';
 
     my $u = undef;
-    enc_error_ok bless( \$u, 'Bifcode::V2::INTEGER' ) => 'EncodeIntegerUndef',
+    encode_err bless( \$u, 'Bifcode::V2::INTEGER' ) => 'EncodeIntegerUndef',
       'forcing undef as integer';
 };
 
@@ -89,11 +89,11 @@ subtest 'REAL' => sub {
     # decimal and exponent leading .0x
     enc_ok force_bifcode( '100.008e0', 'real' ) => 'r100.008e0,';
 
-    enc_error_ok force_bifcode( '00abc', 'real' ) => 'EncodeReal',
+    encode_err force_bifcode( '00abc', 'real' ) => 'EncodeReal',
       'forcing a non-real as real';
 
     my $u = undef;
-    enc_error_ok bless( \$u, 'Bifcode::V2::REAL' ) => 'EncodeRealUndef',
+    encode_err bless( \$u, 'Bifcode::V2::REAL' ) => 'EncodeRealUndef',
       'forcing undef as real';
 };
 
@@ -107,7 +107,7 @@ subtest 'UTF8' => sub {
     enc_ok '00' => 'u2.00,';
 
     my $u = undef;
-    enc_error_ok bless( \$u, 'Bifcode::V2::UTF8' ) => 'EncodeUTF8Undef',
+    encode_err bless( \$u, 'Bifcode::V2::UTF8' ) => 'EncodeUTF8Undef',
       'forcing undef as utf8';
 };
 
@@ -116,8 +116,8 @@ subtest 'BYTES' => sub {
     enc_ok \$bytes => $BYTES;
 
     my $u = undef;
-    enc_error_ok \$u => 'EncodeBytesUndef', 'scalar ref to undef';
-    enc_error_ok bless( \$u, 'Bifcode::V2::BYTES' ) => 'EncodeBytesUndef',
+    encode_err \$u => 'EncodeBytesUndef', 'scalar ref to undef';
+    encode_err bless( \$u, 'Bifcode::V2::BYTES' ) => 'EncodeBytesUndef',
       'forcing undef as bytes';
 };
 
@@ -159,7 +159,7 @@ subtest 'DICT' => sub {
 };
 
 my $u = undef;
-enc_error_ok bless( \$u, 'strange' ) => 'EncodeUnhandled',
+encode_err bless( \$u, 'strange' ) => 'EncodeUnhandled',
   'unknown object type';
 
 eval { encode_bifcode() };

@@ -7,6 +7,7 @@
         - None.
 
     Enhancements:
+        - Better test function names.
         - Better test for decoding of BIFCODE_REAL.
 
     Bug Fixes:

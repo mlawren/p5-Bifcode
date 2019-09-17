@@ -12,9 +12,9 @@ use Exporter::Tidy default => [
       $data1 $DATA1
       $data2 $DATA2
       enc_ok
-      enc_error_ok
-      decod_ok
-      error_ok)
+      encode_err
+      decode_ok
+      decode_err)
 ];
 use Test::More 0.88;    # for done_testing
 
@@ -76,9 +76,9 @@ sub enc_ok {
       : ok 1, "encode $frozen";
 }
 
-sub enc_error_ok {
+sub encode_err {
     my ( $data, $error, $kind_of_brokenness ) = @_;
-    $kind_of_brokenness // Carp::croak 'enc_error_ok needs $kind_of_brokenness';
+    $kind_of_brokenness // Carp::croak 'encode_err needs $kind_of_brokenness';
     local $@;
     eval { encode_bifcode $data };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
@@ -98,14 +98,14 @@ sub un {
       : ( "decode '$frozen_str'", decode_bifcode $frozen );
 }
 
-sub decod_ok {
+sub decode_ok {
     my ( $frozen,   $thawed ) = @_;
     my ( $testname, $result ) = un $frozen;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     is_deeply $result, $thawed, $testname;
 }
 
-sub error_ok {
+sub decode_err {
     my ( $frozen, $error, $kind_of_brokenness ) = @_;
     local $@;
     eval { un $frozen };
