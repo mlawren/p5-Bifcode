@@ -4,9 +4,9 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
-use Test::Bifcode::V2;
+use Test::Bifcode2;
 use Test::More 0.88;    # for done_testing
-use Bifcode::V2 'encode_bifcode2', 'force_bifcode2';
+use Bifcode2 'encode_bifcode2', 'force_bifcode2';
 
 subtest 'UNDEF' => sub {
     enc_ok undef, '~,';
@@ -29,7 +29,7 @@ subtest 'INTEGER' => sub {
       'forcing a non-integer as integer';
 
     my $u = undef;
-    encode_err bless( \$u, 'Bifcode::V2::INTEGER' ) => 'EncodeIntegerUndef',
+    encode_err bless( \$u, 'Bifcode2::INTEGER' ) => 'EncodeIntegerUndef',
       'forcing undef as integer';
 };
 
@@ -93,7 +93,7 @@ subtest 'REAL' => sub {
       'forcing a non-real as real';
 
     my $u = undef;
-    encode_err bless( \$u, 'Bifcode::V2::REAL' ) => 'EncodeRealUndef',
+    encode_err bless( \$u, 'Bifcode2::REAL' ) => 'EncodeRealUndef',
       'forcing undef as real';
 };
 
@@ -107,7 +107,7 @@ subtest 'UTF8' => sub {
     enc_ok '00' => 'u2.00,';
 
     my $u = undef;
-    encode_err bless( \$u, 'Bifcode::V2::UTF8' ) => 'EncodeUTF8Undef',
+    encode_err bless( \$u, 'Bifcode2::UTF8' ) => 'EncodeUTF8Undef',
       'forcing undef as utf8';
 };
 
@@ -117,7 +117,7 @@ subtest 'BYTES' => sub {
 
     my $u = undef;
     encode_err \$u => 'EncodeBytesUndef', 'scalar ref to undef';
-    encode_err bless( \$u, 'Bifcode::V2::BYTES' ) => 'EncodeBytesUndef',
+    encode_err bless( \$u, 'Bifcode2::BYTES' ) => 'EncodeBytesUndef',
       'forcing undef as bytes';
 };
 
@@ -163,8 +163,8 @@ encode_err bless( \$u, 'strange' ) => 'EncodeUnhandled',
   'unknown object type';
 
 eval { encode_bifcode2() };
-isa_ok $@, 'Bifcode::V2::Error::EncodeUsage', 'not enough arguments';
+isa_ok $@, 'Bifcode2::Error::EncodeUsage', 'not enough arguments';
 eval { encode_bifcode2( 1, 2 ) };
-isa_ok $@, 'Bifcode::V2::Error::EncodeUsage', 'too many arguments';
+isa_ok $@, 'Bifcode2::Error::EncodeUsage', 'too many arguments';
 
 done_testing;

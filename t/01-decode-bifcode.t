@@ -4,7 +4,7 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
-use Test::Bifcode::V2;
+use Test::Bifcode2;
 use Test::More 0.88;    # for done_testing
 
 subtest UNDEF => sub {

@@ -1,4 +1,4 @@
-package Bifcode::V2;
+package Bifcode2;
 use 5.010;
 use strict;
 use warnings;
@@ -36,22 +36,22 @@ sub _croak {
         DecodeUTF8Term     => 'missing UTF8 termination at',
         DecodeUsage        => undef,
         DiffUsage          => 'usage: diff_bifcode2($b1, $b2, [$diff_args])',
-        EncodeBytesUndef   => 'Bifcode::V2::BYTES ref is undefined',
+        EncodeBytesUndef   => 'Bifcode2::BYTES ref is undefined',
         EncodeReal         => undef,
-        EncodeRealUndef    => 'Bifcode::V2::REAL ref is undefined',
+        EncodeRealUndef    => 'Bifcode2::REAL ref is undefined',
         EncodeInteger      => undef,
-        EncodeIntegerUndef => 'Bifcode::V2::INTEGER ref is undefined',
+        EncodeIntegerUndef => 'Bifcode2::INTEGER ref is undefined',
         DecodeKeyType      => 'dict key is not BYTES or UTF8 at',
         DecodeKeyDuplicate => 'duplicate dict key at',
         DecodeKeyOrder     => 'dict key not in sort order at',
         DecodeKeyValue     => 'dict key is missing value at',
-        EncodeUTF8Undef    => 'Bifcode::V2::UTF8 ref is undefined',
+        EncodeUTF8Undef    => 'Bifcode2::UTF8 ref is undefined',
         EncodeUnhandled    => undef,
         EncodeUsage        => 'usage: encode_bifcode2($arg)',
         ForceUsage         => 'ref and type must be defined',
     );
 
-    my $err   = 'Bifcode::V2::Error::' . $type;
+    my $err   = 'Bifcode2::Error::' . $type;
     my $msg   = shift // $messages{$type} // die '_error (no message)';
     my $short = Carp::shortmess('');
 
@@ -281,20 +281,20 @@ sub _encode_bifcode2 {
                   }
             ) . '}';
         }
-        elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::V2::BYTES' ) {
+        elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode2::BYTES' ) {
             $$_ // _croak 'EncodeBytesUndef';
             'b' . length($$_) . '.' . $$_ . ',';
         }
         elsif ( boolean::isBoolean($_) ) {
             ( $_ ? 't' : 'f' ) . ',';
         }
-        elsif ( $ref eq 'Bifcode::V2::INTEGER' ) {
+        elsif ( $ref eq 'Bifcode2::INTEGER' ) {
             $$_ // _croak 'EncodeIntegerUndef';
             _croak 'EncodeInteger', 'invalid integer: ' . $$_
               unless $$_ =~ m/\A (?: 0 | -? [1-9] [0-9]* ) \z/x;
             sprintf 'i%s,', $$_;
         }
-        elsif ( $ref eq 'Bifcode::V2::REAL' ) {
+        elsif ( $ref eq 'Bifcode2::REAL' ) {
             $$_ // _croak 'EncodeRealUndef';
             _croak 'EncodeReal', 'invalid real: ' . $$_
               unless $$_ =~ $number_qr;
@@ -304,12 +304,12 @@ sub _encode_bifcode2 {
             $x =~ s/ ([1-9]) (0+ e)/.${1}e/x;    # remove trailing zeros
             $x;
         }
-        elsif ( $ref eq 'Bifcode::V2::UTF8' ) {
+        elsif ( $ref eq 'Bifcode2::UTF8' ) {
             my $str = $$_ // _croak 'EncodeUTF8Undef';
             utf8::encode($str);
             'u' . length($str) . '.' . $str . ',';
         }
-        elsif ( $ref eq 'Bifcode::V2::BIFCODE2' ) {
+        elsif ( $ref eq 'Bifcode2::BIFCODE2' ) {
             my $str = $$_ // _croak 'EncodeBifcodeUndef';
             'B' . length($str) . '.' . $str . ',';
         }
@@ -329,7 +329,7 @@ sub force_bifcode2 {
     my $type = shift;
 
     _croak 'ForceUsage' unless defined $ref and defined $type;
-    bless \$ref, 'Bifcode::V2::' . uc($type);
+    bless \$ref, 'Bifcode2::' . uc($type);
 }
 
 sub _expand_bifcode {
@@ -386,7 +386,7 @@ sub anyevent_write_type {
 
 1;
 
-package Bifcode::V2::BIFCODE2;
+package Bifcode2::BIFCODE2;
 use overload
   bool     => sub { 1 },
   '""'     => sub { ${ $_[0] } },
@@ -402,7 +402,7 @@ __END__
 
 =head1 NAME
 
-Bifcode::V2 - simple serialization format (version 2)
+Bifcode2 - encode and decode BIFCODE2 serialization format
 
 =head1 VERSION
 
@@ -412,7 +412,7 @@ Bifcode::V2 - simple serialization format (version 2)
 
     use utf8;
     use boolean;
-    use Bifcode::V2 qw( encode_bifcode2 decode_bifcode2 );
+    use Bifcode2 qw( encode_bifcode2 decode_bifcode2 );
 
     my $bifcode = encode_bifcode2 {
         bools   => [ boolean::false, boolean::true, ],
@@ -435,7 +435,7 @@ Bifcode::V2 - simple serialization format (version 2)
 
 =head1 DESCRIPTION
 
-B<Bifcode::V2> implements the I<BIFCODE2> serialisation format, a mixed
+B<Bifcode2> implements the I<BIFCODE2> serialisation format, a mixed
 binary/text encoding with support for the following data types:
 
 =over
@@ -579,9 +579,9 @@ over a network.
 =head2 C<encode_bifcode2( $datastructure )>
 
 Takes a single argument which may be a scalar, or may be a reference to
-either a scalar, an array, a hash or a Bifcode::V2::BIFCODE object.
+either a scalar, an array, a hash or a Bifcode2::BIFCODE2 object.
 Arrays and hashes may in turn contain values of these same types.
-Returns a byte string blessed as C<Bifcode::V2::BIFCODE>.
+Returns a byte string blessed as C<Bifcode2::BIFCODE2>.
 
 The mapping from Perl to I<BIFCODE2> is as follows:
 
@@ -619,9 +619,9 @@ BIFCODE2_BYTES when none of the above applies.
 =back
 
 You can force scalars to be encoded a particular way by passing a
-reference to them blessed as Bifcode::V2::BYTES, Bifcode::V2::INTEGER,
-Bifcode::V2::REAL or Bifcode::V2::UTF8. The C<force_bifcode2> function
-below can help with creating such references.
+reference to them blessed as Bifcode2::BYTES, Bifcode2::INTEGER,
+Bifcode2::REAL or Bifcode2::UTF8. The C<force_bifcode2> function below
+can help with creating such references.
 
 =item * SCALAR references become BIFCODE2_BYTES.
 
@@ -629,7 +629,7 @@ below can help with creating such references.
 
 =item * HASH references become BIFCODE2_DICT.
 
-=item * Bifcode::V2::BIFCODE references become BIFCODE2_BIFCODE2.
+=item * Bifcode2::BIFCODE2 references become BIFCODE2_BIFCODE2.
 
 =back
 
@@ -654,7 +654,7 @@ to a particular type (using blessed references) will decode as plain
 scalars.
 
 =item * BIFCODE2_BIFCODE2 types are fully inflated into 
-Perl structures, and not the intermediate Bifcode string.
+Perl structures, and not the intermediate I<BIFCODE2> string.
 
 =back
 
@@ -662,29 +662,29 @@ Croaks on malformed data.
 
 =head2 C<force_bifcode2( $scalar, $type )>
 
-Returns a reference to $scalar blessed as Bifcode::V2::$TYPE. The value
-of $type is not checked, but the C<encode_bifcode2> function will only
+Returns a reference to $scalar blessed as Bifcode2::$TYPE. The value of
+$type is not checked, but the C<encode_bifcode2> function will only
 accept the resulting reference where $type is one of 'bytes', 'real',
 'integer' or 'utf8'.
 
 =head2 C<diff_bifcode2( $bc1, $bc2, [$diff_args] )>
 
 Returns a string representing the difference between two bifcodes. The
-inputs do not need to be valid Bifcode::V2; they are only expanded with
-a very simple regex before the diff is done. The third argument
+inputs do not need to be valid Bifcode2; they are only expanded with a
+very simple regex before the diff is done. The third argument
 (C<$diff_args>) is passed directly to L<Text::Diff>.
 
 Croaks if L<Text::Diff> is not installed.
 
 =head2 AnyEvent::Handle Support
 
-B<Bifcode::V2> implements the L<AnyEvent::Handle> C<anyevent_read_type>
+B<Bifcode2> implements the L<AnyEvent::Handle> C<anyevent_read_type>
 and C<anyevent_write_type> functions which allow you to do this:
 
-    $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
+    $handle->push_write( 'Bifcode2' => { your => 'structure here' } );
 
     $handle->push_read(
-        'Bifcode::V2' => sub {
+        'Bifcode2' => sub {
             my ( $hdl, $ref ) = @_;
             # do stuff with $ref
         },
@@ -693,134 +693,134 @@ and C<anyevent_write_type> functions which allow you to do this:
 
 =head1 DIAGNOSTICS
 
-The following exceptions may be raised by B<Bifcode::V2>:
+The following exceptions may be raised by B<Bifcode2>:
 
 =over
 
-=item Bifcode::V2::Error::Decode
+=item Bifcode2::Error::Decode
 
 Your data is malformed in a non-identifiable way.
 
-=item Bifcode::V2::Error::DecodeBytes
+=item Bifcode2::Error::DecodeBytes
 
 Your data contains a byte string with an invalid length.
 
-=item Bifcode::V2::Error::DecodeBytesTrunc
+=item Bifcode2::Error::DecodeBytesTrunc
 
 Your data includes a byte string declared to be longer than the
 available data.
 
-=item Bifcode::V2::Error::DecodeBytesTerm
+=item Bifcode2::Error::DecodeBytesTerm
 
 Your data includes a byte string that is missing a "," terminator.
 
-=item Bifcode::V2::Error::DecodeDepth
+=item Bifcode2::Error::DecodeDepth
 
 Your data contains dicts or lists that are nested deeper than the
 $max_depth passed to C<decode_bifcode2()>.
 
-=item Bifcode::V2::Error::DecodeTrunc
+=item Bifcode2::Error::DecodeTrunc
 
 Your data is truncated.
 
-=item Bifcode::V2::Error::DecodeReal
+=item Bifcode2::Error::DecodeReal
 
 Your data contained something that was supposed to be a real but didn't
 make sense.
 
-=item Bifcode::V2::Error::DecodeRealTrunc
+=item Bifcode2::Error::DecodeRealTrunc
 
 Your data contains a real that is truncated.
 
-=item Bifcode::V2::Error::DecodeInteger
+=item Bifcode2::Error::DecodeInteger
 
 Your data contained something that was supposed to be an integer but
 didn't make sense.
 
-=item Bifcode::V2::Error::DecodeIntegerTrunc
+=item Bifcode2::Error::DecodeIntegerTrunc
 
 Your data contains an integer that is truncated.
 
-=item Bifcode::V2::Error::DecodeKeyType
+=item Bifcode2::Error::DecodeKeyType
 
 Your data violates the I<bifcode> format constaint that all dict keys
 be BIFCODE2_BYTES or BIFCODE2_UTF8.
 
-=item Bifcode::V2::Error::DecodeKeyDuplicate
+=item Bifcode2::Error::DecodeKeyDuplicate
 
 Your data violates the I<bifcode> format constaint that all dict keys
 must be unique.
 
-=item Bifcode::V2::Error::DecodeKeyOrder
+=item Bifcode2::Error::DecodeKeyOrder
 
 Your data violates the I<bifcode> format constaint that dict keys must
 appear in lexical sort order.
 
-=item Bifcode::V2::Error::DecodeKeyValue
+=item Bifcode2::Error::DecodeKeyValue
 
 Your data contains a dictionary with an odd number of elements.
 
-=item Bifcode::V2::Error::DecodeTrailing
+=item Bifcode2::Error::DecodeTrailing
 
 Your data does not end after the first I<bifcode>-serialised item.
 
-=item Bifcode::V2::Error::DecodeUTF8
+=item Bifcode2::Error::DecodeUTF8
 
 Your data contained a UTF8 string with an invalid length.
 
-=item Bifcode::V2::Error::DecodeUTF8Trunc
+=item Bifcode2::Error::DecodeUTF8Trunc
 
 Your data includes a string declared to be longer than the available
 data.
 
-=item Bifcode::V2::Error::DecodeUTF8Term
+=item Bifcode2::Error::DecodeUTF8Term
 
 Your data includes a UTF8 string that is missing a "," terminator.
 
-=item Bifcode::V2::Error::DecodeUsage
+=item Bifcode2::Error::DecodeUsage
 
 You called C<decode_bifcode2()> with invalid arguments.
 
-=item Bifcode::V2::Error::DiffUsage
+=item Bifcode2::Error::DiffUsage
 
 You called C<diff_bifcode2()> with invalid arguments.
 
-=item Bifcode::V2::Error::EncodeBytesUndef
+=item Bifcode2::Error::EncodeBytesUndef
 
 You attempted to encode C<undef> as a byte string.
 
-=item Bifcode::V2::Error::EncodeReal
+=item Bifcode2::Error::EncodeReal
 
 You attempted to encode something as a real that isn't recognised as
 one.
 
-=item Bifcode::V2::Error::EncodeRealUndef
+=item Bifcode2::Error::EncodeRealUndef
 
 You attempted to encode C<undef> as a real.
 
-=item Bifcode::V2::Error::EncodeInteger
+=item Bifcode2::Error::EncodeInteger
 
 You attempted to encode something as an integer that isn't recognised
 as one.
 
-=item Bifcode::V2::Error::EncodeIntegerUndef
+=item Bifcode2::Error::EncodeIntegerUndef
 
 You attempted to encode C<undef> as an integer.
 
-=item Bifcode::V2::Error::EncodeUTF8Undef
+=item Bifcode2::Error::EncodeUTF8Undef
 
 You attempted to encode C<undef> as a UTF8 string.
 
-=item Bifcode::V2::Error::EncodeUnhandled
+=item Bifcode2::Error::EncodeUnhandled
 
 You are trying to serialise a data structure that contains a data type
 not supported by the I<bifcode> format.
 
-=item Bifcode::V2::Error::EncodeUsage
+=item Bifcode2::Error::EncodeUsage
 
 You called C<encode_bifcode2()> with invalid arguments.
 
-=item Bifcode::V2::Error::ForceUsage
+=item Bifcode2::Error::ForceUsage
 
 You called C<force_bifcode2()> with invalid arguments.
 
@@ -835,7 +835,7 @@ serialise a scalar. This cannot be fixed.
 =head1 SEE ALSO
 
 This distribution includes the L<diff-bifcode> command-line utility for
-comparing Bifcodes in files.
+comparing I<BIFCODE2> in files.
 
 =head1 AUTHOR
 

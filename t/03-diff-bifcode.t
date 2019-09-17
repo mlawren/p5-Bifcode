@@ -3,20 +3,19 @@ use warnings;
 use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
-use Test::Bifcode::V2;
+use Test::Bifcode2;
 use Test::More 0.88;    # for done_testing
 use Test::Needs 'Text::Diff';
-use Bifcode::V2 'encode_bifcode2', 'diff_bifcode2';
+use Bifcode2 'encode_bifcode2', 'diff_bifcode2';
 
 eval { diff_bifcode2() };
-isa_ok $@, 'Bifcode::V2::Error::DiffUsage',
-  'diff_bifcode2 not enough arguments';
+isa_ok $@, 'Bifcode2::Error::DiffUsage', 'diff_bifcode2 not enough arguments';
 
 eval { diff_bifcode2( 1, 2, 3, 4 ) };
-isa_ok $@, 'Bifcode::V2::Error::DiffUsage', 'diff_bifcode2 too many arguments';
+isa_ok $@, 'Bifcode2::Error::DiffUsage', 'diff_bifcode2 too many arguments';
 
 eval { encode_bifcode2( 1, 2, 3 ) };
-isa_ok $@, 'Bifcode::V2::Error::EncodeUsage', 'too many arguments';
+isa_ok $@, 'Bifcode2::Error::EncodeUsage', 'too many arguments';
 
 my $a = '[u1.a,u1.b,u1.c,]';
 my $b = '[u1.a,u1.B,~,]';
