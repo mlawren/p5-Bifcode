@@ -232,7 +232,7 @@ INTERFACE
                 my ( $hdl, $ref ) = @_;
                 # do stuff with $ref
             },
-                    $maxdepth       # passed straight to decode_bifcode()
+            $maxdepth   # passed straight to decode_bifcode()
         );
 
 DIAGNOSTICS

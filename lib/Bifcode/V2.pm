@@ -689,7 +689,7 @@ and C<anyevent_write_type> functions which allow you to do this:
             my ( $hdl, $ref ) = @_;
             # do stuff with $ref
         },
-		$maxdepth 	# passed straight to decode_bifcode()
+        $maxdepth   # passed straight to decode_bifcode()
     );
 
 =head1 DIAGNOSTICS
