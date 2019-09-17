@@ -40,8 +40,8 @@ subtest REAL => sub {
     error_ok 'r0.0e' => 'DecodeReal',      'aborted real';
     error_ok 'r0.e0' => 'DecodeReal',      'aborted real';
     error_ok 'r0e0'  => 'DecodeReal',      'aborted real';
-    decod_ok 'r0.0e0,'  => '0.0e0';
-    decod_ok 'r4.1e-2,' => '4.1e-2';
+    decod_ok 'r0.0e0,'  => 0.0e0;
+    decod_ok 'r4.1e-2,' => 4.1e-2;
     error_ok 'r-0.0e0,' => 'DecodeReal', 'non-zero exponent for 0.0 real';
     error_ok 'r0.0e-1,' => 'DecodeReal', 'non-zero exponent for 0.0 real';
 };

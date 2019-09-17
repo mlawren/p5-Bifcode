@@ -162,7 +162,7 @@ sub _decode_bifcode_chunk {
           and $3 eq '0'     # mantissa 0.0
           and $4 ne '0';    # sign or exponent 0.0e0
 
-        return 0.0 + $2 . '.' . $3 . 'e' . $4;
+        return 0.0 + ( $2 . '.' . $3 . 'e' . $4 );
     }
     elsif ( $1 eq '[' ) {
         _croak 'DecodeDepth' if defined $max_depth and $max_depth < 0;
