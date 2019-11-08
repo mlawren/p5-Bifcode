@@ -1,7 +1,7 @@
 bin/diff-bifcode
 Changes
 cpanfile
-lib/Bifcode/V2.pm
+lib/Bifcode2.pm
 Makefile.PL
 MANIFEST			This list of files
 README
@@ -9,7 +9,8 @@ t/00-errors.t
 t/01-decode-bifcode.t
 t/02-encode-bifcode.t
 t/03-diff-bifcode.t
-t/lib/Test/Bifcode/V2.pm
+t/04-anyevent.t
+t/lib/Test/Bifcode2.pm
 t/synopsis.pl
 TODO
 META.yml                                 Module YAML meta-data (added by MakeMaker)

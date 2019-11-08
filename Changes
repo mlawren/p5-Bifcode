@@ -1,3 +1,14 @@
+2.000_4 (2019-11-09)
+
+    API / Behaviour Changes:
+        - Rename Bifcode::V2 -> Bifcode2
+        - Rename *_bifcode() functions to *_bifcode2()
+
+    Enhancements:
+        - Better test function names.
+        - Better test for decoding of BIFCODE_REAL.
+        - Proper AnyEvent support with tests
+
 2.000_3 (2019-09-09)
 
     API / Behaviour Changes:

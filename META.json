@@ -1,5 +1,5 @@
 {
-   "abstract" : "Simple serialization format",
+   "abstract" : "encode and decode BIFCODE2 serialization format",
    "author" : [
       "Mark Lawrencde <nomad@null.net>"
    ],
@@ -12,14 +12,14 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "Bifcode-V2",
+   "name" : "Bifcode2",
    "no_index" : {
       "directory" : [
          "t",
          "inc"
       ],
       "package" : [
-         "Bifcode::V2::BIFCODE"
+         "Bifcode2::BIFCODE2"
       ]
    },
    "prereqs" : {
@@ -60,6 +60,6 @@
          "url" : "ssh://git@github.com/mlawren/p5-Bifcode.git"
       }
    },
-   "version" : "2.000_3",
+   "version" : "2.000_4",
    "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

@@ -1,10 +1,10 @@
-package Test::Bifcode::V2;
+package Test::Bifcode2;
 use bytes;
 use strict;
 use warnings;
 
 use utf8;
-use Bifcode::V2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
+use Bifcode2 qw/decode_bifcode2 encode_bifcode2 force_bifcode2 diff_bifcode2/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
@@ -12,9 +12,9 @@ use Exporter::Tidy default => [
       $data1 $DATA1
       $data2 $DATA2
       enc_ok
-      enc_error_ok
-      decod_ok
-      error_ok)
+      encode_err
+      decode_ok
+      decode_err)
 ];
 use Test::More 0.88;    # for done_testing
 
@@ -32,7 +32,7 @@ our $BYTES     = 'b' . $bytes_length . '.' . $bytes . ',';
 our $BYTES_KEY = 'b' . $bytes_length . '.' . $bytes . ':';
 
 our $data1 = {
-    bools   => [ $Bifcode::V2::FALSE, $Bifcode::V2::TRUE, ],
+    bools   => [ $Bifcode2::FALSE, $Bifcode2::TRUE, ],
     bytes   => \$bytes,
     integer => 25,
     float   => -1.25e-9,
@@ -49,7 +49,7 @@ our $DATA1 = '{'
   . ( 'u4.utf8,' . $UTF8 ) . '}';
 
 our $data2 = {
-    bools   => [ $Bifcode::V2::FALSE, $Bifcode::V2::TRUE, ],
+    bools   => [ $Bifcode2::FALSE, $Bifcode2::TRUE, ],
     bytes   => \$bytes,
     integer => 24,
     float   => 1.25e-9,
@@ -70,20 +70,20 @@ sub enc_ok {
       unless 2 == @_;
     my ( $thawed, $frozen ) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    my $diff = diff_bifcode( encode_bifcode($thawed), $frozen );
+    my $diff = diff_bifcode2( encode_bifcode2($thawed), $frozen );
     length($diff)
       ? ok 0, "encode $frozen:\n$diff"
       : ok 1, "encode $frozen";
 }
 
-sub enc_error_ok {
+sub encode_err {
     my ( $data, $error, $kind_of_brokenness ) = @_;
-    $kind_of_brokenness // Carp::croak 'enc_error_ok needs $kind_of_brokenness';
+    $kind_of_brokenness // Carp::croak 'encode_err needs $kind_of_brokenness';
     local $@;
-    eval { encode_bifcode $data };
+    eval { encode_bifcode2 $data };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
-    my $want = 'Bifcode::V2::Error::' . $error;
+    my $want = 'Bifcode2::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
@@ -94,24 +94,24 @@ sub un {
     local $, = ', ';
     my $frozen_str = $frozen // '*undef*';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen_str]", decode_bifcode @$frozen )
-      : ( "decode '$frozen_str'", decode_bifcode $frozen );
+      ? ( "decode [@$frozen_str]", decode_bifcode2 @$frozen )
+      : ( "decode '$frozen_str'", decode_bifcode2 $frozen );
 }
 
-sub decod_ok {
+sub decode_ok {
     my ( $frozen,   $thawed ) = @_;
     my ( $testname, $result ) = un $frozen;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     is_deeply $result, $thawed, $testname;
 }
 
-sub error_ok {
+sub decode_err {
     my ( $frozen, $error, $kind_of_brokenness ) = @_;
     local $@;
     eval { un $frozen };
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
-    my $want = 'Bifcode::V2::Error::' . $error;
+    my $want = 'Bifcode2::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
