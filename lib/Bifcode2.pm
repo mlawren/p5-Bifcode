@@ -21,6 +21,7 @@ sub _croak {
     my $type     = shift // Carp::croak('usage: _croak($TYPE, [$msg])');
     my %messages = (
         Decode             => 'garbage at',
+        DecodeBifcodeTerm  => 'missing BIFCODE terminator at',
         DecodeBytes        => 'malformed BYTES length at',
         DecodeBytesTrunc   => 'unexpected BYTES end of data at',
         DecodeBytesTerm    => 'missing BYTES termination at',
@@ -51,8 +52,9 @@ sub _croak {
         ForceUsage         => 'ref and type must be defined',
     );
 
-    my $err   = 'Bifcode2::Error::' . $type;
-    my $msg   = shift // $messages{$type} // die '_error (no message)';
+    my $err = 'Bifcode2::Error::' . $type;
+    my $msg = shift // $messages{$type}
+      // Carp::croak("Bifcode2::_croak($type) has no message ");
     my $short = Carp::shortmess('');
 
     $msg =~ s! at$!' at input byte '. ( pos() // 0 )!e;
@@ -197,11 +199,10 @@ sub _decode_bifcode2_chunk {
         my $len = $2 // _croak 'DecodeBifcode';
         _croak 'DecodeBifcodeTrunc' if $len > length() - pos();
 
-        my $data = substr $_, pos(), $len;
-        pos() = pos() + $len;
-
+        my $res = _decode_bifcode2_chunk();
         _croak 'DecodeBifcodeTerm' unless m/ \G , /xgc;
-        return decode_bifcode2( $data, $max_depth );
+
+        return $res;
     }
 }
 
@@ -216,7 +217,7 @@ sub decode_bifcode2 {
       if utf8::is_utf8($_);
 
     my $deserialised_data = _decode_bifcode2_chunk();
-    _croak 'DecodeTrailing' if $_ !~ m/ \G \z /xgc;
+    _croak 'DecodeTrailing', " For: $_" if $_ !~ m/ \G \z /xgc;
     return $deserialised_data;
 }
 
