@@ -359,30 +359,59 @@ sub diff_bifcode2 {
     return Text::Diff::diff( \$b1, \$b2, $diff_args );
 }
 
+# Looking for something like "B48." that may be truncated at any point
+my $qr_bcbc = qr/
+    ^
+    (                                   # 1
+        B
+        (?:
+            \Z | (?:
+                ( 0 | [1-9][0-9]* )     # 2
+                ( \Z | (\.) )           # 3
+            )
+        )
+    )
+/x;
+
 sub anyevent_read_type {
-    my ( $handle, $cb, $maxdepth ) = @_;
+    my ( $self, $cb, $maxdepth ) = @_;
 
     sub {
-        return unless defined $_[0]{rbuf};
-        unless ( $handle->{rbuf} =~ m/^(B(0|[1-9][0-9]*)\.)/ ) {
-            $handle->_error( Errno::EBADMSG() );
+        return unless defined $_[0]->{rbuf};
+
+        $_[0]->{rbuf} =~ s/^[\r\n]*//;
+        return unless length $_[0]->{rbuf};
+
+        $_[0]->{rbuf} =~ $qr_bcbc;
+
+        if ( length $3 ) {
+            $_[0]->unshift_read(
+                chunk => length($1) + $2 + 1,
+                sub {
+                    my $data = eval { decode_bifcode2( $_[1], $maxdepth ) };
+                    if ($@) {
+                        $_[0]->_error( Errno::EBADMSG(), undef, $@ );
+                    }
+                    else {
+                        $cb->( $_[0], $data );
+                    }
+                    1;
+                }
+            );
+            return 1;
+        }
+        elsif ( not length $1 ) {
+            $_[0]->_error( Errno::EBADMSG() );
             return;
         }
-
-        $handle->unshift_read(
-            chunk => length($1) + $2 + 1,
-            sub {
-                $cb->( $_[0], decode_bifcode2( $_[1], $maxdepth ) );
-            }
-        );
-
-        1;
+        else {
+            return;    # not enough data yet
+        }
     };
 }
 
 sub anyevent_write_type {
-    my ( $handle, $ref ) = @_;
-    encode_bifcode2( encode_bifcode2($ref) );
+    encode_bifcode2( encode_bifcode2( $_[1] ) ) . "\n";
 }
 
 1;

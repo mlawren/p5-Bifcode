@@ -10,6 +10,7 @@
     Enhancements:
         - Better test function names.
         - Better test for decoding of BIFCODE_REAL.
+        - Proper AnyEvent support with tests
 
     Bug Fixes:
         - None.
