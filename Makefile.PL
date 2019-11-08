@@ -8,7 +8,7 @@ WriteMakefile(
     NAME         => 'Bifcode2',
     ABSTRACT     => 'encode and decode BIFCODE2 serialization format',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
-    VERSION_FROM => 'lib/Bifcode/V2.pm',
+    VERSION_FROM => 'lib/Bifcode2.pm',
     LICENSE      => 'perl_5',
     EXE_FILES    => ['bin/diff-bifcode'],
     META_MERGE   => {

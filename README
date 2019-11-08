@@ -1,5 +1,5 @@
 NAME
-    Bifcode2 - simple serialization format (version 2)
+    Bifcode2 - encode and decode BIFCODE2 serialization format
 
 VERSION
     2.000_4 (yyyy-mm-dd)
@@ -147,9 +147,9 @@ SPECIFICATION
 INTERFACE
   "encode_bifcode2( $datastructure )"
     Takes a single argument which may be a scalar, or may be a reference
-    to either a scalar, an array, a hash or a Bifcode2::BIFCODE
-    object. Arrays and hashes may in turn contain values of these same
-    types. Returns a byte string blessed as "Bifcode2::BIFCODE".
+    to either a scalar, an array, a hash or a Bifcode2::BIFCODE2 object.
+    Arrays and hashes may in turn contain values of these same types.
+    Returns a byte string blessed as "Bifcode2::BIFCODE2".
 
     The mapping from Perl to *BIFCODE2* is as follows:
 
@@ -173,8 +173,8 @@ INTERFACE
 
         You can force scalars to be encoded a particular way by passing
         a reference to them blessed as Bifcode2::BYTES,
-        Bifcode2::INTEGER, Bifcode2::REAL or Bifcode2::UTF8.
-        The "force_bifcode2" function below can help with creating such
+        Bifcode2::INTEGER, Bifcode2::REAL or Bifcode2::UTF8. The
+        "force_bifcode2" function below can help with creating such
         references.
 
     *   SCALAR references become BIFCODE2_BYTES.
@@ -183,7 +183,7 @@ INTERFACE
 
     *   HASH references become BIFCODE2_DICT.
 
-    *   Bifcode2::BIFCODE references become BIFCODE2_BIFCODE2.
+    *   Bifcode2::BIFCODE2 references become BIFCODE2_BIFCODE2.
 
     This subroutine croaks on unhandled data types.
 
@@ -202,21 +202,21 @@ INTERFACE
         blessed references) will decode as plain scalars.
 
     *   BIFCODE2_BIFCODE2 types are fully inflated into Perl structures,
-        and not the intermediate Bifcode string.
+        and not the intermediate *BIFCODE2* string.
 
     Croaks on malformed data.
 
   "force_bifcode2( $scalar, $type )"
-    Returns a reference to $scalar blessed as Bifcode2::$TYPE. The
-    value of $type is not checked, but the "encode_bifcode2" function
-    will only accept the resulting reference where $type is one of
-    'bytes', 'real', 'integer' or 'utf8'.
+    Returns a reference to $scalar blessed as Bifcode2::$TYPE. The value
+    of $type is not checked, but the "encode_bifcode2" function will
+    only accept the resulting reference where $type is one of 'bytes',
+    'real', 'integer' or 'utf8'.
 
   "diff_bifcode2( $bc1, $bc2, [$diff_args] )"
     Returns a string representing the difference between two bifcodes.
-    The inputs do not need to be valid Bifcode2; they are only
-    expanded with a very simple regex before the diff is done. The third
-    argument ($diff_args) is passed directly to Text::Diff.
+    The inputs do not need to be valid Bifcode2; they are only expanded
+    with a very simple regex before the diff is done. The third argument
+    ($diff_args) is passed directly to Text::Diff.
 
     Croaks if Text::Diff is not installed.
 
@@ -345,7 +345,7 @@ BUGS AND LIMITATIONS
 
 SEE ALSO
     This distribution includes the diff-bifcode command-line utility for
-    comparing Bifcodes in files.
+    comparing *BIFCODE2* in files.
 
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by
