@@ -436,7 +436,7 @@ Bifcode2 - encode and decode BIFCODE2 serialization format
 
 =head1 VERSION
 
-2.000_4 (yyyy-mm-dd)
+2.000_4 (2019-11-09)
 
 =head1 SYNOPSIS
 
