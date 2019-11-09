@@ -68,6 +68,7 @@ sub _croak {
             1;
         }];
 
+    die $@ if $@;
     die bless \$msg, $err;
 }
 
