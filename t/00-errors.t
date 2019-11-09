@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Bifcode2;
-use Test::More;
+use Test2::V0;
 
 eval { Bifcode2::decode_bifcode2(undef) };
 my $err = $@;

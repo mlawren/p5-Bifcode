@@ -16,9 +16,9 @@ on develop => sub {
 };
 
 on test => sub {
-    requires 'Text::Diff';
-    requires 'Test::More', '0.88';
-    requires 'Test::Needs';
+    requires 'Test2::V0';
+    suggests 'Text::Diff';
+    suggests 'AnyEvent::Handle';
 };
 
 # vim: ft=perl

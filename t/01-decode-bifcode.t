@@ -5,7 +5,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
 use Test::Bifcode2;
-use Test::More 0.88;    # for done_testing
+use Test2::V0;
 
 subtest UNDEF => sub {
     decode_ok '~,' => undef;

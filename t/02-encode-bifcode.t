@@ -5,7 +5,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
 use Test::Bifcode2;
-use Test::More 0.88;    # for done_testing
+use Test2::V0;
 use Bifcode2 'encode_bifcode2', 'force_bifcode2';
 
 subtest 'UNDEF' => sub {
@@ -163,8 +163,8 @@ encode_err bless( \$u, 'strange' ) => 'EncodeUnhandled',
   'unknown object type';
 
 eval { encode_bifcode2() };
-isa_ok $@, 'Bifcode2::Error::EncodeUsage', 'not enough arguments';
+isa_ok $@, ['Bifcode2::Error::EncodeUsage'], 'not enough arguments';
 eval { encode_bifcode2( 1, 2 ) };
-isa_ok $@, 'Bifcode2::Error::EncodeUsage', 'too many arguments';
+isa_ok $@, ['Bifcode2::Error::EncodeUsage'], 'too many arguments';
 
 done_testing;

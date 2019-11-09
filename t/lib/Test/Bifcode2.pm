@@ -16,7 +16,7 @@ use Exporter::Tidy default => [
       decode_ok
       decode_err)
 ];
-use Test::More 0.88;    # for done_testing
+use Test2::V0;
 
 our $utf8 = "\x{100}\x{df}";
 
@@ -69,7 +69,6 @@ sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
       unless 2 == @_;
     my ( $thawed, $frozen ) = @_;
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $diff = diff_bifcode2( encode_bifcode2($thawed), $frozen );
     length($diff)
       ? ok 0, "encode $frozen:\n$diff"
@@ -81,7 +80,6 @@ sub encode_err {
     $kind_of_brokenness // Carp::croak 'encode_err needs $kind_of_brokenness';
     local $@;
     eval { encode_bifcode2 $data };
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
     my $want = 'Bifcode2::Error::' . $error;
     my $ok   = $have eq $want;
@@ -101,15 +99,13 @@ sub un {
 sub decode_ok {
     my ( $frozen,   $thawed ) = @_;
     my ( $testname, $result ) = un $frozen;
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    is_deeply $result, $thawed, $testname;
+    is $result, $thawed, $testname;
 }
 
 sub decode_err {
     my ( $frozen, $error, $kind_of_brokenness ) = @_;
     local $@;
     eval { un $frozen };
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $have = ref $@;
     my $want = 'Bifcode2::Error::' . $error;
     my $ok   = $have eq $want;
