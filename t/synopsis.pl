@@ -5,11 +5,11 @@ use utf8;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib";
 use lib "$RealBin/lib";
-use Bifcode2 qw( encode_bifcode decode_bifcode force_bifcode );
+use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
 use boolean;
 use Data::Dumper;
 use Path::Tiny;
-use Test::Bifcode2;
+use Test::Bifcode;
 no warnings 'once';
 
 my $str = q{encode_bifcode {

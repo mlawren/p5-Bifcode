@@ -1,10 +1,10 @@
-package Test::Bifcode2;
+package Test::Bifcode;
 use bytes;
 use strict;
 use warnings;
 
 use utf8;
-use Bifcode2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
+use Bifcode qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
@@ -32,7 +32,7 @@ our $BYTES     = 'b' . $bytes_length . '.' . $bytes . ',';
 our $BYTES_KEY = 'b' . $bytes_length . '.' . $bytes . ':';
 
 our $data1 = {
-    bools   => [ $Bifcode2::FALSE, $Bifcode2::TRUE, ],
+    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
     bytes   => \$bytes,
     integer => 25,
     float   => -1.25e-9,
@@ -49,7 +49,7 @@ our $DATA1 = '{'
   . ( 'u4.utf8,' . $UTF8 ) . '}';
 
 our $data2 = {
-    bools   => [ $Bifcode2::FALSE, $Bifcode2::TRUE, ],
+    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
     bytes   => \$bytes,
     integer => 24,
     float   => 1.25e-9,
@@ -81,7 +81,7 @@ sub encode_err {
     local $@;
     eval { encode_bifcode $data };
     my $have = ref $@;
-    my $want = 'Bifcode2::Error::' . $error;
+    my $want = 'Bifcode::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
@@ -107,7 +107,7 @@ sub decode_err {
     local $@;
     eval { un $frozen };
     my $have = ref $@;
-    my $want = 'Bifcode2::Error::' . $error;
+    my $want = 'Bifcode::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
