@@ -4,19 +4,21 @@ use warnings;
 use 5.010;
 use ExtUtils::MakeMaker::CPANfile;
 
+my $diff = eval { require Text::Diff; require OptArgs2 };
+
 WriteMakefile(
-    NAME         => 'Bifcode2',
-    ABSTRACT     => 'encode and decode BIFCODE2 serialization format',
+    NAME         => 'Bifcode',
+    ABSTRACT     => 'encode and decode BIFCODE serialization format',
     AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
-    VERSION_FROM => 'lib/Bifcode2.pm',
+    VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
-    EXE_FILES    => ['bin/diff-bifcode'],
+    EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],
     META_MERGE   => {
         'meta-spec' => { version => 2 },
         no_index    => {
             package => [
                 qw(
-                  Bifcode2::BIFCODE2
+                  Bifcode::BIFCODE
                   )
             ],
         },
