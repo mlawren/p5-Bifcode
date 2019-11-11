@@ -12,6 +12,10 @@ feature 'diff-bifcode' => sub {
     requires 'Text::Diff';
 };
 
+feature 'anyevent-handle' => sub {
+    requires 'AnyEvent::Handle';
+};
+
 on configure => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';
 };
