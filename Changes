@@ -1,19 +1,10 @@
-2.000_5 (yyyy-mm-dd)
+2.000_5 (2019-11-11)
 
     API / Behaviour Changes:
         - Rename everything Bifcode2 back to Bifcode
 
-    New Features:
-        - None.
-
     Enhancements:
         - Make diff-bifcode an optional "feature"
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
 
     Packaging:
         - Convert all tests to Test2::V0.
