@@ -1,3 +1,10 @@
+2.000_6 (2019-11-12)
+
+    Packaging:
+        - Depend on Text::Diff explicitly for tests (closes RT#130969)
+        - Add an 'anyevent-handle' feature that depends on
+          AnyEvent::Handle.
+
 2.000_5 (2019-11-11)
 
     API / Behaviour Changes:

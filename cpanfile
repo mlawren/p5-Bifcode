@@ -12,6 +12,10 @@ feature 'diff-bifcode' => sub {
     requires 'Text::Diff';
 };
 
+feature 'anyevent-handle' => sub {
+    requires 'AnyEvent::Handle';
+};
+
 on configure => sub {
     requires 'ExtUtils::MakeMaker::CPANfile';
 };
@@ -26,7 +30,7 @@ on develop => sub {
 on test => sub {
     suggests 'AnyEvent::Handle';
     requires 'Test2::V0';
-    suggests 'Text::Diff';
+    requires 'Text::Diff';
 };
 
 # vim: ft=perl
