@@ -16,7 +16,7 @@
         - None.
 
     Packaging:
-        - None.
+        - Depend on Text::Diff explicitly for tests (closes RT#130969)
 
 2.000_5 (2019-11-11)
 

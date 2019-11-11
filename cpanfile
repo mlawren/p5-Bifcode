@@ -26,7 +26,7 @@ on develop => sub {
 on test => sub {
     suggests 'AnyEvent::Handle';
     requires 'Test2::V0';
-    suggests 'Text::Diff';
+    requires 'Text::Diff';
 };
 
 # vim: ft=perl
