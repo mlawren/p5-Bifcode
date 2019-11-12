@@ -2,7 +2,7 @@ NAME
     Bifcode - encode and decode BIFCODE serialization format
 
 VERSION
-    2.000_6 (2019-11-12)
+    2.000_7 (2019-11-13)
 
 SYNOPSIS
         use utf8;
@@ -145,11 +145,12 @@ SPECIFICATION
     over a network.
 
 INTERFACE
-  "encode_bifcode( $datastructure )"
-    Takes a single argument which may be a scalar, or may be a reference
-    to either a scalar, an array, a hash or a Bifcode::BIFCODE object.
-    Arrays and hashes may in turn contain values of these same types.
-    Returns a byte string blessed as "Bifcode::BIFCODE".
+  "encode_bifcode( $datastructure, $bool )"
+    The first argument (required) may be a scalar, or may be a reference
+    to either a scalar, an array, or a hash. Arrays and hashes may in
+    turn contain values of these same types. Returns the appropriate
+    BIFCODE_* byte string. If the (optional) $bool is true then the
+    result is further encoded as BIFCODE_BIFCODE.
 
     The mapping from Perl to *BIFCODE* is as follows:
 
@@ -182,8 +183,6 @@ INTERFACE
 
     *   HASH references become BIFCODE_DICT.
 
-    *   Bifcode::BIFCODE references become BIFCODE_BIFCODE.
-
     This subroutine croaks on unhandled data types.
 
   "decode_bifcode( $string [, $max_depth ] )"
@@ -201,7 +200,7 @@ INTERFACE
         blessed references) will decode as plain scalars.
 
     *   BIFCODE_BIFCODE types are fully inflated into Perl structures,
-        and not the intermediate *BIFCODE* string.
+        and not the intermediate *BIFCODE* byte string.
 
     Croaks on malformed data.
 
@@ -345,6 +344,9 @@ BUGS AND LIMITATIONS
 SEE ALSO
     This distribution includes the diff-bifcode command-line utility for
     comparing *BIFCODE* in files.
+
+    Bifcode::V1 implements the original (experimental) *BIFCODE* version
+    1.
 
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by
