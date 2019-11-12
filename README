@@ -346,6 +346,9 @@ SEE ALSO
     This distribution includes the diff-bifcode command-line utility for
     comparing *BIFCODE* in files.
 
+    Bifcode::V1 implements the original (experimental) *BIFCODE* version
+    1.
+
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by
     Aristotle Pagaltzis <pagaltzis@gmx.de>
