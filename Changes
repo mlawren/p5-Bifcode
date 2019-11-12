@@ -14,7 +14,7 @@
         - None.
 
     Dependencies:
-        - None.
+        - Convert Bifcode::V1 tests to Test2::V0.
 
     Packaging:
         - None.

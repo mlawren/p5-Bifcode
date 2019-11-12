@@ -4,18 +4,17 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Test::Bifcode;
-use Test::More 0.88;    # for done_testing
-use Test::Needs 'Text::Diff';
+use Test2::V0;
 use Bifcode::V1 'encode_bifcode', 'diff_bifcode';
 
 eval { diff_bifcode() };
-isa_ok $@, 'Bifcode::Error::DiffUsage', 'diff_bifcode not enough arguments';
+isa_ok $@, ['Bifcode::Error::DiffUsage'], 'diff_bifcode not enough arguments';
 
 eval { diff_bifcode( 1, 2, 3, 4 ) };
-isa_ok $@, 'Bifcode::Error::DiffUsage', 'diff_bifcode too many arguments';
+isa_ok $@, ['Bifcode::Error::DiffUsage'], 'diff_bifcode too many arguments';
 
 eval { encode_bifcode( 1, 2, 3 ) };
-isa_ok $@, 'Bifcode::Error::EncodeUsage', 'too many arguments';
+isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'too many arguments';
 
 my $a = '[U1:a,U1:b,U1:c,]';
 my $b = '[U1:a,U1:B,~]';
