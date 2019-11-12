@@ -1,23 +1,11 @@
-2.000_7 (yyyy-mm-dd)
+2.000_7 (2019-11-13)
 
     API / Behaviour Changes:
         - Extra argument to encode_bifcode() for BIFCODE_BIFCODE
           generation. Bifcode::BIFCODE objects are no longer used.
 
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
     Dependencies:
         - Convert Bifcode::V1 tests to Test2::V0.
-
-    Packaging:
-        - None.
 
 2.000_6 (2019-11-12)
 
