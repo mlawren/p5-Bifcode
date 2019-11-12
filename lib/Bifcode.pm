@@ -232,11 +232,7 @@ sub _encode_bifcode {
             '~' . ',';
         }
         elsif ( ( my $ref = ref $_ ) eq '' ) {
-            if ( utf8::is_utf8($_) ) {
-                utf8::encode( my $str = $_ );
-                'u' . length($str) . '.' . $str . ',';
-            }
-            elsif ( $_ =~ $number_qr ) {
+            if ( $_ =~ $number_qr ) {
                 if ( defined $3 or defined $5 ) {
 
                     # normalize to BIFCODE_REAL standards
@@ -249,11 +245,15 @@ sub _encode_bifcode {
                     'i' . $_ . ',';
                 }
             }
-            elsif ( $_ =~ m/[^\x{20}-\x{7E}]/ ) {
-                'b' . length($_) . '.' . $_ . ',';
+            elsif ( utf8::is_utf8($_) ) {
+                utf8::encode( my $str = $_ );
+                'u' . length($str) . '.' . $str . ',';
+            }
+            elsif ( $_ =~ m/^[\x{20}-\x{7E}]*$/ ) {
+                'u' . length($_) . '.' . $_ . ',';
             }
             else {
-                'u' . length($_) . '.' . $_ . ',';
+                'b' . length($_) . '.' . $_ . ',';
             }
         }
         elsif ( $ref eq 'ARRAY' ) {
@@ -269,15 +269,15 @@ sub _encode_bifcode {
                     map {
                         $k = shift @k;
 
-                        if ( utf8::is_utf8($k) ) {
+                        if ( $k =~ m/^[\x{20}-\x{7E}]*$/ ) {
+                            ( 'u' . length($k) . '.' . $k . ':', $_ );
+                        }
+                        elsif ( utf8::is_utf8($k) ) {
                             utf8::encode($k);
                             ( 'u' . length($k) . '.' . $k . ':', $_ );
                         }
-                        elsif ( $k =~ m/[^\x{20}-\x{7E}]/ ) {
-                            ( 'b' . length($k) . '.' . $k . ':', $_ );
-                        }
                         else {
-                            ( 'u' . length($k) . '.' . $k . ':', $_ );
+                            ( 'b' . length($k) . '.' . $k . ':', $_ );
                         }
                     } _encode_bifcode( @$_{@k} );
                   }
