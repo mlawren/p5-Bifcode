@@ -2,7 +2,7 @@ NAME
     Bifcode - encode and decode BIFCODE serialization format
 
 VERSION
-    2.000_7 (2019-11-13)
+    2.000_8 (yyyy-mm-dd)
 
 SYNOPSIS
         use utf8;
@@ -145,12 +145,12 @@ SPECIFICATION
     over a network.
 
 INTERFACE
-  "encode_bifcode( $datastructure, $bool )"
+  "encode_bifcode( $datastructure [, $enclose ] )"
     The first argument (required) may be a scalar, or may be a reference
     to either a scalar, an array, or a hash. Arrays and hashes may in
     turn contain values of these same types. Returns the appropriate
-    BIFCODE_* byte string. If the (optional) $bool is true then the
-    result is further encoded as BIFCODE_BIFCODE.
+    BIFCODE_* byte string. If $enclose is true then the result is
+    further encoded as BIFCODE_BIFCODE.
 
     The mapping from Perl to *BIFCODE* is as follows:
 

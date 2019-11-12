@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '2.000_7';
+our $VERSION = '2.000_8';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
@@ -433,7 +433,7 @@ Bifcode - encode and decode BIFCODE serialization format
 
 =head1 VERSION
 
-2.000_7 (2019-11-13)
+2.000_8 (yyyy-mm-dd)
 
 =head1 SYNOPSIS
 
@@ -608,8 +608,8 @@ over a network.
 The first argument (required) may be a scalar, or may be a reference to
 either a scalar, an array, or a hash. Arrays and hashes may in turn
 contain values of these same types. Returns the appropriate BIFCODE_*
-byte string. If $enclose is true then the result is further encoded
-as BIFCODE_BIFCODE.
+byte string. If $enclose is true then the result is further encoded as
+BIFCODE_BIFCODE.
 
 The mapping from Perl to I<BIFCODE> is as follows:
 
