@@ -164,7 +164,7 @@ encode_err bless( \$u, 'strange' ) => 'EncodeUnhandled',
 
 eval { encode_bifcode() };
 isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'not enough arguments';
-eval { encode_bifcode( 1, 2 ) };
+eval { encode_bifcode( 1, 2, 3 ) };
 isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'too many arguments';
 
 done_testing;

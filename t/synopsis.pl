@@ -19,7 +19,7 @@ my $str = q{encode_bifcode {
     real    => 1.25e-5,
     null    => undef,
     utf8    => "Ελύτη",
-};
+}
 };
 
 binmode STDOUT, ':utf8';
@@ -28,7 +28,7 @@ my $bifcode = eval $str;
 
 binmode STDOUT;
 print $bifcode, "\n\n";
-print encode_bifcode($bifcode), "\n\n";
+print( ( eval $str . ',1' ), "\n\n" );
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 

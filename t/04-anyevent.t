@@ -11,8 +11,8 @@ use AnyEvent::Socket;
 my $host = '127.0.0.1';
 my $port = 44244;
 
-my $c_msg = { client => 1 };
-my $s_msg = { server => 1 };
+my $c_msg = { client => 2 };
+my $s_msg = { server => 3 };
 my $cv    = AE::cv;
 
 my %connections;

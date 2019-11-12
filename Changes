@@ -1,7 +1,8 @@
 2.000_7 (yyyy-mm-dd)
 
     API / Behaviour Changes:
-        - None.
+        - Extra argument to encode_bifcode() for BIFCODE_BIFCODE
+          generation. Bifcode::BIFCODE objects are no longer used.
 
     New Features:
         - None.

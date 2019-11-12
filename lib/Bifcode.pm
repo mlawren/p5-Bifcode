@@ -311,10 +311,6 @@ sub _encode_bifcode {
             utf8::encode($str);
             'u' . length($str) . '.' . $str . ',';
         }
-        elsif ( $ref eq 'Bifcode::BIFCODE' ) {
-            my $str = $$_ // _croak 'EncodeBifcodeUndef';
-            'B' . length($str) . '.' . $str . ',';
-        }
         else {
             _croak 'EncodeUnhandled', 'unhandled data type: ' . $ref;
         }
@@ -322,8 +318,16 @@ sub _encode_bifcode {
 }
 
 sub encode_bifcode {
-    _croak 'EncodeUsage' if @_ != 1;
-    bless \(&_encode_bifcode)[0], __PACKAGE__ . '::BIFCODE';
+    if ( ( @_ == 2 ) && pop ) {
+        my $b = (&_encode_bifcode)[0];
+        'B' . length($b) . '.' . $b . ',';
+    }
+    elsif ( @_ == 1 ) {
+        (&_encode_bifcode)[0];
+    }
+    else {
+        _croak 'EncodeUsage';
+    }
 }
 
 sub force_bifcode {
@@ -412,16 +416,8 @@ sub anyevent_read_type {
 }
 
 sub anyevent_write_type {
-    encode_bifcode( encode_bifcode( $_[1] ) ) . "\n";
+    encode_bifcode( $_[1], 1 ) . "\n";
 }
-
-1;
-
-package Bifcode::BIFCODE;
-use overload
-  bool     => sub { 1 },
-  '""'     => sub { ${ $_[0] } },
-  fallback => 1;
 
 1;
 
@@ -607,12 +603,13 @@ over a network.
 
 =head1 INTERFACE
 
-=head2 C<encode_bifcode( $datastructure )>
+=head2 C<encode_bifcode( $datastructure [, $enclose ] )>
 
-Takes a single argument which may be a scalar, or may be a reference to
-either a scalar, an array, a hash or a Bifcode::BIFCODE object. Arrays
-and hashes may in turn contain values of these same types. Returns a
-byte string blessed as C<Bifcode::BIFCODE>.
+The first argument (required) may be a scalar, or may be a reference to
+either a scalar, an array, or a hash. Arrays and hashes may in turn
+contain values of these same types. Returns the appropriate BIFCODE_*
+byte string. If $enclose is true then the result is further encoded
+as BIFCODE_BIFCODE.
 
 The mapping from Perl to I<BIFCODE> is as follows:
 
@@ -660,8 +657,6 @@ help with creating such references.
 
 =item * HASH references become BIFCODE_DICT.
 
-=item * Bifcode::BIFCODE references become BIFCODE_BIFCODE.
-
 =back
 
 This subroutine croaks on unhandled data types.
@@ -685,7 +680,7 @@ to a particular type (using blessed references) will decode as plain
 scalars.
 
 =item * BIFCODE_BIFCODE types are fully inflated into 
-Perl structures, and not the intermediate I<BIFCODE> string.
+Perl structures, and not the intermediate I<BIFCODE> byte string.
 
 =back
 
