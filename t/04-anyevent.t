@@ -76,7 +76,7 @@ tcp_connect $host, $port, sub {
         fh       => $fh,
         on_error => sub {
             my ( $aeh, $fatal, $msg ) = @_;
-            AE::log error => $msg;
+            AE::log error => "$msg";
             $aeh->destroy;
             $cv->send;
         }
