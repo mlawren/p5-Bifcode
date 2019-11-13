@@ -1,23 +1,8 @@
-2.000_8 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
+2.000_8 (2019-11-13)
 
     Dependencies:
         - Hopefully support Perl 5.12 by not using "package BLOCK" in
           error class.
-
-    Packaging:
-        - None.
 
 2.000_7 (2019-11-13)
 
