@@ -13,7 +13,8 @@
         - None.
 
     Dependencies:
-        - None.
+        - Hopefully support Perl 5.12 by not using "package BLOCK" in
+          error class.
 
     Packaging:
         - None.
