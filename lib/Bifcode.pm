@@ -57,13 +57,16 @@ sub _croak {
 
     $msg =~ s! at$!' at input byte '. ( pos() // 0 )!e;
 
-    eval 'package ' . $err . qq[;
+    eval qq[
+        package $err;
         use overload
           bool => sub { 1 },
           '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
           fallback => 1;
-        1; ];
+        1;
+        ];
 
+    die $@ if $@;
     die bless \$msg, $err;
 }
 
