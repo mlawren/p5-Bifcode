@@ -2,7 +2,7 @@ NAME
     Bifcode - encode and decode BIFCODE serialization format
 
 VERSION
-    2.000_8 (2019-11-13)
+    2.000_9 (yyyy-mm-dd)
 
 SYNOPSIS
         use utf8;
