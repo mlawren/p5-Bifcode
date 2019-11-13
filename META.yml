@@ -31,5 +31,5 @@ requires:
   warnings: '0'
 resources:
   repository: ssh://git@github.com/mlawren/p5-Bifcode.git
-version: 2.000_7
+version: 2.000_8
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

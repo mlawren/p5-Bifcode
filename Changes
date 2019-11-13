@@ -1,3 +1,9 @@
+2.000_8 (2019-11-13)
+
+    Dependencies:
+        - Hopefully support Perl 5.12 by not using "package BLOCK" in
+          error class.
+
 2.000_7 (2019-11-13)
 
     API / Behaviour Changes:
