@@ -17,6 +17,8 @@
 
     Packaging:
         - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
+        - Add a test script to compare Bifcode vs Bifcode::V1
+          performance
 
 2.000_8 (2019-11-13)
 
