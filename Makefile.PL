@@ -13,7 +13,10 @@ WriteMakefile(
     VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
     EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],
-    META_MERGE   => {
+    test         => {
+        RECURSIVE_TEST_FILES => 1,
+    },
+    META_MERGE => {
         'meta-spec' => { version => 2 },
         no_index    => {
             package => [
