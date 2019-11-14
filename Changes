@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - More idomatic and robust tests for AnyEvent::Handle support
 
     Bug Fixes:
         - None.
