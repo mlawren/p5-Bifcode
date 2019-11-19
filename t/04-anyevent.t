@@ -55,7 +55,16 @@ tcp_server(
             Bifcode => sub {
                 is $_[1], $c_msg, 'server received c_msg';
                 $handle->push_write( Bifcode => $s_msg );
+                1;
+            }
+        );
+
+        $handle->push_read(
+            Bifcode => sub {
+                is $_[1], $c_msg, 'server received c_msg';
+                $handle->push_write( Bifcode => $s_msg );
                 note 'server disconnecting';
+                $handle->push_shutdown();
                 $handle->destroy();
                 $cv->end;
                 1;
@@ -97,8 +106,21 @@ tcp_connect $host, $port, sub {
         'Bifcode' => sub {
             my ( $aeh, $ref ) = @_;
             is $ref, $s_msg, 'client received s_msg';
+        }
+    );
+
+    $aeh->push_write('B1');
+    $aeh->{__my_timer} = AE::timer 1, 0, sub {
+        $aeh->push_write('5.{u6.client:i2,},');
+    };
+
+    $aeh->push_read(
+        'Bifcode' => sub {
+            my ( $aeh, $ref ) = @_;
+            is $ref, $s_msg, 'client received s_msg';
 
             note 'client disconnecting';
+            $aeh->push_shutdown;
             $aeh->destroy;
             $cv->end;
         }
