@@ -1,4 +1,4 @@
-package Bifcode;
+package Bifcode::V2;
 use 5.010;
 use strict;
 use warnings;
@@ -151,7 +151,7 @@ sub _decode_bifcode_chunk {
         return $str;
     }
     elsif ( $1 eq 'i' ) {
-        return 0 + $2 if defined $2;
+        return 0 + $2               if defined $2;
         _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
         _croak 'DecodeInteger';
     }
@@ -280,7 +280,7 @@ sub _encode_bifcode {
                             ( 'b' . length($k) . '.' . $k . ':', $_ );
                         }
                     } _encode_bifcode( @$_{@k} );
-                  }
+                }
             ) . '}';
         }
         elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::BYTES' ) {
@@ -439,7 +439,7 @@ Bifcode - encode and decode BIFCODE serialization format
 
     use utf8;
     use boolean;
-    use Bifcode qw( encode_bifcode decode_bifcode );
+    use Bifcode::V2 qw( encode_bifcode decode_bifcode );
 
     my $bifcode = encode_bifcode {
         bools   => [ boolean::false, boolean::true, ],
@@ -462,8 +462,8 @@ Bifcode - encode and decode BIFCODE serialization format
 
 =head1 DESCRIPTION
 
-B<Bifcode> implements the I<BIFCODE> (v2) serialisation format, a mixed
-binary/text encoding with support for the following data types:
+B<Bifcode::V2> implements the I<BIFCODE> (v2) serialisation format, a
+mixed binary/text encoding with support for the following data types:
 
 =over
 
