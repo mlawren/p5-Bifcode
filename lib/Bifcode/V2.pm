@@ -707,10 +707,10 @@ Croaks if L<Text::Diff> is not installed.
 B<Bifcode> implements the L<AnyEvent::Handle> C<anyevent_read_type> and
 C<anyevent_write_type> functions which allow you to do this:
 
-    $handle->push_write( 'Bifcode' => { your => 'structure here' } );
+    $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
 
     $handle->push_read(
-        'Bifcode' => sub {
+        'Bifcode::V2' => sub {
             my ( $hdl, $ref ) = @_;
             # do stuff with $ref
         },
