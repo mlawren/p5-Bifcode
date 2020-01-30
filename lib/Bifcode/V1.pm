@@ -116,7 +116,7 @@ sub _decode_bifcode_chunk {
         return $str;
     }
     elsif ( $1 eq 'I' ) {
-        return $2 if defined $2;
+        return $2                   if defined $2;
         _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
         _croak 'DecodeInteger';
     }
@@ -228,7 +228,7 @@ sub _encode_bifcode {
                         #     ('B' . length($k) . ':' . $k .',', $_);
                         # }
                     } _encode_bifcode( @$_{@k} );
-                  }
+                }
             ) . '}';
         }
         elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::BYTES' ) {
@@ -317,7 +317,7 @@ Bifcode::V1 - simple serialization format
 
 =head1 VERSION
 
-1.003_1 (2020-01-30)
+1.003_1 (yyyy-mm-dd)
 
 =head1 SYNOPSIS
 
