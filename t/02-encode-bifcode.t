@@ -6,7 +6,7 @@ use lib "$RealBin/lib";
 use boolean;
 use Test::Bifcode;
 use Test2::V0;
-use Bifcode 'encode_bifcode', 'force_bifcode';
+use Bifcode::V2 'encode_bifcode', 'force_bifcode';
 
 subtest 'UNDEF' => sub {
     enc_ok undef, '~,';
@@ -18,11 +18,11 @@ subtest 'BOOLEAN' => sub {
 };
 
 subtest 'INTEGER' => sub {
-    enc_ok 4 => 'i4,';
-    enc_ok force_bifcode( 5, 'integer' ) => 'i5,';
-    enc_ok 0                      => 'i0,';
-    enc_ok - 10                   => 'i-10,';
-    enc_ok '12345678901234567890' => 'i12345678901234567890,';
+    enc_ok 4                                    => 'i4,';
+    enc_ok force_bifcode( 5, 'integer' )        => 'i5,';
+    enc_ok 0                                    => 'i0,';
+    enc_ok - 10                                 => 'i-10,';
+    enc_ok '12345678901234567890'               => 'i12345678901234567890,';
     encode_err force_bifcode( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
     encode_err force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
@@ -113,7 +113,7 @@ subtest 'UTF8' => sub {
 
 subtest 'BYTES' => sub {
     enc_ok force_bifcode( $bytes, 'bytes' ) => $BYTES;
-    enc_ok \$bytes => $BYTES;
+    enc_ok \$bytes                          => $BYTES;
 
     my $u = undef;
     encode_err \$u => 'EncodeBytesUndef', 'scalar ref to undef';
@@ -122,15 +122,15 @@ subtest 'BYTES' => sub {
 };
 
 subtest 'LIST' => sub {
-    enc_ok [] => '[]';
-    enc_ok [ 1, 2, undef, $utf8 ] => '[i1,i2,~,' . $UTF8 . ']';
+    enc_ok []                               => '[]';
+    enc_ok [ 1, 2, undef, $utf8 ]           => '[i1,i2,~,' . $UTF8 . ']';
     enc_ok [ [ 'Alice', 'Bob' ], [ 2, 3 ] ] => '[[u5.Alice,u3.Bob,][i2,i3,]]';
 };
 
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
     enc_ok { 1 => 'one' } => '{u1.1:u3.one,}';
-    enc_ok { 1.5 => 'one' } => '{u3.1.5:u3.one,}';
+    enc_ok { 1.5 => 'one' }                              => '{u3.1.5:u3.one,}';
     enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{u5.bytes:'
       . $BYTES . '}';
 

@@ -9,20 +9,16 @@ my $diff = eval { require Text::Diff; require OptArgs2 };
 WriteMakefile(
     NAME         => 'Bifcode',
     ABSTRACT     => 'encode and decode BIFCODE serialization format',
-    AUTHOR       => 'Mark Lawrencde <nomad@null.net>',
-    VERSION_FROM => 'lib/Bifcode.pm',
+    AUTHOR       => 'Mark Lawrence <nomad@null.net>',
+    VERSION_FROM => 'lib/Bifcode/V2.pm',
     LICENSE      => 'perl_5',
     EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],
-    META_MERGE   => {
+    test         => {
+        RECURSIVE_TEST_FILES => 1,
+    },
+    META_MERGE => {
         'meta-spec' => { version => 2 },
-        no_index    => {
-            package => [
-                qw(
-                  Bifcode::BIFCODE
-                  )
-            ],
-        },
-        resources => {
+        resources   => {
             bugtracker =>
               { web => 'https//github.com/mlawren/p5-Bifcode/issues', },
             homepage   => 'https//github.com/mlawren/p5-Bifcode',
