@@ -1,20 +1,11 @@
-2.000_9 (yyyy-mm-dd)
+2.000_9 (2020-01-30)
 
     API / Behaviour Changes:
         - Rename Bifcode -> Bifcode::V2 so that it is explicitly
           obvious which version is in use.
 
-    New Features:
-        - None.
-
     Enhancements:
         - More idomatic and robust tests for AnyEvent::Handle support
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
 
     Packaging:
         - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES

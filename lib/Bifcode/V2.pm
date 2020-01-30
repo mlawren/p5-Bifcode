@@ -433,7 +433,7 @@ Bifcode - encode and decode BIFCODE serialization format
 
 =head1 VERSION
 
-2.000_9 (yyyy-mm-dd)
+2.000_9 (2020-01-30)
 
 =head1 SYNOPSIS
 
