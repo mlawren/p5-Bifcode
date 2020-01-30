@@ -25,7 +25,7 @@ cmpthese(
     10000,
     {
         'Bifcode::V1' => sub { Bifcode::V1::encode_bifcode $h1 },
-        Bifcode       => sub { Bifcode::V2::encode_bifcode $h1},
+        'Bifcode::V2' => sub { Bifcode::V2::encode_bifcode $h1},
     }
 );
 
@@ -56,7 +56,7 @@ cmpthese(
     10000,
     {
         'Bifcode::V1' => sub { Bifcode::V1::decode_bifcode $b1 },
-        Bifcode       => sub { Bifcode::V2::decode_bifcode $b2},
+        'Bifcode::V2' => sub { Bifcode::V2::decode_bifcode $b2},
     }
 );
 
