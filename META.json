@@ -59,6 +59,6 @@
          "url" : "ssh://git@github.com/mlawren/p5-Bifcode.git"
       }
    },
-   "version" : "2.000_9",
+   "version" : "2.000_10",
    "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

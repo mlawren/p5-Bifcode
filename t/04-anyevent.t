@@ -40,7 +40,8 @@ tcp_server(
                 AE::log error => "$msg";
                 if ( $! == Errno::EBADMSG() ) {
                     $aeh->push_write(
-                        Bifcode => { status => 'EBADMSG', msg => "$msg" } );
+                        'Bifcode::V2' => { status => 'EBADMSG', msg => "$msg" }
+                    );
                 }
                 else {
                     $aeh->push_write("Internal Error\n");
@@ -52,17 +53,17 @@ tcp_server(
         );
 
         $handle->push_read(
-            Bifcode => sub {
+            'Bifcode::V2' => sub {
                 is $_[1], $c_msg, 'server received c_msg';
-                $handle->push_write( Bifcode => $s_msg );
+                $handle->push_write( 'Bifcode::V2' => $s_msg );
                 1;
             }
         );
 
         $handle->push_read(
-            Bifcode => sub {
+            'Bifcode::V2' => sub {
                 is $_[1], $c_msg, 'server received c_msg';
-                $handle->push_write( Bifcode => $s_msg );
+                $handle->push_write( 'Bifcode::V2' => $s_msg );
                 note 'server disconnecting';
                 $handle->push_shutdown();
                 $handle->destroy();
@@ -100,10 +101,10 @@ tcp_connect $host, $port, sub {
         },
     );
 
-    $aeh->push_write( Bifcode => $c_msg );
+    $aeh->push_write( 'Bifcode::V2' => $c_msg );
 
     $aeh->push_read(
-        'Bifcode' => sub {
+        'Bifcode::V2' => sub {
             my ( $aeh, $ref ) = @_;
             is $ref, $s_msg, 'client received s_msg';
         }
@@ -115,7 +116,7 @@ tcp_connect $host, $port, sub {
     };
 
     $aeh->push_read(
-        'Bifcode' => sub {
+        'Bifcode::V2' => sub {
             my ( $aeh, $ref ) = @_;
             is $ref, $s_msg, 'client received s_msg';
 

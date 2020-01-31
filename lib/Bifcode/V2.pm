@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '2.000_9';
+our $VERSION = '2.000_10';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
@@ -433,7 +433,7 @@ Bifcode - encode and decode BIFCODE serialization format
 
 =head1 VERSION
 
-2.000_9 (2020-01-30)
+2.000_10 (2020-01-31)
 
 =head1 SYNOPSIS
 
@@ -707,10 +707,10 @@ Croaks if L<Text::Diff> is not installed.
 B<Bifcode> implements the L<AnyEvent::Handle> C<anyevent_read_type> and
 C<anyevent_write_type> functions which allow you to do this:
 
-    $handle->push_write( 'Bifcode' => { your => 'structure here' } );
+    $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
 
     $handle->push_read(
-        'Bifcode' => sub {
+        'Bifcode::V2' => sub {
             my ( $hdl, $ref ) = @_;
             # do stuff with $ref
         },

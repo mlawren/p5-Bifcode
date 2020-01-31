@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use utf8;
-use Bifcode qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
+use Bifcode::V2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
