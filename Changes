@@ -1,22 +1,7 @@
-2.000 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
+2.000_10 (yyyy-mm-dd)
 
     Bug Fixes:
         - Fix up missing Bifcode -> Bifcode::V2 changes in t/
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
 
 2.000_9 (2020-01-30)
 
