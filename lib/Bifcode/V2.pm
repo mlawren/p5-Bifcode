@@ -429,7 +429,7 @@ __END__
 
 =head1 NAME
 
-Bifcode - encode and decode BIFCODE serialization format
+Bifcode::V2 - encode and decode BIFCODE serialization format
 
 =head1 VERSION
 

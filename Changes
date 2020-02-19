@@ -10,7 +10,7 @@
         - None.
 
     Bug Fixes:
-        - None.
+        - Set the NAME correctly in Bifcode::V2 POD section
 
     Dependencies:
         - None.
