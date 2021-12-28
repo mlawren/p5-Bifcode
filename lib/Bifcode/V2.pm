@@ -429,7 +429,7 @@ __END__
 
 =head1 NAME
 
-Bifcode::V2 - encode and decode BIFCODE serialization format
+Bifcode::V2 - encode and decode BifcodeV2 serialization format
 
 =head1 VERSION
 
@@ -462,7 +462,7 @@ Bifcode::V2 - encode and decode BIFCODE serialization format
 
 =head1 DESCRIPTION
 
-B<Bifcode::V2> implements the I<BIFCODE> (v2) serialisation format, a
+B<Bifcode::V2> implements the I<BifcodeV2> serialisation format, a
 mixed binary/text encoding with support for the following data types:
 
 =over
@@ -502,9 +502,10 @@ is no need to escape special characters in strings. It is not
 considered human readable, but as it is mostly text it can usually be
 visually debugged.
 
-I<BIFCODE> can only be constructed canonically; i.e. there is only one
-possible encoding per data structure. This property makes it suitable
-for comparing structures (using cryptographic hashes) across networks.
+I<BifcodeV2> can only be constructed canonically; i.e. there is only
+one possible encoding per data structure. This property makes it
+suitable for comparing structures (using cryptographic hashes) across
+networks.
 
 In terms of size the encoding is similar to minified JSON. In terms of
 speed this module compares well with other pure Perl encoding modules
@@ -512,7 +513,7 @@ with the same features.
 
 =head1 MOTIVATION
 
-I<BIFCODE> was created for a project because none of currently
+I<Bifcode> was created for a project because none of currently
 available serialization formats (Bencode, JSON, MsgPack, Netstrings,
 Sereal, YAML, etc) met the requirements of:
 
@@ -578,9 +579,9 @@ extraneous trailing zero, such as 'r3.10e0,', are invalid.
 
 =head2 BIFCODE_LIST
 
-Lists are encoded as a '[' followed by their elements (also I<BIFCODE>
-encoded) followed by a ']'. For example '[u4.spam,u4.eggs,]'
-corresponds to ['spam', 'eggs'].
+Lists are encoded as a '[' followed by their elements (also
+I<BifcodeV2> encoded) followed by a ']'. For example
+'[u4.spam,u4.eggs,]' corresponds to ['spam', 'eggs'].
 
 =head2 BIFCODE_DICT
 
@@ -611,7 +612,7 @@ contain values of these same types. Returns the appropriate BIFCODE_*
 byte string. If $enclose is true then the result is further encoded as
 BIFCODE_BIFCODE.
 
-The mapping from Perl to I<BIFCODE> is as follows:
+The mapping from Perl to I<BifcodeV2> is as follows:
 
 =over
 
@@ -670,7 +671,7 @@ If you pass an integer for the second option, it will croak when
 attempting to parse dictionaries nested deeper than this level, to
 prevent DoS attacks using maliciously crafted input.
 
-I<BIFCODE> types are mapped back to Perl in the reverse way to the
+I<BifcodeV2> types are mapped back to Perl in the reverse way to the
 C<encode_bifcode> function, except for:
 
 =over
@@ -680,7 +681,7 @@ to a particular type (using blessed references) will decode as plain
 scalars.
 
 =item * BIFCODE_BIFCODE types are fully inflated into 
-Perl structures, and not the intermediate I<BIFCODE> byte string.
+Perl structures, and not the intermediate I<BifcodeV2> byte string.
 
 =back
 
@@ -704,8 +705,8 @@ Croaks if L<Text::Diff> is not installed.
 
 =head2 AnyEvent::Handle Support
 
-B<Bifcode> implements the L<AnyEvent::Handle> C<anyevent_read_type> and
-C<anyevent_write_type> functions which allow you to do this:
+B<Bifcode::V2> implements the L<AnyEvent::Handle> C<anyevent_read_type>
+and C<anyevent_write_type> functions which allow you to do this:
 
     $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
 
@@ -719,7 +720,7 @@ C<anyevent_write_type> functions which allow you to do this:
 
 =head1 DIAGNOSTICS
 
-The following exceptions may be raised by B<Bifcode>:
+The following exceptions may be raised by B<Bifcode::V2>:
 
 =over
 
@@ -769,18 +770,18 @@ Your data contains an integer that is truncated.
 
 =item Bifcode::Error::DecodeKeyType
 
-Your data violates the I<bifcode> format constaint that all dict keys
+Your data violates the I<BifcodeV2> format constaint that all dict keys
 be BIFCODE_BYTES or BIFCODE_UTF8.
 
 =item Bifcode::Error::DecodeKeyDuplicate
 
-Your data violates the I<bifcode> format constaint that all dict keys
+Your data violates the I<BifcodeV2> format constaint that all dict keys
 must be unique.
 
 =item Bifcode::Error::DecodeKeyOrder
 
-Your data violates the I<bifcode> format constaint that dict keys must
-appear in lexical sort order.
+Your data violates the I<BifcodeV2> format constaint that dict keys
+must appear in lexical sort order.
 
 =item Bifcode::Error::DecodeKeyValue
 
@@ -788,7 +789,7 @@ Your data contains a dictionary with an odd number of elements.
 
 =item Bifcode::Error::DecodeTrailing
 
-Your data does not end after the first I<bifcode>-serialised item.
+Your data does not end after the first I<BifcodeV2>-serialised item.
 
 =item Bifcode::Error::DecodeUTF8
 
@@ -840,7 +841,7 @@ You attempted to encode C<undef> as a UTF8 string.
 =item Bifcode::Error::EncodeUnhandled
 
 You are trying to serialise a data structure that contains a data type
-not supported by the I<bifcode> format.
+not supported by the I<BifcodeV2> format.
 
 =item Bifcode::Error::EncodeUsage
 
@@ -861,10 +862,9 @@ serialise a scalar. This cannot be fixed.
 =head1 SEE ALSO
 
 This distribution includes the L<diff-bifcode> command-line utility for
-comparing I<BIFCODE> in files.
+comparing I<BifcodeV2> in files.
 
-L<Bifcode::V1> implements the original (experimental) I<BIFCODE>
-version 1.
+L<Bifcode::V1> implements the original (experimental) I<BifcodeV1>.
 
 =head1 AUTHOR
 

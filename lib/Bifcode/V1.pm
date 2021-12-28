@@ -3,7 +3,7 @@ use 5.010;
 use strict;
 use warnings;
 use boolean ();
-use Carp (qw/croak shortmess/);
+use Carp    (qw/croak shortmess/);
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -346,12 +346,11 @@ Bifcode::V1 - simple serialization format
 
 =head1 DESCRIPTION
 
-[ This module is kept around for legacy reasons, but you should only
-use the newer version 2 encoding maintained in L<Bifcode> ]
+[ B<OBSOLETE!> This module is kept around for legacy reasons, but all
+new code should be using L<Bifcode::V2> or later. ]
 
-B<Bifcode::V1> implements the I<bifcode> serialisation format version
-1, a mixed binary/text encoding with support for the following data
-types:
+B<Bifcode::V1> implements the I<BifcodeV1> serialisation format, a
+mixed binary/text encoding with support for the following data types:
 
 =over
 
