@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Bifcode ':all';
+use Bifcode::V2 ':all';
 use OptArgs2;
 
 arg file1 => (
@@ -55,14 +55,14 @@ my $bc1 = _slurp( $opts->{file1} );
 my $bc2 = _slurp( $opts->{file2} );
 
 foreach my $pair ( [ $opts->{file1}, $bc1 ], [ $opts->{file2}, $bc2 ] ) {
-    if ( !eval { Bifcode::decode_bifcode( $pair->[1] ) } ) {
+    if ( !eval { decode_bifcode( $pair->[1] ) } ) {
         my $err = $@;
         $err =~ s/^/  /mg;
         warn sprintf "warning: invalid Bifcode in file '%s'\n$err", $pair->[0];
     }
 }
 
-print my $diff = Bifcode::diff_bifcode( $bc1, $bc2 );
+print my $diff = diff_bifcode( $bc1, $bc2 );
 exit length($diff) ? 1 : 0;
 
 __END__
@@ -113,7 +113,7 @@ they do not.
 
 =head1 SEE ALSO
 
-This utility is a tiny command-line wrapper around the L<Bifcode>
+This command-line utility is a tiny wrapper around the L<Bifcode::V2>
 C<diff_bifcode()> function.
 
 =head1 AUTHOR
@@ -122,7 +122,7 @@ Mark Lawrence E<lt>nomad@null.netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2017 Mark Lawrence <nomad@null.net>
+Copyright 2017-2021 Mark Lawrence <nomad@null.net>
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
