@@ -1,22 +1,12 @@
 2.000 (yyyy-mm-dd)
 
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
     Bug Fixes:
-        - Set the NAME correctly in Bifcode::V2 POD section
-
-    Dependencies:
-        - None.
+        - Several documentation fixes for previous Bifcode to
+          Bifcode::V2 naming change
+        - Use Bifcode::V2 in (previously broken) diff-bifcode
 
     Packaging:
-        - None.
+        - Change to semver versioning
 
 2.000_10 (2020-01-31)
 
