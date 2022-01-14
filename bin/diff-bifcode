@@ -17,9 +17,10 @@ arg file2 => (
 );
 
 opt strip => (
-    alias   => 's',
+    alias   => 'S',
     comment => 'strip newlines from bifcode before checking',
-    isa     => 'Flag',
+    default => 1,
+    isa     => 'Bool',
 );
 
 opt help => (
@@ -104,8 +105,9 @@ A warning is printed to I<stderr> if either file does not contain valid
 Bifcode.
 
 Bifcode does not allow trailing newlines which makes it a little tricky
-to create them with a text editor. You can use the C<--strip | -s>
-options to strip newlines from the end of each file before parsing.
+to create them with a text editor. So they are stripped before
+comparing by default. You can use the C<--no-strip | -S> option to not
+do this.
 
 =head1 EXIT VALUE
 
