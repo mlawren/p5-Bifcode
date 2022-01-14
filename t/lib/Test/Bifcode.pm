@@ -2,9 +2,10 @@ package Test::Bifcode;
 use bytes;
 use strict;
 use warnings;
-
 use utf8;
-use Bifcode::V2 qw/decode_bifcode encode_bifcode force_bifcode diff_bifcode/;
+use boolean;
+use Bifcode::V2
+  qw/decode_bifcodeV2 encode_bifcodeV2 force_bifcodeV2 diff_bifcodeV2/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
@@ -32,7 +33,7 @@ our $BYTES     = 'b' . $bytes_length . '.' . $bytes . ',';
 our $BYTES_KEY = 'b' . $bytes_length . '.' . $bytes . ':';
 
 our $data1 = {
-    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+    bools   => [ false, true, ],
     bytes   => \$bytes,
     integer => 25,
     float   => -1.25e-9,
@@ -49,7 +50,7 @@ our $DATA1 = '{'
   . ( 'u4.utf8,' . $UTF8 ) . '}';
 
 our $data2 = {
-    bools   => [ $Bifcode::FALSE, $Bifcode::TRUE, ],
+    bools   => [ false, true, ],
     bytes   => \$bytes,
     integer => 24,
     float   => 1.25e-9,
@@ -69,7 +70,7 @@ sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
       unless 2 == @_;
     my ( $thawed, $frozen ) = @_;
-    my $diff = diff_bifcode( encode_bifcode($thawed), $frozen );
+    my $diff = diff_bifcodeV2( encode_bifcodeV2($thawed), $frozen );
     length($diff)
       ? ok 0, "encode $frozen:\n$diff"
       : ok 1, "encode $frozen";
@@ -79,7 +80,7 @@ sub encode_err {
     my ( $data, $error, $kind_of_brokenness ) = @_;
     $kind_of_brokenness // Carp::croak 'encode_err needs $kind_of_brokenness';
     local $@;
-    eval { encode_bifcode $data };
+    eval { encode_bifcodeV2 $data };
     my $have = ref $@;
     my $want = 'Bifcode::Error::' . $error;
     my $ok   = $have eq $want;
@@ -92,8 +93,8 @@ sub un {
     local $, = ', ';
     my $frozen_str = $frozen // '*undef*';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen_str]", decode_bifcode @$frozen )
-      : ( "decode '$frozen_str'", decode_bifcode $frozen );
+      ? ( "decode [@$frozen_str]", decode_bifcodeV2 @$frozen )
+      : ( "decode '$frozen_str'", decode_bifcodeV2 $frozen );
 }
 
 sub decode_ok {

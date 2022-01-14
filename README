@@ -7,9 +7,9 @@ VERSION
 SYNOPSIS
         use utf8;
         use boolean;
-        use Bifcode::V2 qw( encode_bifcode decode_bifcode );
+        use Bifcode::V2 qw( encode_bifcodeV2 decode_bifcodeV2 );
 
-        my $bifcode = encode_bifcode {
+        my $bifcode = encode_bifcodeV2 {
             bools   => [ boolean::false, boolean::true, ],
             bytes   => \pack( 's<',       255 ),
             integer => 25,
@@ -26,7 +26,7 @@ SYNOPSIS
         # 2e 75 74 66 38 3a 75 31 30 2e ce 95 ce bb cf    .utf8:u10......
         # 8d cf 84 ce b7 2c 7d                            .....,}
 
-        my $decoded = decode_bifcode $bifcode;
+        my $decoded = decode_bifcodeV2 $bifcode;
 
 DESCRIPTION
     Bifcode::V2 implements the *BifcodeV2* serialisation format, a mixed
@@ -145,7 +145,7 @@ SPECIFICATION
     over a network.
 
 INTERFACE
-  "encode_bifcode( $datastructure [, $enclose ] )"
+  "encode_bifcodeV2( $datastructure [, $enclose ] )"
     The first argument (required) may be a scalar, or may be a reference
     to either a scalar, an array, or a hash. Arrays and hashes may in
     turn contain values of these same types. Returns the appropriate
@@ -174,7 +174,7 @@ INTERFACE
 
         You can force scalars to be encoded a particular way by passing
         a reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER,
-        Bifcode::REAL or Bifcode::UTF8. The "force_bifcode" function
+        Bifcode::REAL or Bifcode::UTF8. The "force_bifcodeV2" function
         below can help with creating such references.
 
     *   SCALAR references become BIFCODE_BYTES.
@@ -185,7 +185,7 @@ INTERFACE
 
     This subroutine croaks on unhandled data types.
 
-  "decode_bifcode( $string [, $max_depth ] )"
+  "decode_bifcodeV2( $string [, $max_depth ] )"
     Takes a byte string and returns the corresponding deserialised data
     structure.
 
@@ -194,7 +194,7 @@ INTERFACE
     prevent DoS attacks using maliciously crafted input.
 
     *BifcodeV2* types are mapped back to Perl in the reverse way to the
-    "encode_bifcode" function, except for:
+    "encode_bifcodeV2" function, except for:
 
     *   Any scalars which were "forced" to a particular type (using
         blessed references) will decode as plain scalars.
@@ -204,13 +204,13 @@ INTERFACE
 
     Croaks on malformed data.
 
-  "force_bifcode( $scalar, $type )"
+  "force_bifcodeV2( $scalar, $type )"
     Returns a reference to $scalar blessed as Bifcode::$TYPE. The value
-    of $type is not checked, but the "encode_bifcode" function will only
-    accept the resulting reference where $type is one of 'bytes',
+    of $type is not checked, but the "encode_bifcodeV2" function will
+    only accept the resulting reference where $type is one of 'bytes',
     'real', 'integer' or 'utf8'.
 
-  "diff_bifcode( $bc1, $bc2, [$diff_args] )"
+  "diff_bifcodeV2( $bc1, $bc2, [$diff_args] )"
     Returns a string representing the difference between two bifcodes.
     The inputs do not need to be valid Bifcode; they are only expanded
     with a very simple regex before the diff is done. The third argument
@@ -229,7 +229,7 @@ INTERFACE
                 my ( $hdl, $ref ) = @_;
                 # do stuff with $ref
             },
-            $maxdepth   # passed straight to decode_bifcode()
+            $maxdepth   # passed straight to decode_bifcodeV2()
         );
 
 DIAGNOSTICS
@@ -251,7 +251,7 @@ DIAGNOSTICS
 
     Bifcode::Error::DecodeDepth
         Your data contains dicts or lists that are nested deeper than
-        the $max_depth passed to "decode_bifcode()".
+        the $max_depth passed to "decode_bifcodeV2()".
 
     Bifcode::Error::DecodeTrunc
         Your data is truncated.
@@ -301,10 +301,10 @@ DIAGNOSTICS
         terminator.
 
     Bifcode::Error::DecodeUsage
-        You called "decode_bifcode()" with invalid arguments.
+        You called "decode_bifcodeV2()" with invalid arguments.
 
     Bifcode::Error::DiffUsage
-        You called "diff_bifcode()" with invalid arguments.
+        You called "diff_bifcodeV2()" with invalid arguments.
 
     Bifcode::Error::EncodeBytesUndef
         You attempted to encode "undef" as a byte string.
@@ -331,14 +331,14 @@ DIAGNOSTICS
         data type not supported by the *BifcodeV2* format.
 
     Bifcode::Error::EncodeUsage
-        You called "encode_bifcode()" with invalid arguments.
+        You called "encode_bifcodeV2()" with invalid arguments.
 
     Bifcode::Error::ForceUsage
-        You called "force_bifcode()" with invalid arguments.
+        You called "force_bifcodeV2()" with invalid arguments.
 
 BUGS AND LIMITATIONS
     Strings and numbers are practically indistinguishable in Perl, so
-    "encode_bifcode()" has to resort to a heuristic to decide how to
+    "encode_bifcodeV2()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
 
 SEE ALSO

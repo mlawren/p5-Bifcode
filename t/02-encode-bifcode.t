@@ -6,7 +6,7 @@ use lib "$RealBin/lib";
 use boolean;
 use Test::Bifcode;
 use Test2::V0;
-use Bifcode::V2 'encode_bifcode', 'force_bifcode';
+use Bifcode::V2 'encode_bifcodeV2', 'force_bifcodeV2';
 
 subtest 'UNDEF' => sub {
     enc_ok undef, '~,';
@@ -18,14 +18,14 @@ subtest 'BOOLEAN' => sub {
 };
 
 subtest 'INTEGER' => sub {
-    enc_ok 4                                    => 'i4,';
-    enc_ok force_bifcode( 5, 'integer' )        => 'i5,';
-    enc_ok 0                                    => 'i0,';
-    enc_ok - 10                                 => 'i-10,';
-    enc_ok '12345678901234567890'               => 'i12345678901234567890,';
-    encode_err force_bifcode( '00', 'integer' ) => 'EncodeInteger',
+    enc_ok 4                                      => 'i4,';
+    enc_ok force_bifcodeV2( 5, 'integer' )        => 'i5,';
+    enc_ok 0                                      => 'i0,';
+    enc_ok - 10                                   => 'i-10,';
+    enc_ok '12345678901234567890'                 => 'i12345678901234567890,';
+    encode_err force_bifcodeV2( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
-    encode_err force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
+    encode_err force_bifcodeV2( '00abc', 'integer' ) => 'EncodeInteger',
       'forcing a non-integer as integer';
 
     my $u = undef;
@@ -69,27 +69,27 @@ subtest 'REAL' => sub {
     enc_ok 3.33333333e-8 => 'r3.33333333e-8,';
 
     # Plain integer
-    enc_ok force_bifcode( 0, 'real' ) => 'r0.0e0,';
+    enc_ok force_bifcodeV2( 0, 'real' ) => 'r0.0e0,';
 
     # Plain real
-    enc_ok force_bifcode( '100.2', 'real' ) => 'r100.2e0,';
+    enc_ok force_bifcodeV2( '100.2', 'real' ) => 'r100.2e0,';
 
     # Plain real trailing .x0
-    enc_ok force_bifcode( '100.20', 'real' ) => 'r100.2e0,';
+    enc_ok force_bifcodeV2( '100.20', 'real' ) => 'r100.2e0,';
 
     # Plain real leading .0x
-    enc_ok force_bifcode( '100.08', 'real' ) => 'r100.08e0,';
+    enc_ok force_bifcodeV2( '100.08', 'real' ) => 'r100.08e0,';
 
     # exponent no decimal
-    enc_ok force_bifcode( '100e0', 'real' ) => 'r100.0e0,';
+    enc_ok force_bifcodeV2( '100e0', 'real' ) => 'r100.0e0,';
 
     # decimal and exponent
-    enc_ok force_bifcode( '100.2e0', 'real' ) => 'r100.2e0,';
+    enc_ok force_bifcodeV2( '100.2e0', 'real' ) => 'r100.2e0,';
 
     # decimal and exponent leading .0x
-    enc_ok force_bifcode( '100.008e0', 'real' ) => 'r100.008e0,';
+    enc_ok force_bifcodeV2( '100.008e0', 'real' ) => 'r100.008e0,';
 
-    encode_err force_bifcode( '00abc', 'real' ) => 'EncodeReal',
+    encode_err force_bifcodeV2( '00abc', 'real' ) => 'EncodeReal',
       'forcing a non-real as real';
 
     my $u = undef;
@@ -101,10 +101,10 @@ subtest 'UTF8' => sub {
     enc_ok ''    => 'u0.,';
     enc_ok $utf8 => $UTF8;
     ok utf8::is_utf8($utf8), 'still have utf8 flag on source string';
-    enc_ok 'abc' => 'u3.abc,';
-    enc_ok force_bifcode( '1234567890', 'utf8' ) => 'u10.1234567890,';
-    enc_ok force_bifcode( '0',          'utf8' ) => 'u1.0,';
-    enc_ok '00' => 'u2.00,';
+    enc_ok 'abc'                                   => 'u3.abc,';
+    enc_ok force_bifcodeV2( '1234567890', 'utf8' ) => 'u10.1234567890,';
+    enc_ok force_bifcodeV2( '0', 'utf8' )          => 'u1.0,';
+    enc_ok '00'                                    => 'u2.00,';
 
     my $u = undef;
     encode_err bless( \$u, 'Bifcode::UTF8' ) => 'EncodeUTF8Undef',
@@ -112,8 +112,8 @@ subtest 'UTF8' => sub {
 };
 
 subtest 'BYTES' => sub {
-    enc_ok force_bifcode( $bytes, 'bytes' ) => $BYTES;
-    enc_ok \$bytes                          => $BYTES;
+    enc_ok force_bifcodeV2( $bytes, 'bytes' ) => $BYTES;
+    enc_ok \$bytes                            => $BYTES;
 
     my $u = undef;
     encode_err \$u => 'EncodeBytesUndef', 'scalar ref to undef';
@@ -130,8 +130,8 @@ subtest 'LIST' => sub {
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
     enc_ok { 1 => 'one' } => '{u1.1:u3.one,}';
-    enc_ok { 1.5 => 'one' }                              => '{u3.1.5:u3.one,}';
-    enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{u5.bytes:'
+    enc_ok { 1.5 => 'one' } => '{u3.1.5:u3.one,}';
+    enc_ok { bytes => force_bifcodeV2( $bytes, 'bytes' ) } => '{u5.bytes:'
       . $BYTES . '}';
 
     enc_ok {
@@ -148,7 +148,7 @@ subtest 'DICT' => sub {
     enc_ok {
         'spam.mp3' => {
             'author' => 'Alice',
-            'bytes'  => force_bifcode( $bytes, 'bytes' ),
+            'bytes'  => force_bifcodeV2( $bytes, 'bytes' ),
             'length' => 100000,
             'undef'  => undef,
         }
@@ -162,9 +162,9 @@ my $u = undef;
 encode_err bless( \$u, 'strange' ) => 'EncodeUnhandled',
   'unknown object type';
 
-eval { encode_bifcode() };
+eval { encode_bifcodeV2() };
 isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'not enough arguments';
-eval { encode_bifcode( 1, 2, 3 ) };
+eval { encode_bifcodeV2( 1, 2, 3 ) };
 isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'too many arguments';
 
 done_testing;
