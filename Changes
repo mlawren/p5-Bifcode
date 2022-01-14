@@ -1,4 +1,4 @@
-2.0.0_11 (yyyy-mm-dd)
+2.0.0_11 (2022-01-14)
 
     API / Behaviour Changes:
         - All V2 functions now named like encode_bifcodeV2()
