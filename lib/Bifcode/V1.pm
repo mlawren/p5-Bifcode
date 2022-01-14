@@ -3,7 +3,7 @@ use 5.010;
 use strict;
 use warnings;
 use boolean ();
-use Carp (qw/croak shortmess/);
+use Carp    (qw/croak shortmess/);
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -317,7 +317,7 @@ Bifcode::V1 - simple serialization format
 
 =head1 VERSION
 
-1.003_1 (2020-01-31)
+1.003_1 (2022-01-14)
 
 =head1 SYNOPSIS
 
@@ -346,12 +346,11 @@ Bifcode::V1 - simple serialization format
 
 =head1 DESCRIPTION
 
-[ This module is kept around for legacy reasons, but you should only
-use the newer version 2 encoding maintained in L<Bifcode> ]
+[ B<OBSOLETE!> This module is kept around for legacy reasons, but all
+new code should be using L<Bifcode::V2> or later. ]
 
-B<Bifcode::V1> implements the I<bifcode> serialisation format version
-1, a mixed binary/text encoding with support for the following data
-types:
+B<Bifcode::V1> implements the I<BifcodeV1> serialisation format, a
+mixed binary/text encoding with support for the following data types:
 
 =over
 
@@ -438,7 +437,7 @@ Boolean values are represented by "1" and "0".
 
 A UTF8 string is "U" followed by the octet length of the encoded string
 as a base ten number followed by a colon and the encoded string
-followed by ",". For example the Perl string "\x{df}" (ß) corresponds
+followed by ",". For example the Perl string "\x{df}" (Ã) corresponds
 to "U2:\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
@@ -721,7 +720,7 @@ This software is copyright (c):
 
 =item * 2015 by Aristotle Pagaltzis
 
-=item * 2017-2018 by Mark Lawrence.
+=item * 2017-2022 by Mark Lawrence.
 
 =back
 

@@ -7,7 +7,7 @@ build_requires:
   Test2::V0: '0'
   Text::Diff: '0'
 configure_requires:
-  ExtUtils::MakeMaker::CPANfile: '0.08'
+  ExtUtils::MakeMaker::CPANfile: '0.09'
 dynamic_config: 0
 generated_by: 'ExtUtils::MakeMaker version 7.34, CPAN::Meta::Converter version 2.150010'
 license: perl
@@ -29,5 +29,5 @@ requires:
   warnings: '0'
 resources:
   repository: ssh://git@github.com/mlawren/p5-Bifcode.git
-version: 2.000_10
+version: v2.0.0_11
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

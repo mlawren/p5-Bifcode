@@ -25,7 +25,7 @@ cmpthese(
     10000,
     {
         'Bifcode::V1' => sub { Bifcode::V1::encode_bifcode $h1 },
-        'Bifcode::V2' => sub { Bifcode::V2::encode_bifcode $h1},
+        'Bifcode::V2' => sub { Bifcode::V2::encode_bifcodeV2 $h1},
     }
 );
 
@@ -43,7 +43,7 @@ my $b1 = ''
   };
 
 my $b2 = ''
-  . Bifcode::V2::encode_bifcode {
+  . Bifcode::V2::encode_bifcodeV2 {
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<', 255 ),
     integer => 25,
@@ -56,7 +56,7 @@ cmpthese(
     10000,
     {
         'Bifcode::V1' => sub { Bifcode::V1::decode_bifcode $b1 },
-        'Bifcode::V2' => sub { Bifcode::V2::decode_bifcode $b2},
+        'Bifcode::V2' => sub { Bifcode::V2::decode_bifcodeV2 $b2},
     }
 );
 

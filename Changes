@@ -1,3 +1,16 @@
+2.0.0_11 (2022-01-14)
+
+    API / Behaviour Changes:
+        - All V2 functions now named like encode_bifcodeV2()
+
+    Bug Fixes:
+        - Several documentation fixes for previous Bifcode to
+          Bifcode::V2 naming change
+        - Use Bifcode::V2 in (previously broken) diff-bifcode
+
+    Packaging:
+        - Change to semver versioning
+
 2.000_10 (2020-01-31)
 
     Bug Fixes:
