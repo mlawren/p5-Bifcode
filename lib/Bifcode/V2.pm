@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '2.0.0_11';
+our $VERSION = '2.0.0';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
@@ -433,7 +433,7 @@ Bifcode::V2 - encode and decode BifcodeV2 serialization format
 
 =head1 VERSION
 
-2.0.0_11 (2022-01-14)
+2.0.0 (yyyy-mm-dd)
 
 =head1 SYNOPSIS
 
