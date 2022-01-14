@@ -1,4 +1,7 @@
-2.000 (yyyy-mm-dd)
+2.0.0_11 (yyyy-mm-dd)
+
+    API / Behaviour Changes:
+        - All V2 functions now named like encode_bifcodeV2()
 
     Bug Fixes:
         - Several documentation fixes for previous Bifcode to

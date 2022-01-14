@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '2.000';
+our $VERSION = '2.0.0_11';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
@@ -433,7 +433,7 @@ Bifcode::V2 - encode and decode BifcodeV2 serialization format
 
 =head1 VERSION
 
-2.000 (yyyy-mm-dd)
+2.0.0_11 (yyyy-mm-dd)
 
 =head1 SYNOPSIS
 
@@ -447,7 +447,7 @@ Bifcode::V2 - encode and decode BifcodeV2 serialization format
         integer => 25,
         real    => 1.25e-5,
         null    => undef,
-        utf8    => "Ελύτη",
+        utf8    => "ÎÎ»ÏÏÎ·",
     };
 
     # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66 2c 74 2c    {u5.bools:[f,t,
@@ -551,7 +551,7 @@ Boolean values are represented by "t," and "f,".
 
 A UTF8 string is "u" followed by the octet length of the encoded string
 as a base ten number followed by a "." and the encoded string followed
-by ",". For example the Perl string "\x{df}" (ß) corresponds to
+by ",". For example the Perl string "\x{df}" (Ã) corresponds to
 "u2.\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
