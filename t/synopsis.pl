@@ -26,7 +26,7 @@ binmode STDOUT, ':utf8';
 print 'my $bifcode = ' . $str;
 my $bifcode = eval $str;
 
-binmode STDOUT, ':raw';
+binmode STDOUT;
 print $bifcode, "\n\n";
 print( ( eval $str . ',1' ), "\n\n" );
 my $bifcode_file = Path::Tiny->tempfile;

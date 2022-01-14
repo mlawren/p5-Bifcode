@@ -15,8 +15,8 @@ SYNOPSIS
             integer => 25,
             real    => 1.25e-5,
             null    => undef,
-            utf8    => "ÃÂÃÂ»ÃÂÃÂÃÂ·",
-        };
+            utf8    => "Ελύτη",
+        }
 
         # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66 2c 74 2c    {u5.bools:[f,t,
         # 5d 75 35 2e 62 79 74 65 73 3a 62 32 2e ff  0    ]u5.bytes:b2...
