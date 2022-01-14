@@ -879,7 +879,7 @@ This software is copyright (c):
 
 =item * 2015 by Aristotle Pagaltzis
 
-=item * 2017-2021 by Mark Lawrence.
+=item * 2017-2022 by Mark Lawrence.
 
 =back
 
