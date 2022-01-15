@@ -5,6 +5,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Test::Bifcode;
 use Test2::V0;
+use Test2::Require::Module 'Text::Diff';
 use Bifcode::V1 'encode_bifcode', 'diff_bifcode';
 
 eval { diff_bifcode() };
