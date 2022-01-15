@@ -3,9 +3,9 @@ use warnings;
 use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
-use Test::Bifcode;
 use Test2::V0;
 use Test2::Require::Module 'Text::Diff';
+use Test::Bifcode;
 use Bifcode::V2 'encode_bifcodeV2', 'diff_bifcodeV2';
 
 eval { diff_bifcodeV2() };
