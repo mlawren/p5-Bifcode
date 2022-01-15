@@ -4,8 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use boolean;
-use Bifcode::V2
-  qw/decode_bifcodeV2 encode_bifcodeV2 force_bifcodeV2 diff_bifcodeV2/;
+use Bifcode::V2 qw/decode_bifcodeV2 encode_bifcodeV2 force_bifcodeV2/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
@@ -69,11 +68,8 @@ our $DATA2 = '{'
 sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
       unless 2 == @_;
-    my ( $thawed, $frozen ) = @_;
-    my $diff = diff_bifcodeV2( encode_bifcodeV2($thawed), $frozen );
-    length($diff)
-      ? ok 0, "encode $frozen:\n$diff"
-      : ok 1, "encode $frozen";
+    my ( $thawed, $frozen, $testname ) = @_;
+    is encode_bifcodeV2($thawed), $frozen, $testname // $frozen;
 }
 
 sub encode_err {
