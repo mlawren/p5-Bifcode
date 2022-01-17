@@ -8,6 +8,7 @@
         - Hopefully support Perl 5.12 by not using "package BLOCK" in
           error class.
         - Convert all tests to Test2::V0.
+        - Add development dep on Text::Table::Tiny for t/synopsis.pl
 
     Packaging:
         - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
