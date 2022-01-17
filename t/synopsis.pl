@@ -5,7 +5,7 @@ use utf8;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib";
 use lib "$RealBin/lib";
-use Bifcode::V2 qw( encode_bifcodeV2 decode_bifcodeV2 force_bifcodeV2 );
+use Bifcode2 qw( encode_bifcode2 decode_bifcode2 force_bifcode2 );
 use boolean;
 use Data::Dumper 'Dumper';
 use Path::Tiny;
@@ -14,7 +14,7 @@ use Text::Table::Tiny 0.04 qw/ generate_table /;
 
 no warnings 'once';
 
-my $str = q{encode_bifcodeV2 {
+my $str = q{encode_bifcode2 {
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
@@ -28,6 +28,7 @@ binmode STDOUT, ':utf8';
 print 'my $bifcode = ' . $str;
 my $bifcode = eval $str;
 
+binmode STDOUT, ':bytes';
 print $bifcode, "\n\n";
 print( ( eval $str . ',1' ), "\n\n" );
 my $bifcode_file = Path::Tiny->tempfile;
@@ -43,35 +44,36 @@ use constant PERL    => 1;
 use constant DISPLAY => 2;
 
 $Data::Dumper::Indent = 0;
-
-my @items = (
-    [ 'UNDEF',   undef ],
-    [ 'TRUE',    true,  'boolean::true' ],
-    [ 'FALSE',   false, 'boolean::false' ],
-    [ 'INTEGER', -1 ],
-    [ 'INTEGER', 0 ],
-    [ 'INTEGER', 1 ],
-    [ 'REAL',    '0.0' ],
-    [ 'REAL',    3.1415 ],
-    [ 'BYTES',   \pack( 's<', 255 ), q{pack( 's<', 255 )} ],
-    [ 'UTF8',    'MIXΣD ƬΣXƬ',       q{'MIXΣD ƬΣXƬ'} ],
-    [ 'ARRAY',   [ 'one', 'two' ] ],
-    [ 'DICT',    { key => 'value' } ],
-);
+use Encode 'encode';
+my @items = ();
 
 my $rows = [
-    [ 'Type', 'Perl', 'Bifcode' ],
-    map {
-        [
-            $_->[TYPE],
-            $_->[DISPLAY] // ( Dumper( $_->[PERL] ) =~ s/(\$VAR1 = )|;//gr ),
-            encode_bifcodeV2( $_->[PERL] )
-        ]
-    } @items
+    [ 'Type',    'Perl',           'Bifcode' ],
+    [ 'UNDEF',   'undef',          encode_bifcode2(undef) ],
+    [ 'TRUE',    'boolean::true',  encode_bifcode2(true) ],
+    [ 'FALSE',   'boolean::false', encode_bifcode2(false) ],
+    [ 'INTEGER', -1,               encode_bifcode2(-1) ],
+    [ 'INTEGER', 0,                encode_bifcode2(0) ],
+    [ 'INTEGER', 1,                encode_bifcode2(1) ],
+
+    #    [ 'REAL',    '0.0', encode_bifcode2('0.0') ],
+    [ 'REAL',  3.1415,                encode_bifcode2(3.1415) ],
+    [ 'BYTES', q[\pack( 's<', 255 )], encode_bifcode2( pack( 's<', 255 ) ) ],
+    [
+        'UTF8', encode( 'UTF-8', q{'MIXΣD ƬΣXƬ'} ),
+        encode_bifcode2('MIXΣD ƬΣXƬ')
+    ],
+    [ 'ARRAY', q{[ 'one', 'two' ]},  encode_bifcode2( [ 'one', 'two' ] ) ],
+    [ 'DICT',  q[{ key => 'value'}], encode_bifcode2( { key => 'value' } ) ],
 ];
 
-print generate_table(
+my $T     = encode( 'UTF-8', 'Ƭ' );
+my $table = generate_table(
     rows       => $rows,
     header_row => 1
-) =~ s/(b2.*,)/$1 /r;
-print "\n";
+);
+$table =~ s/$T'/$T'    /;
+$table =~ s/$T,/$T,    /;
+$table =~ s/(b2.*, )/$1 /;
+
+print $table. "\n";

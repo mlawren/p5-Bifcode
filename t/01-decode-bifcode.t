@@ -49,7 +49,7 @@ subtest REAL => sub {
 subtest UTF8 => sub {
     decode_err
       'u0.,u0.' => 'DecodeTrailing',
-      'data past end of first correct encode_bifcodeV2\'d string';
+      'data past end of first correct encode_bifcode2\'d string';
     decode_err 'u1.'  => 'DecodeUTF8Trunc', 'string longer than data';
     decode_err 'u1.1' => 'DecodeUTF8Term',  'string missing terminator';
     decode_err
@@ -177,9 +177,9 @@ subtest nest_limits => sub {
       'list in dict when max_depth is 1';
 };
 
-decode_err undef, 'DecodeUsage', 'decode_bifcodeV2 needs defined';
+decode_err undef, 'DecodeUsage', 'decode_bifcode2 needs defined';
 decode_err [ '[u0.,]', 0, 'arg3' ] => 'DecodeUsage',
-  'decode_bifcodeV2 only takes up to 2 args';
+  'decode_bifcode2 only takes up to 2 args';
 decode_err ''    => 'DecodeTrunc', 'empty data';
 decode_err $utf8 => 'DecodeUsage',
   'check for utf8 flag';

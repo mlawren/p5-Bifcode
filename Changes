@@ -1,7 +1,7 @@
 2.0.0 (yyyy-mm-dd)
 
     API / Behaviour Changes:
-        - None.
+        - Rename Bifcode::V2 to Bifcode2
 
     New Features:
         - None.
@@ -17,7 +17,7 @@
         - Suggest on develop dep OptArgs2 for bin/diff-bifcode
 
     Packaging:
-        - None.
+        - Split Bifcode::V1 back into its own Bifcode distribution
 
 2.0.0_11 (2022-01-14)
 

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use boolean;
-use Bifcode::V2 qw/decode_bifcodeV2 encode_bifcodeV2 force_bifcodeV2/;
+use Bifcode2 qw/decode_bifcode2 encode_bifcode2 force_bifcode2/;
 use Carp;
 use Exporter::Tidy default => [
     qw($bytes $BYTES $BYTES_KEY
@@ -69,16 +69,16 @@ sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
       unless 2 == @_;
     my ( $thawed, $frozen, $testname ) = @_;
-    is encode_bifcodeV2($thawed), $frozen, $testname // $frozen;
+    is encode_bifcode2($thawed), $frozen, $testname // $frozen;
 }
 
 sub encode_err {
     my ( $data, $error, $kind_of_brokenness ) = @_;
     $kind_of_brokenness // Carp::croak 'encode_err needs $kind_of_brokenness';
     local $@;
-    eval { encode_bifcodeV2 $data };
+    eval { encode_bifcode2 $data };
     my $have = ref $@;
-    my $want = 'Bifcode::Error::' . $error;
+    my $want = 'Bifcode2::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
@@ -89,8 +89,8 @@ sub un {
     local $, = ', ';
     my $frozen_str = $frozen // '*undef*';
     return 'ARRAY' eq ref $frozen
-      ? ( "decode [@$frozen_str]", decode_bifcodeV2 @$frozen )
-      : ( "decode '$frozen_str'", decode_bifcodeV2 $frozen );
+      ? ( "decode [@$frozen_str]", decode_bifcode2 @$frozen )
+      : ( "decode '$frozen_str'", decode_bifcode2 $frozen );
 }
 
 sub decode_ok {
@@ -104,7 +104,7 @@ sub decode_err {
     local $@;
     eval { un $frozen };
     my $have = ref $@;
-    my $want = 'Bifcode::Error::' . $error;
+    my $want = 'Bifcode2::Error::' . $error;
     my $ok   = $have eq $want;
     ok $ok, "reject $kind_of_brokenness";
     diag "    wanted:  $want\n    got:     $have" unless $ok;
