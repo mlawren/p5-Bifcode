@@ -25,6 +25,8 @@ on develop => sub {
 
 on test => sub {
     requires 'Test2::V0';
+    suggests 'AnyEvent::Handle';
+    suggests 'OptArgs2';
     suggests 'Text::Diff';
 };
 
