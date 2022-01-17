@@ -1,131 +1,17 @@
-2.0.0 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - Hopefully support Perl 5.12 by not using "package BLOCK" in
-          error class.
-
-    Packaging:
-        - None.
-
-2.0.0_11 (2022-01-14)
-
-    API / Behaviour Changes:
-        - All V2 functions now named like encode_bifcodeV2()
-
-    Bug Fixes:
-        - Several documentation fixes for previous Bifcode to
-          Bifcode::V2 naming change
-        - Use Bifcode::V2 in (previously broken) diff-bifcode
-
-    Packaging:
-        - Change to semver versioning
-
-2.000_10 (2020-01-31)
-
-    Bug Fixes:
-        - Fix up missing Bifcode -> Bifcode::V2 changes in t/
-
-2.000_9 (2020-01-30)
-
-    API / Behaviour Changes:
-        - Rename Bifcode -> Bifcode::V2 so that it is explicitly
-          obvious which version is in use.
-
-    Enhancements:
-        - More idomatic and robust tests for AnyEvent::Handle support
-
-    Packaging:
-        - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
-        - Add a test script to compare Bifcode vs Bifcode
-          performance
-
-2.000_8 (2019-11-13)
-
-    Dependencies:
-        - Hopefully support Perl 5.12 by not using "package BLOCK" in
-          error class.
-
-2.000_7 (2019-11-13)
-
-    API / Behaviour Changes:
-        - Extra argument to encode_bifcode() for BIFCODE_BIFCODE
-          generation. Bifcode::BIFCODE objects are no longer used.
-
-    Dependencies:
-        - Convert Bifcode tests to Test2::V0.
-
-2.000_6 (2019-11-12)
-
-    Packaging:
-        - Depend on Text::Diff explicitly for tests (closes RT#130969)
-        - Add an 'anyevent-handle' feature that depends on
-          AnyEvent::Handle.
-
-2.000_5 (2019-11-11)
-
-    API / Behaviour Changes:
-        - Rename everything Bifcode2 back to Bifcode
+1.003 (yyyy-mm-dd)
 
     Enhancements:
         - Make diff-bifcode an optional "feature"
-
-    Packaging:
-        - Convert all tests to Test2::V0.
-
-2.000_4 (2019-11-09)
-
-    API / Behaviour Changes:
-        - Rename Bifcode::V2 -> Bifcode2
-        - Rename *_bifcode() functions to *_bifcode2()
-
-    Enhancements:
-        - Better test function names.
-        - Better test for decoding of BIFCODE_REAL.
-        - Proper AnyEvent support with tests
-
-2.000_3 (2019-09-09)
-
-    API / Behaviour Changes:
-        - Re-introduce requirement for BIFCODE_DICT keys to be
-          BIFCODE_UTF8 or BIFCODE_BYTES.
-
-    New Features:
-        - New BIFCODE_BIFCODE type for framing Bifcodes across a
-          network connection.
-        - Support AnyEvent::Handle integration.
-
-    Enhancements:
-        - Only load Carp when we actually need to croak
-
-    Packaging:
         - Add some missing (bugtracker, repo) META data.
 
-2.000_2 (2019-09-08)
+    Dependencies:
+        - Hopefully support Perl 5.12 by not using "package BLOCK" in
+          error class.
+        - Convert all tests to Test2::V0.
 
-    API / Behaviour Changes:
-        - Use ":" to separate hash keys from values.
-        - Allow hash keys to be of any type.
-
-    Enhancements:
-        - Inflate numbers as Perl IV and NV values.
-        - Better automatic UTF8/BYTES detection.
-
-2.000_1 (2019-09-02)
-
-    API / Behaviour Changes:
-        - Implements bifcode version 2, incompatible with version 1.
+    Packaging:
+        - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
+        - Depend on Text::Diff explicitly for tests (closes RT#130969)
 
 1.002 (2018-09-23)
 
