@@ -6,9 +6,9 @@ use lib 'lib';
 use utf8;
 use boolean;
 use Benchmark qw(cmpthese);
-use Bencode     ();
-use Bifcode::V1 ();
-use Bifcode::V2 ();
+use Bencode  ();
+use Bifcode  ();
+use Bifcode2 ();
 use Data::Dumper;
 use Compress::Zlib;
 use JSON::PP   ();
@@ -129,9 +129,8 @@ print "Encoding\n";
 cmpthese(
     $rounds,
     {
-        'Bifcode::V1' => sub { $bifcode1 = Bifcode::V1::encode_bifcode($data) },
-        'Bifcode::V2' =>
-          sub { $bifcode2 = Bifcode::V2::encode_bifcodeV2($data) },
+        'Bifcode'  => sub { $bifcode1 = Bifcode::encode_bifcode($data) },
+        'Bifcode2' => sub { $bifcode2 = Bifcode2::encode_bifcode2($data) },
 
      #        'Bencode'    => sub { $bencode   = Bencode::bencode($data) },
      #        'JSON:PP'    => sub { $json_pp   = JSON::PP::encode_json($data) },
@@ -146,10 +145,10 @@ print "Decoding\n";
 cmpthese(
     $rounds,
     {
-        'Bifcode::V1' =>
-          sub { $bifcode1_perl = Bifcode::V1::decode_bifcode($bifcode1) },
-        'Bifcode::V2' =>
-          sub { $bifcode2_perl = Bifcode::V2::decode_bifcodeV2($bifcode2) },
+        'Bifcode' =>
+          sub { $bifcode1_perl = Bifcode::decode_bifcode($bifcode1) },
+        'Bifcode2' =>
+          sub { $bifcode2_perl = Bifcode2::decode_bifcode2($bifcode2) },
 
   #        'Bencode' => sub { $bencode_perl = Bencode::bdecode($bencode) },
   #        'JSON:PP' => sub { $json_pp_perl = JSON::PP::decode_json($json_pp) },
@@ -162,7 +161,7 @@ cmpthese(
 
 my @list = (
     [ 'bifcodeV1:       ', $bifcode1, $bifcode1_perl ],
-    [ 'bifcodeV2:       ', $bifcode2, $bifcode2_perl ],
+    [ 'bifcode2:       ',  $bifcode2, $bifcode2_perl ],
 
     #    [ 'bencode:   ',     $bencode,   $bencode_perl ],
     #    [ 'json_pp:   ',     $json_pp,   $json_pp_perl ],

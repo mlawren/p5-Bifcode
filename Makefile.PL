@@ -7,12 +7,12 @@ use ExtUtils::MakeMaker::CPANfile;
 my $diff = eval { require Text::Diff; require OptArgs2 };
 
 WriteMakefile(
-    NAME         => 'Bifcode',
-    ABSTRACT     => 'encode and decode BIFCODE serialization format',
+    NAME         => 'Bifcode2',
+    ABSTRACT     => 'simple serialization format (version 2)',
     AUTHOR       => 'Mark Lawrence <nomad@null.net>',
-    VERSION_FROM => 'lib/Bifcode/V2.pm',
+    VERSION_FROM => 'lib/Bifcode2.pm',
     LICENSE      => 'perl_5',
-    EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],
+    EXE_FILES    => $diff ? ['bin/diff-bifcode2'] : [],
     test         => {
         RECURSIVE_TEST_FILES => 1,
     },

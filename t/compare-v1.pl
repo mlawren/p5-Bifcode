@@ -6,8 +6,8 @@ use FindBin qw($RealBin);
 use lib "$RealBin/../lib";
 
 use Benchmark 'cmpthese';
-use Bifcode::V2 ();
-use Bifcode::V1 ();
+use Bifcode2 ();
+use Bifcode  ();
 
 #DB::enable_profile();
 
@@ -24,8 +24,8 @@ say 'Encoding:';
 cmpthese(
     10000,
     {
-        'Bifcode::V1' => sub { Bifcode::V1::encode_bifcode $h1 },
-        'Bifcode::V2' => sub { Bifcode::V2::encode_bifcodeV2 $h1},
+        'Bifcode'  => sub { Bifcode::encode_bifcode $h1 },
+        'Bifcode2' => sub { Bifcode2::encode_bifcode2 $h1},
     }
 );
 
@@ -33,7 +33,7 @@ say '';
 say 'Decoding:';
 
 my $b1 = ''
-  . Bifcode::V1::encode_bifcode {
+  . Bifcode::encode_bifcode {
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<', 255 ),
     integer => 25,
@@ -43,7 +43,7 @@ my $b1 = ''
   };
 
 my $b2 = ''
-  . Bifcode::V2::encode_bifcodeV2 {
+  . Bifcode2::encode_bifcode2 {
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<', 255 ),
     integer => 25,
@@ -55,8 +55,8 @@ my $b2 = ''
 cmpthese(
     10000,
     {
-        'Bifcode::V1' => sub { Bifcode::V1::decode_bifcode $b1 },
-        'Bifcode::V2' => sub { Bifcode::V2::decode_bifcodeV2 $b2},
+        'Bifcode'  => sub { Bifcode::decode_bifcode $b1 },
+        'Bifcode2' => sub { Bifcode2::decode_bifcode2 $b2},
     }
 );
 

@@ -1,3 +1,15 @@
+2.0.0_12 (2022-01-17)
+
+    API / Behaviour Changes:
+        - Rename Bifcode::V2 to Bifcode2
+
+    Dependencies:
+        - Add development dep on Text::Table::Tiny for t/synopsis.pl
+        - Suggest on develop dep OptArgs2 for bin/diff-bifcode
+
+    Packaging:
+        - Split Bifcode::V1 back into its own Bifcode distribution
+
 2.0.0_11 (2022-01-14)
 
     API / Behaviour Changes:
@@ -44,9 +56,6 @@
 
     Dependencies:
         - Convert Bifcode::V1 tests to Test2::V0.
-
-2.000_6 (2019-11-12)
-
     Packaging:
         - Depend on Text::Diff explicitly for tests (closes RT#130969)
         - Add an 'anyevent-handle' feature that depends on

@@ -1,22 +1,22 @@
 NAME
-    Bifcode::V2 - encode and decode BifcodeV2 serialization format
+    Bifcode2 - encode and decode Bifcode2 serialization format
 
 VERSION
-    2.0.0_11 (2022-01-14)
+    2.0.0_12 (2022-01-17)
 
 SYNOPSIS
         use utf8;
         use boolean;
-        use Bifcode::V2 qw( encode_bifcodeV2 decode_bifcodeV2 );
+        use Bifcode2 qw( encode_bifcode2 decode_bifcode2 );
 
-        my $bifcode = encode_bifcodeV2 {
+        my $bifcode = encode_bifcode2 {
             bools   => [ boolean::false, boolean::true, ],
             bytes   => \pack( 's<',       255 ),
             integer => 25,
             real    => 1.25e-5,
             null    => undef,
             utf8    => "ÃÂÃÂ»ÃÂÃÂÃÂ·",
-        };
+        }
 
         # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66 2c 74 2c    {u5.bools:[f,t,
         # 5d 75 35 2e 62 79 74 65 73 3a 62 32 2e ff  0    ]u5.bytes:b2...
@@ -26,10 +26,10 @@ SYNOPSIS
         # 2e 75 74 66 38 3a 75 31 30 2e ce 95 ce bb cf    .utf8:u10......
         # 8d cf 84 ce b7 2c 7d                            .....,}
 
-        my $decoded = decode_bifcodeV2 $bifcode;
+        my $decoded = decode_bifcode2 $bifcode;
 
 DESCRIPTION
-    Bifcode::V2 implements the *BifcodeV2* serialisation format, a mixed
+    Bifcode2 implements the *Bifcode2* serialisation format, a mixed
     binary/text encoding with support for the following data types:
 
     *   Primitive:
@@ -57,7 +57,23 @@ DESCRIPTION
     considered human readable, but as it is mostly text it can usually
     be visually debugged.
 
-    *BifcodeV2* can only be constructed canonically; i.e. there is only
+        +---------+--------------------+---------------------+
+        | Type    | Perl               | Bifcode             |
+        +---------+--------------------+---------------------+
+        | UNDEF   | undef              | ~,                  |
+        | TRUE    | boolean::true      | t,                  |
+        | FALSE   | boolean::false     | f,                  |
+        | INTEGER | -1                 | i-1,                |
+        | INTEGER | 0                  | i0,                 |
+        | INTEGER | 1                  | i1,                 |
+        | REAL    | 3.1415             | r3.1415e0,          |
+        | BYTES   | \pack( 's<', 255 ) | b2.Ã¯Â¿Â½,               |
+        | UTF8    | 'MIXÃÂ£D ÃÂ¬ÃÂ£XÃÂ¬'       | u14.MIXÃÂ£D ÃÂ¬ÃÂ£XÃÂ¬,     |
+        | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]    |
+        | DICT    | { key => 'value'}  | {u3.key:u5.value,}  |
+        +---------+--------------------+---------------------+
+
+    *Bifcode2* can only be constructed canonically; i.e. there is only
     one possible encoding per data structure. This property makes it
     suitable for comparing structures (using cryptographic hashes)
     across networks.
@@ -97,7 +113,7 @@ SPECIFICATION
   BIFCODE_UTF8
     A UTF8 string is "u" followed by the octet length of the encoded
     string as a base ten number followed by a "." and the encoded string
-    followed by ",". For example the Perl string "\x{df}" (ÃÂ)
+    followed by ",". For example the Perl string "\x{df}" (ÃÂÃÂÃÂÃÂ)
     corresponds to "u2.\x{c3}\x{9f},".
 
   BIFCODE_BYTES
@@ -124,7 +140,7 @@ SPECIFICATION
 
   BIFCODE_LIST
     Lists are encoded as a '[' followed by their elements (also
-    *BifcodeV2* encoded) followed by a ']'. For example
+    *Bifcode2* encoded) followed by a ']'. For example
     '[u4.spam,u4.eggs,]' corresponds to ['spam', 'eggs'].
 
   BIFCODE_DICT
@@ -145,14 +161,14 @@ SPECIFICATION
     over a network.
 
 INTERFACE
-  "encode_bifcodeV2( $datastructure [, $enclose ] )"
+  "encode_bifcode2( $datastructure [, $enclose ] )"
     The first argument (required) may be a scalar, or may be a reference
     to either a scalar, an array, or a hash. Arrays and hashes may in
     turn contain values of these same types. Returns the appropriate
     BIFCODE_* byte string. If $enclose is true then the result is
     further encoded as BIFCODE_BIFCODE.
 
-    The mapping from Perl to *BifcodeV2* is as follows:
+    The mapping from Perl to *Bifcode2* is as follows:
 
     *   'undef' maps directly to BIFCODE_UNDEF.
 
@@ -173,9 +189,10 @@ INTERFACE
         *   BIFCODE_BYTES when none of the above applies.
 
         You can force scalars to be encoded a particular way by passing
-        a reference to them blessed as Bifcode::BYTES, Bifcode::INTEGER,
-        Bifcode::REAL or Bifcode::UTF8. The "force_bifcodeV2" function
-        below can help with creating such references.
+        a reference to them blessed as Bifcode2::BYTES,
+        Bifcode2::INTEGER, Bifcode2::REAL or Bifcode2::UTF8. The
+        "force_bifcode2" function below can help with creating such
+        references.
 
     *   SCALAR references become BIFCODE_BYTES.
 
@@ -185,7 +202,7 @@ INTERFACE
 
     This subroutine croaks on unhandled data types.
 
-  "decode_bifcodeV2( $string [, $max_depth ] )"
+  "decode_bifcode2( $string [, $max_depth ] )"
     Takes a byte string and returns the corresponding deserialised data
     structure.
 
@@ -193,24 +210,24 @@ INTERFACE
     attempting to parse dictionaries nested deeper than this level, to
     prevent DoS attacks using maliciously crafted input.
 
-    *BifcodeV2* types are mapped back to Perl in the reverse way to the
-    "encode_bifcodeV2" function, except for:
+    *Bifcode2* types are mapped back to Perl in the reverse way to the
+    "encode_bifcode2" function, except for:
 
     *   Any scalars which were "forced" to a particular type (using
         blessed references) will decode as plain scalars.
 
     *   BIFCODE_BIFCODE types are fully inflated into Perl structures,
-        and not the intermediate *BifcodeV2* byte string.
+        and not the intermediate *Bifcode2* byte string.
 
     Croaks on malformed data.
 
-  "force_bifcodeV2( $scalar, $type )"
+  "force_bifcode2( $scalar, $type )"
     Returns a reference to $scalar blessed as Bifcode::$TYPE. The value
-    of $type is not checked, but the "encode_bifcodeV2" function will
+    of $type is not checked, but the "encode_bifcode2" function will
     only accept the resulting reference where $type is one of 'bytes',
     'real', 'integer' or 'utf8'.
 
-  "diff_bifcodeV2( $bc1, $bc2, [$diff_args] )"
+  "diff_bifcode2( $bc1, $bc2, [$diff_args] )"
     Returns a string representing the difference between two bifcodes.
     The inputs do not need to be valid Bifcode; they are only expanded
     with a very simple regex before the diff is done. The third argument
@@ -219,133 +236,133 @@ INTERFACE
     Croaks if Text::Diff is not installed.
 
   AnyEvent::Handle Support
-    Bifcode::V2 implements the AnyEvent::Handle "anyevent_read_type" and
+    Bifcode2 implements the AnyEvent::Handle "anyevent_read_type" and
     "anyevent_write_type" functions which allow you to do this:
 
-        $handle->push_write( 'Bifcode::V2' => { your => 'structure here' } );
+        $handle->push_write( 'Bifcode2' => { your => 'structure here' } );
 
         $handle->push_read(
-            'Bifcode::V2' => sub {
+            'Bifcode2' => sub {
                 my ( $hdl, $ref ) = @_;
                 # do stuff with $ref
             },
-            $maxdepth   # passed straight to decode_bifcodeV2()
+            $maxdepth   # passed straight to decode_bifcode2()
         );
 
 DIAGNOSTICS
-    The following exceptions may be raised by Bifcode::V2:
+    The following exceptions may be raised by Bifcode2:
 
-    Bifcode::Error::Decode
+    Bifcode2::Error::Decode
         Your data is malformed in a non-identifiable way.
 
-    Bifcode::Error::DecodeBytes
+    Bifcode2::Error::DecodeBytes
         Your data contains a byte string with an invalid length.
 
-    Bifcode::Error::DecodeBytesTrunc
+    Bifcode2::Error::DecodeBytesTrunc
         Your data includes a byte string declared to be longer than the
         available data.
 
-    Bifcode::Error::DecodeBytesTerm
+    Bifcode2::Error::DecodeBytesTerm
         Your data includes a byte string that is missing a ","
         terminator.
 
-    Bifcode::Error::DecodeDepth
+    Bifcode2::Error::DecodeDepth
         Your data contains dicts or lists that are nested deeper than
-        the $max_depth passed to "decode_bifcodeV2()".
+        the $max_depth passed to "decode_bifcode2()".
 
-    Bifcode::Error::DecodeTrunc
+    Bifcode2::Error::DecodeTrunc
         Your data is truncated.
 
-    Bifcode::Error::DecodeReal
+    Bifcode2::Error::DecodeReal
         Your data contained something that was supposed to be a real but
         didn't make sense.
 
-    Bifcode::Error::DecodeRealTrunc
+    Bifcode2::Error::DecodeRealTrunc
         Your data contains a real that is truncated.
 
-    Bifcode::Error::DecodeInteger
+    Bifcode2::Error::DecodeInteger
         Your data contained something that was supposed to be an integer
         but didn't make sense.
 
-    Bifcode::Error::DecodeIntegerTrunc
+    Bifcode2::Error::DecodeIntegerTrunc
         Your data contains an integer that is truncated.
 
-    Bifcode::Error::DecodeKeyType
-        Your data violates the *BifcodeV2* format constaint that all
-        dict keys be BIFCODE_BYTES or BIFCODE_UTF8.
+    Bifcode2::Error::DecodeKeyType
+        Your data violates the *Bifcode2* format constaint that all dict
+        keys be BIFCODE_BYTES or BIFCODE_UTF8.
 
-    Bifcode::Error::DecodeKeyDuplicate
-        Your data violates the *BifcodeV2* format constaint that all
-        dict keys must be unique.
+    Bifcode2::Error::DecodeKeyDuplicate
+        Your data violates the *Bifcode2* format constaint that all dict
+        keys must be unique.
 
-    Bifcode::Error::DecodeKeyOrder
-        Your data violates the *BifcodeV2* format constaint that dict
+    Bifcode2::Error::DecodeKeyOrder
+        Your data violates the *Bifcode2* format constaint that dict
         keys must appear in lexical sort order.
 
-    Bifcode::Error::DecodeKeyValue
+    Bifcode2::Error::DecodeKeyValue
         Your data contains a dictionary with an odd number of elements.
 
-    Bifcode::Error::DecodeTrailing
-        Your data does not end after the first *BifcodeV2*-serialised
+    Bifcode2::Error::DecodeTrailing
+        Your data does not end after the first *Bifcode2*-serialised
         item.
 
-    Bifcode::Error::DecodeUTF8
+    Bifcode2::Error::DecodeUTF8
         Your data contained a UTF8 string with an invalid length.
 
-    Bifcode::Error::DecodeUTF8Trunc
+    Bifcode2::Error::DecodeUTF8Trunc
         Your data includes a string declared to be longer than the
         available data.
 
-    Bifcode::Error::DecodeUTF8Term
+    Bifcode2::Error::DecodeUTF8Term
         Your data includes a UTF8 string that is missing a ","
         terminator.
 
-    Bifcode::Error::DecodeUsage
-        You called "decode_bifcodeV2()" with invalid arguments.
+    Bifcode2::Error::DecodeUsage
+        You called "decode_bifcode2()" with invalid arguments.
 
-    Bifcode::Error::DiffUsage
-        You called "diff_bifcodeV2()" with invalid arguments.
+    Bifcode2::Error::DiffUsage
+        You called "diff_bifcode2()" with invalid arguments.
 
-    Bifcode::Error::EncodeBytesUndef
+    Bifcode2::Error::EncodeBytesUndef
         You attempted to encode "undef" as a byte string.
 
-    Bifcode::Error::EncodeReal
+    Bifcode2::Error::EncodeReal
         You attempted to encode something as a real that isn't
         recognised as one.
 
-    Bifcode::Error::EncodeRealUndef
+    Bifcode2::Error::EncodeRealUndef
         You attempted to encode "undef" as a real.
 
-    Bifcode::Error::EncodeInteger
+    Bifcode2::Error::EncodeInteger
         You attempted to encode something as an integer that isn't
         recognised as one.
 
-    Bifcode::Error::EncodeIntegerUndef
+    Bifcode2::Error::EncodeIntegerUndef
         You attempted to encode "undef" as an integer.
 
-    Bifcode::Error::EncodeUTF8Undef
+    Bifcode2::Error::EncodeUTF8Undef
         You attempted to encode "undef" as a UTF8 string.
 
-    Bifcode::Error::EncodeUnhandled
+    Bifcode2::Error::EncodeUnhandled
         You are trying to serialise a data structure that contains a
-        data type not supported by the *BifcodeV2* format.
+        data type not supported by the *Bifcode2* format.
 
-    Bifcode::Error::EncodeUsage
-        You called "encode_bifcodeV2()" with invalid arguments.
+    Bifcode2::Error::EncodeUsage
+        You called "encode_bifcode2()" with invalid arguments.
 
-    Bifcode::Error::ForceUsage
-        You called "force_bifcodeV2()" with invalid arguments.
+    Bifcode2::Error::ForceUsage
+        You called "force_bifcode2()" with invalid arguments.
 
 BUGS AND LIMITATIONS
     Strings and numbers are practically indistinguishable in Perl, so
-    "encode_bifcodeV2()" has to resort to a heuristic to decide how to
+    "encode_bifcode2()" has to resort to a heuristic to decide how to
     serialise a scalar. This cannot be fixed.
 
 SEE ALSO
-    This distribution includes the diff-bifcode command-line utility for
-    comparing *BifcodeV2* in files.
+    This distribution includes the diff-bifcode2 command-line utility
+    for comparing *Bifcode2* in files.
 
-    Bifcode::V1 implements the original (experimental) *BifcodeV1*.
+    Bifcode implements the original (experimental) encoding.
 
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by

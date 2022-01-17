@@ -7,7 +7,7 @@ requires 'strict';
 requires 'utf8';
 requires 'warnings';
 
-feature 'diff-bifcode' => sub {
+feature 'diff-bifcode2' => sub {
     requires 'OptArgs2';
     requires 'Text::Diff';
 };
@@ -25,12 +25,14 @@ on develop => sub {
     requires 'AnyEvent::Handle';
     requires 'OptArgs2';
     requires 'Text::Diff';
+    requires 'Text::Table::Tiny';
 };
 
 on test => sub {
-    suggests 'AnyEvent::Handle';
     requires 'Test2::V0';
-    requires 'Text::Diff';
+    suggests 'AnyEvent::Handle';
+    suggests 'OptArgs2';
+    suggests 'Text::Diff';
 };
 
 # vim: ft=perl
