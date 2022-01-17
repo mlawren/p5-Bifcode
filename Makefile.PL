@@ -10,7 +10,7 @@ WriteMakefile(
     NAME         => 'Bifcode',
     ABSTRACT     => 'encode and decode BIFCODE serialization format',
     AUTHOR       => 'Mark Lawrence <nomad@null.net>',
-    VERSION_FROM => 'lib/Bifcode/V2.pm',
+    VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
     EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],
     test         => {

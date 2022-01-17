@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Bifcode::V2 ':all';
+use Bifcode ':all';
 use OptArgs2;
 
 arg file1 => (
@@ -56,30 +56,30 @@ my $bc1 = _slurp( $opts->{file1} );
 my $bc2 = _slurp( $opts->{file2} );
 
 foreach my $pair ( [ $opts->{file1}, $bc1 ], [ $opts->{file2}, $bc2 ] ) {
-    if ( !eval { decode_bifcodeV2( $pair->[1] ) } ) {
+    if ( !eval { decode_bifcode( $pair->[1] ) } ) {
         my $err = $@;
         $err =~ s/^/  /mg;
         warn sprintf "warning: invalid Bifcode in file '%s'\n$err", $pair->[0];
     }
 }
 
-print my $diff = diff_bifcodeV2( $bc1, $bc2 );
+print my $diff = diff_bifcode( $bc1, $bc2 );
 exit length($diff) ? 1 : 0;
 
 __END__
 
 =head1 NAME
 
-diff-bifcodeV2 - compare files containing BifcodeV2
+diff-bifcode - compare files containing Bifcode
 
 =head1 SYNOPSIS
 
-    diff-bifcodeV2 FILE1 FILE2 [OPTIONS...]
+    diff-bifcode FILE1 FILE2 [OPTIONS...]
 
 =head1 DESCRIPTION
 
-The B<diff-bifcodeV2> utility compares two files contining BifcodeV2.
-For example, if file1 contains:
+The B<diff-bifcode> utility compares two files contining Bifcode. For
+example, if file1 contains:
 
     {U3:oneI1,U3:twoI2,}
 
@@ -87,10 +87,9 @@ And file2 contains:
 
     {U3:oneI1,U5:threeI3,U3:twoI2,}
 
-Then running B<diff-bifcodeV2> against the two results in the
-following:
+Then running B<diff-bifcode> against the two results in the following:
 
-    $ diff-bifcodeV2 file1 file2
+    $ diff-bifcode file1 file2
     @@ -2,6 +2,8 @@
      {
      U3:one
@@ -116,8 +115,8 @@ they do not.
 
 =head1 SEE ALSO
 
-This command-line utility is a tiny wrapper around the L<Bifcode::V2>
-C<diff_bifcodeV2()> function.
+This command-line utility is a tiny wrapper around the L<Bifcode>
+C<diff_bifcode()> function.
 
 =head1 AUTHOR
 

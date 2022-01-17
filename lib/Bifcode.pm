@@ -1,4 +1,4 @@
-package Bifcode::V1;
+package Bifcode;
 use 5.010;
 use strict;
 use warnings;
@@ -313,7 +313,7 @@ __END__
 
 =head1 NAME
 
-Bifcode::V1 - simple serialization format
+Bifcode - simple serialization format
 
 =head1 VERSION
 
@@ -322,7 +322,7 @@ Bifcode::V1 - simple serialization format
 =head1 SYNOPSIS
 
     use boolean;
-    use Bifcode::V1 qw( encode_bifcode decode_bifcode );
+    use Bifcode qw( encode_bifcode decode_bifcode );
 
     my $bifcode = encode_bifcode {
         bools   => [ boolean::false, boolean::true, ],
@@ -349,8 +349,8 @@ Bifcode::V1 - simple serialization format
 [ B<OBSOLETE!> This module is kept around for legacy reasons, but all
 new code should be using L<Bifcode::V2> or later. ]
 
-B<Bifcode::V1> implements the I<BifcodeV1> serialisation format, a
-mixed binary/text encoding with support for the following data types:
+B<Bifcode> implements the I<BifcodeV1> serialisation format, a mixed
+binary/text encoding with support for the following data types:
 
 =over
 

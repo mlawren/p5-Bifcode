@@ -47,7 +47,7 @@
 
     Packaging:
         - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
-        - Add a test script to compare Bifcode vs Bifcode::V1
+        - Add a test script to compare Bifcode vs Bifcode
           performance
 
 2.000_8 (2019-11-13)
@@ -63,7 +63,7 @@
           generation. Bifcode::BIFCODE objects are no longer used.
 
     Dependencies:
-        - Convert Bifcode::V1 tests to Test2::V0.
+        - Convert Bifcode tests to Test2::V0.
 
 2.000_6 (2019-11-12)
 
