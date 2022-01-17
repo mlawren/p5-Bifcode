@@ -13,7 +13,7 @@
         - None.
 
     Dependencies:
-        - None.
+        - Add development dep on Text::Table::Tiny for t/synopsis.pl
 
     Packaging:
         - None.
@@ -64,9 +64,6 @@
 
     Dependencies:
         - Convert Bifcode::V1 tests to Test2::V0.
-
-2.000_6 (2019-11-12)
-
     Packaging:
         - Depend on Text::Diff explicitly for tests (closes RT#130969)
         - Add an 'anyevent-handle' feature that depends on
