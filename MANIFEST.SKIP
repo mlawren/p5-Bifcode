@@ -5,7 +5,7 @@
 \.podtidy-opts
 \.readme_from
 ^blib
-^Bifcode-*
+^Bifcode*
 Makefile$
 MANIFEST.SKIP
 \.bak$
