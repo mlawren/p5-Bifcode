@@ -502,6 +502,22 @@ is no need to escape special characters in strings. It is not
 considered human readable, but as it is mostly text it can usually be
 visually debugged.
 
+    +---------+--------------------+---------------------+
+    | Type    | Perl               | Bifcode             |
+    +---------+--------------------+---------------------+
+    | UNDEF   | undef              | ~,                  |
+    | TRUE    | boolean::true      | t,                  |
+    | FALSE   | boolean::false     | f,                  |
+    | INTEGER | -1                 | i-1,                |
+    | INTEGER | 0                  | i0,                 |
+    | INTEGER | 1                  | i1,                 |
+    | REAL    | 3.1415             | r3.1415e0,          |
+    | BYTES   | \pack( 's<', 255 ) | b2.�,               |
+    | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,     |
+    | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]    |
+    | DICT    | { key => 'value'}  | {u3.key:u5.value,}  |
+    +---------+--------------------+---------------------+
+
 I<Bifcode2> can only be constructed canonically; i.e. there is only one
 possible encoding per data structure. This property makes it suitable
 for comparing structures (using cryptographic hashes) across networks.
