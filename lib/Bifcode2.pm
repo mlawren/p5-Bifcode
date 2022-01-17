@@ -433,7 +433,7 @@ Bifcode2 - encode and decode Bifcode2 serialization format
 
 =head1 VERSION
 
-2.0.0_12 (yyyy-mm-dd)
+2.0.0_12 (2022-01-17)
 
 =head1 SYNOPSIS
 
@@ -447,7 +447,7 @@ Bifcode2 - encode and decode Bifcode2 serialization format
         integer => 25,
         real    => 1.25e-5,
         null    => undef,
-        utf8    => "ÎÎ»ÏÏÎ·",
+        utf8    => "ÃÂÃÂ»ÃÂÃÂÃÂ·",
     }
 
     # 7b 75 35 2e 62 6f 6f 6c 73 3a 5b 66 2c 74 2c    {u5.bools:[f,t,
@@ -512,8 +512,8 @@ visually debugged.
     | INTEGER | 0                  | i0,                 |
     | INTEGER | 1                  | i1,                 |
     | REAL    | 3.1415             | r3.1415e0,          |
-    | BYTES   | \pack( 's<', 255 ) | b2.ï¿½,               |
-    | UTF8    | 'MIXÎ£D Æ¬Î£XÆ¬'       | u14.MIXÎ£D Æ¬Î£XÆ¬,     |
+    | BYTES   | \pack( 's<', 255 ) | b2.Ã¯Â¿Â½,               |
+    | UTF8    | 'MIXÃÂ£D ÃÂ¬ÃÂ£XÃÂ¬'       | u14.MIXÃÂ£D ÃÂ¬ÃÂ£XÃÂ¬,     |
     | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]    |
     | DICT    | { key => 'value'}  | {u3.key:u5.value,}  |
     +---------+--------------------+---------------------+
@@ -566,7 +566,7 @@ Boolean values are represented by "t," and "f,".
 
 A UTF8 string is "u" followed by the octet length of the encoded string
 as a base ten number followed by a "." and the encoded string followed
-by ",". For example the Perl string "\x{df}" (ÃÂÃÂ)
+by ",". For example the Perl string "\x{df}" (ÃÂÃÂÃÂÃÂ)
 corresponds to "u2.\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
