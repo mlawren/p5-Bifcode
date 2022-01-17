@@ -1,16 +1,7 @@
-2.0.0 (yyyy-mm-dd)
+2.0.0_12 (yyyy-mm-dd)
 
     API / Behaviour Changes:
         - Rename Bifcode::V2 to Bifcode2
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
 
     Dependencies:
         - Add development dep on Text::Table::Tiny for t/synopsis.pl
