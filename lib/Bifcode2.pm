@@ -876,10 +876,10 @@ serialise a scalar. This cannot be fixed.
 
 =head1 SEE ALSO
 
-This distribution includes the L<diff-bifcode> command-line utility for
-comparing I<Bifcode2> in files.
+This distribution includes the L<diff-bifcode2> command-line utility
+for comparing I<Bifcode2> in files.
 
-L<Bifcode> implements the original (experimental) I<BifcodeV1>.
+L<Bifcode> implements the original (experimental) encoding.
 
 =head1 AUTHOR
 

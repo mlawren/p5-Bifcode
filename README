@@ -359,10 +359,10 @@ BUGS AND LIMITATIONS
     serialise a scalar. This cannot be fixed.
 
 SEE ALSO
-    This distribution includes the diff-bifcode command-line utility for
-    comparing *Bifcode2* in files.
+    This distribution includes the diff-bifcode2 command-line utility
+    for comparing *Bifcode2* in files.
 
-    Bifcode implements the original (experimental) *BifcodeV1*.
+    Bifcode implements the original (experimental) encoding.
 
 AUTHOR
     Mark Lawrence <nomad@null.net>, heavily based on Bencode by
