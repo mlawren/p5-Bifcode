@@ -2,7 +2,7 @@ NAME
     Bifcode2 - encode and decode Bifcode2 serialization format
 
 VERSION
-    2.0.0_12 (2022-01-17)
+    2.0.0_13 (yyyy-mm-dd)
 
 SYNOPSIS
         use utf8;
@@ -113,8 +113,8 @@ SPECIFICATION
   BIFCODE_UTF8
     A UTF8 string is "u" followed by the octet length of the encoded
     string as a base ten number followed by a "." and the encoded string
-    followed by ",". For example the Perl string "\x{df}" (ÃÂÃÂÃÂÃÂ)
-    corresponds to "u2.\x{c3}\x{9f},".
+    followed by ",". For example the Perl string "\x{df}"
+    (ÃÂÃÂÃÂÃÂ) corresponds to "u2.\x{c3}\x{9f},".
 
   BIFCODE_BYTES
     Opaque data is 'b' followed by the octet length of the data as a
