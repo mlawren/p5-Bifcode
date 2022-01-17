@@ -14,6 +14,7 @@
 
     Dependencies:
         - Add development dep on Text::Table::Tiny for t/synopsis.pl
+        - Suggest on develop dep OptArgs2 for bin/diff-bifcode
 
     Packaging:
         - None.

@@ -29,9 +29,10 @@ on develop => sub {
 };
 
 on test => sub {
-    suggests 'AnyEvent::Handle';
     requires 'Test2::V0';
-    requires 'Text::Diff';
+    suggests 'AnyEvent::Handle';
+    suggests 'OptArgs2';
+    suggests 'Text::Diff';
 };
 
 # vim: ft=perl
