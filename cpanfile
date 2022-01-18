@@ -20,7 +20,7 @@ on develop => sub {
     requires 'App::githook::perltidy';
     requires 'OptArgs2';
     requires 'Text::Diff';
-    requires 'Text::Table::Tiny';
+    requires 'Term::Table';
 };
 
 on test => sub {

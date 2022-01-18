@@ -1,75 +1,69 @@
 #!/usr/bin/env perl
-use strict;
-use warnings;
-use utf8;
+use Test2::V0;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib";
-use lib "$RealBin/lib";
-use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
 use boolean;
-use Data::Dumper 'Dumper';
+use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
 use Path::Tiny;
-use Test::Bifcode;
-use Text::Table::Tiny 0.04 qw/ generate_table /;
-no warnings 'once';
+use Term::Table;
 
-my $str = q{encode_bifcode {
+my $struct = q{{
     bools   => [ boolean::false, boolean::true, ],
     bytes   => \pack( 's<',       255 ),
     integer => 25,
-    float   => 1.25e-5,
-    undef   => undef,
+    real    => 1.25e-5,
+    null    => undef,
     utf8    => "Ελύτη",
-};
+}
 };
 
-binmode STDOUT, ':utf8';
-print 'my $bifcode = ' . $str;
-my $bifcode = eval $str;
+my $ref     = eval $struct;
+my $bifcode = encode_bifcode $ref;
 
-print $bifcode, "\n\n";
+note 'my $bifcode = encode_bifcode ' . $struct;
+note $bifcode;
+
+like( $bifcode, qr/^{/, 'bifcode hash' );
+
 my $bifcode_file = Path::Tiny->tempfile;
 $bifcode_file->spew_raw($bifcode);
 
-my $format      = '12/1 " %2x"' . "\n" . '"    " "%_p"' . "\n" . '"\n"' . "\n";
+my $format      = '15/1 " %2x"' . "\n" . '"    " "%_p"' . "\n" . '"\n"' . "\n";
 my $format_file = Path::Tiny->tempfile;
 $format_file->spew($format);
-system( 'hexdump', '-f', $format_file, $bifcode_file );
+open my $fh, '-|', 'hexdump', '-f', $format_file, $bifcode_file;
+note $_ while <$fh>;
 
-use constant TYPE    => 0;
-use constant PERL    => 1;
-use constant DISPLAY => 2;
+my $table_src = Term::Table->new(
+    header => [ 'Type', 'Perl', 'Bifcode' ],
+    rows   => [
+        [ 'UNDEF',   'undef',          encode_bifcode(undef) ],
+        [ 'TRUE',    'boolean::true',  encode_bifcode(true) ],
+        [ 'FALSE',   'boolean::false', encode_bifcode(false) ],
+        [ 'INTEGER', -1,               encode_bifcode(-1) ],
+        [ 'INTEGER', 0,                encode_bifcode(0) ],
+        [ 'INTEGER', 1,                encode_bifcode(1) ],
 
-$Data::Dumper::Indent = 0;
+        #    [ 'REAL',    '0.0', encode_bifcode('0.0') ],
+        [ 'REAL', 3.1415,       encode_bifcode(3.1415) ],
+        [ 'REAL', 1.380649e-23, encode_bifcode(1.380649e-23) ],
+        [
+            'BYTES', q[$TWO_BYTE_STR],
+            encode_bifcode( \pack( 's<', 255 ) ) =~ s/([.:]).*,/${1}��,/r
+        ],
+        [
+            'UTF8',
+            q{'MIXΣD ƬΣXƬ'},
+            encode_bifcode('MIXΣD ƬΣXƬ') =~ s/([.:])(.*),/${1}MIXΣD ƬΣXƬ,/r
+        ],
+        [ 'ARRAY', q{[ 'one', 'two' ]},  encode_bifcode( [ 'one', 'two' ] ) ],
+        [ 'DICT',  q[{ key => 'value'}], encode_bifcode( { key => 'value' } ) ],
 
-my @items = (
-    [ 'UNDEF',   undef ],
-    [ 'TRUE',    true,  'boolean::true' ],
-    [ 'FALSE',   false, 'boolean::false' ],
-    [ 'INTEGER', -1 ],
-    [ 'INTEGER', 0 ],
-    [ 'INTEGER', 1 ],
-    [ 'REAL',    '0.0' ],
-    [ 'REAL',    3.1415 ],
-    [ 'BYTES',   \pack( 's<', 255 ), q{pack( 's<', 255 )} ],
-    [ 'UTF8',    'MIXΣD ƬΣXƬ',       q{'MIXΣD ƬΣXƬ'} ],
-    [ 'ARRAY',   [ 'one', 'two' ] ],
-    [ 'DICT',    { key => 'value' } ],
+    ],
 );
 
-my $rows = [
-    [ 'Type', 'Perl', 'Bifcode' ],
-    map {
-        [
-            $_->[TYPE],
-            $_->[DISPLAY] // ( Dumper( $_->[PERL] ) =~ s/(\$VAR1 = )|;//gr ),
-            encode_bifcode( $_->[PERL] )
-        ]
-    } @items
-];
+my $table = join( "\n", $table_src->render, '' );
 
-print generate_table(
-    rows       => $rows,
-    header_row => 1
-) =~ s/(B2.*,)/$1 /r;
-print "\n";
+note($table);
+
+done_testing();
