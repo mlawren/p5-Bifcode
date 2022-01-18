@@ -4,6 +4,7 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
+use Math::BigInt;
 use Test::Bifcode;
 use Test2::V0;
 
@@ -44,6 +45,13 @@ subtest REAL => sub {
     decode_ok 'r4.1e-2,'  => 4.1e-2;
     decode_err 'r-0.0e0,' => 'DecodeReal', 'non-zero exponent for 0.0 real';
     decode_err 'r0.0e-1,' => 'DecodeReal', 'non-zero exponent for 0.0 real';
+};
+
+subtest INF => sub {
+    decode_err '+' => 'Decode', 'aborted inf';
+    decode_err '-' => 'Decode', 'aborted -inf';
+    decode_ok '+,' => Math::BigInt->binf;
+    decode_ok '-,' => Math::BigInt->binf('-');
 };
 
 subtest UTF8 => sub {

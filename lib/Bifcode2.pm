@@ -76,6 +76,8 @@ my $chunk = qr/ \G (?|
       (~,)
     | (f,)
     | (t,)
+    | (-,)
+    | (\+,)
     | (B|b|u) (?:     ( 0 |    [1-9]   [0-9]* ) \. )?
     | (i)     (?:     ( 0 | -? [1-9]   [0-9]* ) ,  )?
     | (r)     (?:     ( 0 | -? [1-9]   [0-9]* )
@@ -129,6 +131,14 @@ sub _decode_bifcode2_chunk {
     }
     elsif ( $1 eq 't,' ) {
         return boolean::true;
+    }
+    elsif ( $1 eq '-,' ) {
+        require Math::BigInt;
+        return Math::BigInt->binf('-');
+    }
+    elsif ( $1 eq '+,' ) {
+        require Math::BigInt;
+        return Math::BigInt->binf('+');
     }
     elsif ( $1 eq 'b' ) {
         my $len = $2 // _croak 'DecodeBytes';
@@ -311,6 +321,14 @@ sub _encode_bifcode2 {
             utf8::encode($str);
             'u' . length($str) . '.' . $str . ',';
         }
+        elsif ( eval { $_->is_inf } ) {
+            $_->is_pos ? '+,' : '-,';
+        }
+        elsif ( my $a = eval { [ $_->is_int ] } ) {
+            $a->[0]
+              ? 'i' . $_->bdstr() . ','
+              : 'r' . $_->bnstr() . ',';
+        }
         else {
             _croak 'EncodeUnhandled', 'unhandled data type: ' . $ref;
         }
@@ -479,6 +497,8 @@ binary/text encoding with support for the following data types:
 
 =item * Real numbers
 
+=item * +/- Infinity
+
 =item * UTF8 strings
 
 =item * Binary strings
@@ -502,22 +522,25 @@ is no need to escape special characters in strings. It is not
 considered human readable, but as it is mostly text it can usually be
 visually debugged.
 
-	+---------+--------------------+--------------------+
-	| Type    | Perl               | Bifcode            |
-	+---------+--------------------+--------------------+
-	| UNDEF   | undef              | ~,                 |
-	| TRUE    | boolean::true      | t,                 |
-	| FALSE   | boolean::false     | f,                 |
-	| INTEGER | -1                 | i-1,               |
-	| INTEGER | 0                  | i0,                |
-	| INTEGER | 1                  | i1,                |
-	| REAL    | 3.1415             | r3.1415e0,         |
-	| REAL    | 1.380649e-23       | r1.380649e-23,     |
-	| BYTES   | \pack( 's<', 255 ) | b2.��,             |
-	| UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
-	| ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
-	| DICT    | { key => 'value'}  | {u3.key:u5.value,} |
-	+---------+--------------------+--------------------+
+    +---------+--------------------+--------------------+
+    | Type    | Perl               | Bifcode2           |
+    +---------+--------------------+--------------------+
+    | UNDEF   | undef              | ~,                 |
+    | TRUE    | boolean::true      | t,                 |
+    | FALSE   | boolean::false     | f,                 |
+    | INTEGER | -1                 | i-1,               |
+    | INTEGER | 0                  | i0,                |
+    | INTEGER | 1                  | i1,                |
+    | REAL    | 3.1415             | r3.1415e0,         |
+    | REAL    | 1.380649e-23       | r1.380649e-23,     |
+    | INF     | use bignum;  inf() | +,                 |
+    | NEGINF  | use bignum; -inf() | -,                 |
+    | INTEGER | 0                  | i0,                |
+    | BYTES   | $TWO_BYTE_STR      | b2.��,             |
+    | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
+    | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
+    | DICT    | { key => 'value'}  | {u3.key:u5.value,} |
+    +---------+--------------------+--------------------+
 
 I<Bifcode2> can only be constructed canonically; i.e. there is only one
 possible encoding per data structure. This property makes it suitable
@@ -562,6 +585,10 @@ A null or undefined value correspond to "~,".
 =head2 BIFCODE_TRUE and BIFCODE_FALSE
 
 Boolean values are represented by "t," and "f,".
+
+=head2 BIFCODE_INF and BIFCODE_NEGINF
+
+Positive and negative infinity represented by "+," and "-,".
 
 =head2 BIFCODE_UTF8
 

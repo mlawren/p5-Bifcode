@@ -6,6 +6,7 @@ use boolean;
 use Bifcode2 qw( encode_bifcode2 decode_bifcode2 force_bifcode2 );
 use Path::Tiny;
 use Term::Table;
+use Math::BigInt;
 
 my $struct = q{{
     bools   => [ boolean::false, boolean::true, ],
@@ -45,8 +46,17 @@ my $table_src = Term::Table->new(
         [ 'INTEGER', 1,                encode_bifcode2(1) ],
 
         #    [ 'REAL',    '0.0', encode_bifcode2('0.0') ],
-        [ 'REAL', 3.1415,       encode_bifcode2(3.1415) ],
-        [ 'REAL', 1.380649e-23, encode_bifcode2(1.380649e-23) ],
+        [ 'REAL', 3.1415,               encode_bifcode2(3.1415) ],
+        [ 'REAL', 1.380649e-23,         encode_bifcode2(1.380649e-23) ],
+        [ 'INF',  'use bignum;  inf()', encode_bifcode2( Math::BigInt->binf ) ],
+        [
+            'NEGINF',
+            q{use bignum; -inf()},
+            encode_bifcode2( Math::BigInt->binf('-') )
+        ],
+
+        #        [ 'RATIONAL', -inf,               encode_bifcode2(-inf) ],
+        [ 'INTEGER', 0, encode_bifcode2(0) ],
         [
             'BYTES', q[$TWO_BYTE_STR],
             encode_bifcode2( \pack( 's<', 255 ) ) =~ s/([.:]).*,/${1}��,/r

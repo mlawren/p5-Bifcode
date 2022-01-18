@@ -42,6 +42,8 @@ DESCRIPTION
 
         *   Real numbers
 
+        *   +/- Infinity
+
         *   UTF8 strings
 
         *   Binary strings
@@ -57,22 +59,25 @@ DESCRIPTION
     considered human readable, but as it is mostly text it can usually
     be visually debugged.
 
-            +---------+--------------------+--------------------+
-            | Type    | Perl               | Bifcode            |
-            +---------+--------------------+--------------------+
-            | UNDEF   | undef              | ~,                 |
-            | TRUE    | boolean::true      | t,                 |
-            | FALSE   | boolean::false     | f,                 |
-            | INTEGER | -1                 | i-1,               |
-            | INTEGER | 0                  | i0,                |
-            | INTEGER | 1                  | i1,                |
-            | REAL    | 3.1415             | r3.1415e0,         |
-            | REAL    | 1.380649e-23       | r1.380649e-23,     |
-            | BYTES   | \pack( 's<', 255 ) | b2.��,             |
-            | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
-            | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
-            | DICT    | { key => 'value'}  | {u3.key:u5.value,} |
-            +---------+--------------------+--------------------+
+        +---------+--------------------+--------------------+
+        | Type    | Perl               | Bifcode2           |
+        +---------+--------------------+--------------------+
+        | UNDEF   | undef              | ~,                 |
+        | TRUE    | boolean::true      | t,                 |
+        | FALSE   | boolean::false     | f,                 |
+        | INTEGER | -1                 | i-1,               |
+        | INTEGER | 0                  | i0,                |
+        | INTEGER | 1                  | i1,                |
+        | REAL    | 3.1415             | r3.1415e0,         |
+        | REAL    | 1.380649e-23       | r1.380649e-23,     |
+        | INF     | use bignum;  inf() | +,                 |
+        | NEGINF  | use bignum; -inf() | -,                 |
+        | INTEGER | 0                  | i0,                |
+        | BYTES   | $TWO_BYTE_STR      | b2.��,             |
+        | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
+        | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
+        | DICT    | { key => 'value'}  | {u3.key:u5.value,} |
+        +---------+--------------------+--------------------+
 
     *Bifcode2* can only be constructed canonically; i.e. there is only
     one possible encoding per data structure. This property makes it
@@ -110,6 +115,9 @@ SPECIFICATION
 
   BIFCODE_TRUE and BIFCODE_FALSE
     Boolean values are represented by "t," and "f,".
+
+  BIFCODE_INF and BIFCODE_NEGINF
+    Positive and negative infinity represented by "+," and "-,".
 
   BIFCODE_UTF8
     A UTF8 string is "u" followed by the octet length of the encoded
