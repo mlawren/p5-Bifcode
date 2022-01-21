@@ -5,7 +5,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
 use Test::Bifcode;
-use Test::More 0.88;    # for done_testing
+use Test2::V0;
 use Bifcode 'encode_bifcode', 'force_bifcode';
 
 subtest 'UNDEF' => sub {
@@ -18,11 +18,11 @@ subtest 'BOOLEAN' => sub {
 };
 
 subtest 'INTEGER' => sub {
-    enc_ok 4 => 'I4,';
-    enc_ok force_bifcode( 5, 'integer' ) => 'I5,';
-    enc_ok 0                      => 'I0,';
-    enc_ok - 10                   => 'I-10,';
-    enc_ok '12345678901234567890' => 'I12345678901234567890,';
+    enc_ok 4                                      => 'I4,';
+    enc_ok force_bifcode( 5, 'integer' )          => 'I5,';
+    enc_ok 0                                      => 'I0,';
+    enc_ok - 10                                   => 'I-10,';
+    enc_ok '12345678901234567890'                 => 'I12345678901234567890,';
     enc_error_ok force_bifcode( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
     enc_error_ok force_bifcode( '00abc', 'integer' ) => 'EncodeInteger',
@@ -101,10 +101,10 @@ subtest 'UTF8' => sub {
     enc_ok ''    => 'U0:,';
     enc_ok $utf8 => $UTF8;
     ok utf8::is_utf8($utf8), 'still have utf8 flag on source string';
-    enc_ok 'abc' => 'U3:abc,';
+    enc_ok 'abc'                                 => 'U3:abc,';
     enc_ok force_bifcode( '1234567890', 'utf8' ) => 'U10:1234567890,';
-    enc_ok force_bifcode( '0',          'utf8' ) => 'U1:0,';
-    enc_ok '00' => 'U2:00,';
+    enc_ok force_bifcode( '0', 'utf8' )          => 'U1:0,';
+    enc_ok '00'                                  => 'U2:00,';
 
     my $u = undef;
     enc_error_ok bless( \$u, 'Bifcode::UTF8' ) => 'EncodeUTF8Undef',
@@ -113,23 +113,23 @@ subtest 'UTF8' => sub {
 
 subtest 'BYTES' => sub {
     enc_ok force_bifcode( $bytes, 'bytes' ) => $BYTES;
-    enc_ok \$bytes => $BYTES;
+    enc_ok \$bytes                          => $BYTES;
 
     my $u = undef;
-    enc_error_ok \$u => 'EncodeBytesUndef',
+    enc_error_ok \$u                              => 'EncodeBytesUndef',
       enc_error_ok bless( \$u, 'Bifcode::BYTES' ) => 'EncodeBytesUndef',
       'forcing undef as bytes';
 };
 
 subtest 'LIST' => sub {
-    enc_ok [] => '[]';
-    enc_ok [ 1, 2, undef, $utf8 ] => '[I1,I2,~' . $UTF8 . ']';
+    enc_ok []                               => '[]';
+    enc_ok [ 1, 2, undef, $utf8 ]           => '[I1,I2,~' . $UTF8 . ']';
     enc_ok [ [ 'Alice', 'Bob' ], [ 2, 3 ] ] => '[[U5:Alice,U3:Bob,][I2,I3,]]';
 };
 
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
-    enc_ok { 1 => 'one' } => '{U1:1,U3:one,}';
+    enc_ok { 1     => 'one' }                            => '{U1:1,U3:one,}';
     enc_ok { bytes => force_bifcode( $bytes, 'bytes' ) } => '{U5:bytes,'
       . $BYTES . '}';
 
@@ -162,8 +162,8 @@ enc_error_ok bless( \$u, 'strange' ) => 'EncodeUnhandled',
   'unknown object type';
 
 eval { encode_bifcode() };
-isa_ok $@, 'Bifcode::Error::EncodeUsage', 'not enough arguments';
+isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'not enough arguments';
 eval { encode_bifcode( 1, 2 ) };
-isa_ok $@, 'Bifcode::Error::EncodeUsage', 'too many arguments';
+isa_ok $@, ['Bifcode::Error::EncodeUsage'], 'too many arguments';
 
 done_testing;

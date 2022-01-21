@@ -3,7 +3,7 @@ use 5.010;
 use strict;
 use warnings;
 use boolean ();
-use Carp (qw/croak shortmess/);
+use Carp    (qw/croak shortmess/);
 use Exporter::Tidy all => [
     qw( encode_bifcode
       decode_bifcode
@@ -13,7 +13,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '1.002';
+our $VERSION = '2.0.0_12';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
@@ -57,13 +57,16 @@ sub _croak {
 
     $msg =~ s! at$!' at input byte '. ( pos() // 0 )!e;
 
-    eval 'package ' . $err . qq[;
+    eval qq[
+        package $err;
         use overload
           bool => sub { 1 },
           '""' => sub { \${ \$_[0] } . ' (' . ( ref \$_[0] ) . ')$short' },
-          fallback => 1; 
-        1; ];
+          fallback => 1;
+        1;
+        ];
 
+    die $@ if $@;
     die bless \$msg, $err;
 }
 
@@ -71,7 +74,7 @@ my $match = qr/ \G (?|
       (~)
     | (0)
     | (1)
-    | (B|U) (?: ( 0 | [1-9] [0-9]* ) : )? 
+    | (B|U) (?: ( 0 | [1-9] [0-9]* ) : )?
     | (I)   (?: ( 0 | -? [1-9] [0-9]* ) , )?
     | (F)   (?: ( 0 | -? [1-9] [0-9]* ) \. ( 0 | [0-9]* [1-9] ) e
                 ( (?: 0 | -? [1-9] ) [0-9]* ) , )?
@@ -116,7 +119,7 @@ sub _decode_bifcode_chunk {
         return $str;
     }
     elsif ( $1 eq 'I' ) {
-        return $2 if defined $2;
+        return $2                   if defined $2;
         _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
         _croak 'DecodeInteger';
     }
@@ -228,7 +231,7 @@ sub _encode_bifcode {
                         #     ('B' . length($k) . ':' . $k .',', $_);
                         # }
                     } _encode_bifcode( @$_{@k} );
-                  }
+                }
             ) . '}';
         }
         elsif ( $ref eq 'SCALAR' or $ref eq 'Bifcode::BYTES' ) {
@@ -282,9 +285,9 @@ sub _expand_bifcode {
     my $bifcode = shift;
     $bifcode =~ s/ (
             [~\[\]\{\}]
-            | (U|B) [0-9]+ :  
-            | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,  
-            | I [0-9]+ ,  
+            | (U|B) [0-9]+ :
+            | F -? [0-9]+ \. [0-9]+ e -? [0-9]+ ,
+            | I [0-9]+ ,
         ) /\n$1/gmx;
     $bifcode =~ s/ \A \n //mx;
     $bifcode . "\n";
@@ -317,8 +320,7 @@ Bifcode - simple serialization format
 
 =head1 VERSION
 
-1.002 (2018-09-23)
-
+2.0.0_12 (2022-01-21)
 
 =head1 SYNOPSIS
 
@@ -347,7 +349,10 @@ Bifcode - simple serialization format
 
 =head1 DESCRIPTION
 
-B<Bifcode> implements the I<bifcode> serialisation format, a mixed
+[ B<OBSOLETE!> This module is kept around for legacy reasons, but all
+new code should be using L<Bifcode::V2> or later. ]
+
+B<Bifcode> implements the I<BifcodeV1> serialisation format, a mixed
 binary/text encoding with support for the following data types:
 
 =over
@@ -435,8 +440,8 @@ Boolean values are represented by "1" and "0".
 
 A UTF8 string is "U" followed by the octet length of the encoded string
 as a base ten number followed by a colon and the encoded string
-followed by ",". For example the Perl string "\x{df}" (ß) corresponds
-to "U2:\x{c3}\x{9f},".
+followed by ",". For example the Perl string "\x{df}" (ÃÂ)
+corresponds to "U2:\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
 
@@ -497,7 +502,7 @@ distribution encode to BIFCODE_TRUE and BIFCODE_FALSE.
 
 =over
 
-=item 
+=item
 
 They look like canonically represented integers in which case they are
 mapped to BIFCODE_INTEGER; or
@@ -718,7 +723,7 @@ This software is copyright (c):
 
 =item * 2015 by Aristotle Pagaltzis
 
-=item * 2017-2018 by Mark Lawrence.
+=item * 2017-2022 by Mark Lawrence.
 
 =back
 

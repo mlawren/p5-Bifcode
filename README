@@ -2,7 +2,7 @@ NAME
     Bifcode - simple serialization format
 
 VERSION
-    1.002 (2018-09-23)
+    2.0.0_12 (2022-01-21)
 
 SYNOPSIS
         use boolean;
@@ -29,7 +29,10 @@ SYNOPSIS
         my $decoded = decode_bifcode $bifcode;
 
 DESCRIPTION
-    Bifcode implements the *bifcode* serialisation format, a mixed
+    [ OBSOLETE! This module is kept around for legacy reasons, but all
+    new code should be using Bifcode::V2 or later. ]
+
+    Bifcode implements the *BifcodeV1* serialisation format, a mixed
     binary/text encoding with support for the following data types:
 
     *   Primitive:
@@ -97,7 +100,7 @@ SPECIFICATION
   BIFCODE_UTF8
     A UTF8 string is "U" followed by the octet length of the encoded
     string as a base ten number followed by a colon and the encoded
-    string followed by ",". For example the Perl string "\x{df}" (ß)
+    string followed by ",". For example the Perl string "\x{df}" (ÃÂ)
     corresponds to "U2:\x{c3}\x{9f},".
 
   BIFCODE_BYTES
@@ -323,7 +326,7 @@ COPYRIGHT AND LICENSE
 
     *   2015 by Aristotle Pagaltzis
 
-    *   2017-2018 by Mark Lawrence.
+    *   2017-2022 by Mark Lawrence.
 
     This is free software; you can redistribute it and/or modify it
     under the same terms as the Perl 5 programming language system

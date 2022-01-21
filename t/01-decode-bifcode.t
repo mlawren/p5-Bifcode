@@ -5,7 +5,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
 use Test::Bifcode;
-use Test::More 0.88;    # for done_testing
+use Test2::V0;
 
 subtest UNDEF => sub {
     decod_ok '~' => undef;
@@ -25,21 +25,21 @@ subtest INTEGER => sub {
     decod_ok 'I0,'         => 0;
     decod_ok 'I123456789,' => 123456789;
     decod_ok 'I-10,'       => -10;
-    error_ok 'I-0,'        => 'DecodeInteger',      'negative zero integer';
-    error_ok 'I123'        => 'DecodeInteger',      'unterminated integer';
+    error_ok 'I-0,'   => 'DecodeInteger',  'negative zero integer';
+    error_ok 'I123'   => 'DecodeInteger',  'unterminated integer';
     error_ok 'I6,asd' => 'DecodeTrailing', 'integer with trailing garbage';
     error_ok 'I03,'   => 'DecodeInteger',  'integer with leading zero';
     error_ok 'I-03,'  => 'DecodeInteger',  'negative integer with leading zero';
 };
 
 subtest FLOAT => sub {
-    error_ok 'F'     => 'DecodeFloatTrunc', 'aborted float';
-    error_ok 'F0'    => 'DecodeFloat',      'aborted float';
-    error_ok 'F0.'   => 'DecodeFloat',      'aborted float';
-    error_ok 'F0.0'  => 'DecodeFloat',      'aborted float';
-    error_ok 'F0.0e' => 'DecodeFloat',      'aborted float';
-    error_ok 'F0.e0' => 'DecodeFloat',      'aborted float';
-    error_ok 'F0e0'  => 'DecodeFloat',      'aborted float';
+    error_ok 'F'        => 'DecodeFloatTrunc', 'aborted float';
+    error_ok 'F0'       => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.'      => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.0'     => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.0e'    => 'DecodeFloat',      'aborted float';
+    error_ok 'F0.e0'    => 'DecodeFloat',      'aborted float';
+    error_ok 'F0e0'     => 'DecodeFloat',      'aborted float';
     decod_ok 'F0.0e0,'  => '0.0e0';
     decod_ok 'F4.1e-2,' => '4.1e-2';
     error_ok 'F-0.0e0,' => 'DecodeFloat', 'non-zero exponent for 0.0 float';
@@ -88,7 +88,7 @@ subtest LIST => sub {
       '[]anfdldjfh' => 'DecodeTrailing',
       'empty list with trailing garbage';
     decod_ok '[~~~]' => [ undef, undef, undef ];
-    decod_ok '[10]' => [ boolean::true, boolean::false ];
+    decod_ok '[10]'  => [ boolean::true, boolean::false ];
     decod_ok '[U0:,U0:,U0:,]'               => [ '',    '',   '' ];
     decod_ok '[I1,I2,I3,]'                  => [ 1,     2,    3 ];
     decod_ok '[U3:asd,U2:xy,' . $UTF8 . ']' => [ 'asd', 'xy', $utf8 ];
@@ -124,7 +124,7 @@ subtest DICT => sub {
     error_ok
       '{U3:foo,}' => 'DecodeKeyValue',
       'dict with odd number of elements';
-    error_ok '{I1,U0:,}' => 'DecodeKeyType', 'dict with integer key';
+    error_ok '{I1,U0:,}'            => 'DecodeKeyType', 'dict with integer key';
     error_ok '{U1:b,U0:,U1:a,U0:,}' => 'DecodeKeyOrder',     'missorted keys';
     error_ok '{U1:a,U0:,U1:a,U0:,}' => 'DecodeKeyDuplicate', 'duplicate keys';
     error_ok
@@ -174,7 +174,7 @@ subtest nest_limits => sub {
 error_ok undef, 'DecodeUsage', 'decode_bifcode needs defined';
 error_ok [ '[U0:,]', 0, 'arg3' ] => 'DecodeUsage',
   'decode_bifcode only takes up to 2 args';
-error_ok '' => 'DecodeTrunc', 'empty data';
+error_ok ''    => 'DecodeTrunc', 'empty data';
 error_ok $utf8 => 'DecodeUsage',
   'check for utf8 flag';
 error_ok 'relwjhrlewjh' => 'Decode', 'complete garbage';

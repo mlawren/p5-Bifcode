@@ -8,6 +8,7 @@ README
 t/00-errors.t
 t/01-decode-bifcode.t
 t/02-encode-bifcode.t
+t/03-diff-bifcode-bin.t
 t/03-diff-bifcode.t
 t/lib/Test/Bifcode.pm
 t/synopsis.pl

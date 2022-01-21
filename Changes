@@ -1,3 +1,21 @@
+2.0.0_12 (2022-01-21)
+
+    Enhancements:
+        - Make diff-bifcode an optional "feature"
+        - Add some missing (bugtracker, repo) META data.
+
+    Dependencies:
+        - Hopefully support Perl 5.12 by not using "package BLOCK" in
+          error class.
+        - Convert all tests to Test2::V0.
+        - Add development dep on Text::Table::Tiny for t/synopsis.pl
+        - Suggest on develop dep OptArgs2 for bin/diff-bifcode
+
+    Packaging:
+        - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
+        - Depend on Text::Diff explicitly for tests (closes RT#130969)
+        - Bump VERSION to 2.x.x due to previously uploaded dists
+
 1.002 (2018-09-23)
 
     Packaging:
