@@ -1,4 +1,4 @@
-1.003 (yyyy-mm-dd)
+2.0.0_12 (yyyy-mm-dd)
 
     Enhancements:
         - Make diff-bifcode an optional "feature"
@@ -14,6 +14,7 @@
     Packaging:
         - Set ExtUtils::MakeMaker RECURSIVE_TEST_FILES
         - Depend on Text::Diff explicitly for tests (closes RT#130969)
+        - Bump VERSION to 2.x.x due to previously uploaded dists
 
 1.002 (2018-09-23)
 
