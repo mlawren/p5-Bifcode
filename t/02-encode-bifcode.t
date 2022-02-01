@@ -4,6 +4,7 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
+use bignum;
 use Test::Bifcode;
 use Test2::V0;
 use Bifcode2 'encode_bifcode2', 'force_bifcode2';
@@ -95,6 +96,16 @@ subtest 'REAL' => sub {
     my $u = undef;
     encode_err bless( \$u, 'Bifcode2::REAL' ) => 'EncodeRealUndef',
       'forcing undef as real';
+};
+
+subtest 'INF' => sub {
+    enc_ok( NaN,                       'N,' );
+    enc_ok( inf,                       '+,' );
+    enc_ok( Math::BigInt->binf(),      '+,' );
+    enc_ok( Math::BigFloat->binf(),    '+,' );
+    enc_ok( -inf,                      '-,' );
+    enc_ok( Math::BigInt->binf('-'),   '-,' );
+    enc_ok( Math::BigFloat->binf('-'), '-,' );
 };
 
 subtest 'UTF8' => sub {
