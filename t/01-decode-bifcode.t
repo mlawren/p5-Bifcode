@@ -48,6 +48,8 @@ subtest REAL => sub {
 };
 
 subtest INF => sub {
+    decode_err 'N' => 'Decode', 'aborted NaN';
+    decode_ok 'N,' => Math::BigInt->bnan;
     decode_err '+' => 'Decode', 'aborted inf';
     decode_err '-' => 'Decode', 'aborted -inf';
     decode_ok '+,' => Math::BigInt->binf;

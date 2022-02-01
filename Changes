@@ -5,6 +5,7 @@
 
     New Features:
         - New infinity types INF and NEGINF
+        - New Not a number type NAN
 
     Enhancements:
         - None.

@@ -76,6 +76,7 @@ my $chunk = qr/ \G (?|
       (~,)
     | (f,)
     | (t,)
+    | (N,)
     | (-,)
     | (\+,)
     | (B|b|u) (?:     ( 0 |    [1-9]   [0-9]* ) \. )?
@@ -131,6 +132,10 @@ sub _decode_bifcode2_chunk {
     }
     elsif ( $1 eq 't,' ) {
         return boolean::true;
+    }
+    elsif ( $1 eq 'N,' ) {
+        require Math::BigInt;
+        return Math::BigInt->bnan;
     }
     elsif ( $1 eq '-,' ) {
         require Math::BigInt;
@@ -321,6 +326,9 @@ sub _encode_bifcode2 {
             utf8::encode($str);
             'u' . length($str) . '.' . $str . ',';
         }
+        elsif ( eval { $_->is_nan } ) {
+            'N,';
+        }
         elsif ( eval { $_->is_inf } ) {
             $_->is_pos ? '+,' : '-,';
         }
@@ -493,6 +501,8 @@ binary/text encoding with support for the following data types:
 
 =item * Booleans(true/false)
 
+=item * Not a Number (NaN)
+
 =item * Integer numbers
 
 =item * Real numbers
@@ -528,6 +538,7 @@ visually debugged.
     | UNDEF   | undef              | ~,                 |
     | TRUE    | boolean::true      | t,                 |
     | FALSE   | boolean::false     | f,                 |
+    | NAN     | use bignum;  NaN() | N,                 |
     | INTEGER | -1                 | i-1,               |
     | INTEGER | 0                  | i0,                |
     | INTEGER | 1                  | i1,                |
@@ -585,6 +596,10 @@ A null or undefined value correspond to "~,".
 =head2 BIFCODE_TRUE and BIFCODE_FALSE
 
 Boolean values are represented by "t," and "f,".
+
+=head2 BIFCODE_NAN
+
+Not a number (NaN) is represented by "N,".
 
 =head2 BIFCODE_INF and BIFCODE_NEGINF
 

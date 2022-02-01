@@ -38,6 +38,8 @@ DESCRIPTION
 
         *   Booleans(true/false)
 
+        *   Not a Number (NaN)
+
         *   Integer numbers
 
         *   Real numbers
@@ -65,6 +67,7 @@ DESCRIPTION
         | UNDEF   | undef              | ~,                 |
         | TRUE    | boolean::true      | t,                 |
         | FALSE   | boolean::false     | f,                 |
+        | NAN     | use bignum;  NaN() | N,                 |
         | INTEGER | -1                 | i-1,               |
         | INTEGER | 0                  | i0,                |
         | INTEGER | 1                  | i1,                |
@@ -115,6 +118,9 @@ SPECIFICATION
 
   BIFCODE_TRUE and BIFCODE_FALSE
     Boolean values are represented by "t," and "f,".
+
+  BIFCODE_NAN
+    Not a number (NaN) is represented by "N,".
 
   BIFCODE_INF and BIFCODE_NEGINF
     Positive and negative infinity represented by "+," and "-,".

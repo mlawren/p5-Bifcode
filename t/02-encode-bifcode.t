@@ -99,6 +99,7 @@ subtest 'REAL' => sub {
 };
 
 subtest 'INF' => sub {
+    enc_ok( NaN,                       'N,' );
     enc_ok( inf,                       '+,' );
     enc_ok( Math::BigInt->binf(),      '+,' );
     enc_ok( Math::BigFloat->binf(),    '+,' );

@@ -38,9 +38,10 @@ note $_ while <$fh>;
 my $table_src = Term::Table->new(
     header => [ 'Type', 'Perl', 'Bifcode2' ],
     rows   => [
-        [ 'UNDEF',   'undef',          encode_bifcode2(undef) ],
-        [ 'TRUE',    'boolean::true',  encode_bifcode2(true) ],
-        [ 'FALSE',   'boolean::false', encode_bifcode2(false) ],
+        [ 'UNDEF', 'undef',            encode_bifcode2(undef) ],
+        [ 'TRUE',  'boolean::true',    encode_bifcode2(true) ],
+        [ 'FALSE', 'boolean::false',   encode_bifcode2(false) ],
+        [ 'NAN', 'use bignum;  NaN()', encode_bifcode2( Math::BigInt->bnan ) ],
         [ 'INTEGER', -1,               encode_bifcode2(-1) ],
         [ 'INTEGER', 0,                encode_bifcode2(0) ],
         [ 'INTEGER', 1,                encode_bifcode2(1) ],
