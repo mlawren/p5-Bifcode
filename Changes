@@ -1,23 +1,8 @@
-2.0.0_13 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
+2.0.0_13 (2022-02-01)
 
     New Features:
         - New infinity types INF and NEGINF
         - New Not a number type NAN
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
-
-    Packaging:
-        - None.
 
 2.0.0_12 (2022-01-17)
 

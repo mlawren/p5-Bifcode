@@ -459,7 +459,7 @@ Bifcode2 - encode and decode Bifcode2 serialization format
 
 =head1 VERSION
 
-2.0.0_13 (yyyy-mm-dd)
+2.0.0_13 (2022-02-01)
 
 =head1 SYNOPSIS
 
