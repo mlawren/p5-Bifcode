@@ -103,7 +103,7 @@ sub _decode_bifcode2_key {
         pos() = pos() + $len;
 
         _croak 'DecodeBytesTerm' unless m/ \G : /xgc;
-        return $data;
+        $data;
     }
     elsif ( $1 eq 'u' ) {
         my $len = $2 // _croak 'DecodeUTF8';
@@ -113,7 +113,7 @@ sub _decode_bifcode2_key {
         pos() = pos() + $len;
 
         _croak 'DecodeUTF8Term' unless m/ \G : /xgc;
-        return $str;
+        $str;
     }
 }
 
@@ -125,25 +125,25 @@ sub _decode_bifcode2_chunk {
     }
 
     if ( $1 eq '~,' ) {
-        return undef;
+        undef;
     }
     elsif ( $1 eq 'f,' ) {
-        return boolean::false;
+        boolean::false;
     }
     elsif ( $1 eq 't,' ) {
-        return boolean::true;
+        boolean::true;
     }
     elsif ( $1 eq 'N,' ) {
         require Math::BigInt;
-        return Math::BigInt->bnan;
+        Math::BigInt->bnan;
     }
     elsif ( $1 eq '-,' ) {
         require Math::BigInt;
-        return Math::BigInt->binf('-');
+        Math::BigInt->binf('-');
     }
     elsif ( $1 eq '+,' ) {
         require Math::BigInt;
-        return Math::BigInt->binf('+');
+        Math::BigInt->binf('+');
     }
     elsif ( $1 eq 'b' ) {
         my $len = $2 // _croak 'DecodeBytes';
@@ -153,7 +153,7 @@ sub _decode_bifcode2_chunk {
         pos() = pos() + $len;
 
         _croak 'DecodeBytesTerm' unless m/ \G , /xgc;
-        return $data;
+        $data;
     }
     elsif ( $1 eq 'u' ) {
         my $len = $2 // _croak 'DecodeUTF8';
@@ -163,12 +163,14 @@ sub _decode_bifcode2_chunk {
         pos() = pos() + $len;
 
         _croak 'DecodeUTF8Term' unless m/ \G , /xgc;
-        return $str;
+        $str;
     }
     elsif ( $1 eq 'i' ) {
-        return 0 + $2               if defined $2;
-        _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
-        _croak 'DecodeInteger';
+        if ( not defined $2 ) {
+            _croak 'DecodeIntegerTrunc' if m/ \G \z /xgc;
+            _croak 'DecodeInteger';
+        }
+        0 + $2;
     }
     elsif ( $1 eq 'r' ) {
         if ( !defined $2 ) {
@@ -180,7 +182,7 @@ sub _decode_bifcode2_chunk {
           and $3 eq '0'     # mantissa 0.0
           and $4 ne '0';    # sign or exponent 0.0e0
 
-        return 0.0 + ( $2 . '.' . $3 . 'e' . $4 );
+        0.0 + ( $2 . '.' . $3 . 'e' . $4 );
     }
     elsif ( $1 eq '[' ) {
         _croak 'DecodeDepth' if defined $max_depth and $max_depth < 0;
@@ -189,7 +191,7 @@ sub _decode_bifcode2_chunk {
         until (m/ \G \] /xgc) {
             push @list, _decode_bifcode2_chunk();
         }
-        return \@list;
+        \@list;
     }
     elsif ( $1 eq '{' ) {
         _croak 'DecodeDepth' if defined $max_depth and $max_depth < 0;
@@ -209,7 +211,7 @@ sub _decode_bifcode2_chunk {
             $last_key = $key;
             $hash{$key} = _decode_bifcode2_chunk();
         }
-        return \%hash;
+        \%hash;
     }
     elsif ( $1 eq 'B' ) {
         my $len = $2 // _croak 'DecodeBifcode';
@@ -218,7 +220,7 @@ sub _decode_bifcode2_chunk {
         my $res = _decode_bifcode2_chunk();
         _croak 'DecodeBifcodeTerm' unless m/ \G , /xgc;
 
-        return $res;
+        $res;
     }
 }
 

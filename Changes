@@ -7,7 +7,7 @@
         - None.
 
     Enhancements:
-        - None.
+        - Avoid heavy use of 'return' statements
 
     Bug Fixes:
         - None.
