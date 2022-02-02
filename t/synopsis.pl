@@ -61,6 +61,7 @@ my $table_src = Term::Table->new(
             'BYTES', q[$TWO_BYTE_STR],
             encode_bifcode2( \pack( 's<', 255 ) ) =~ s/([.:]).*,/${1}��,/r
         ],
+        [ 'UTF8', q{'Plain ASCII'}, encode_bifcode2('Plain ASCII') ],
         [
             'UTF8',
             q{'MIXΣD ƬΣXƬ'},

@@ -549,6 +549,7 @@ visually debugged.
     | INF     | use bignum;  inf() | +,                 |
     | NEGINF  | use bignum; -inf() | -,                 |
     | BYTES   | $TWO_BYTE_STR      | b2.��,             |
+    | UTF8    | 'Plain ASCII'      | u11.Plain ASCII,   |
     | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
     | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
     | DICT    | { key => 'value'}  | {u3.key:u5.value,} |
