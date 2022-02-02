@@ -1,3 +1,12 @@
+2.0.0_14 (2022-02-02)
+
+    Bug Fixes:
+        - Document limitations of decoding large numbers.
+
+    Dependencies:
+        - Need at least version 1.999723 of Math::BigInt for the
+          bdstr() and bnstr() methods.
+
 2.0.0_13 (2022-02-01)
 
     New Features:

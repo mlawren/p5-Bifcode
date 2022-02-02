@@ -2,7 +2,7 @@ NAME
     Bifcode2 - encode and decode Bifcode2 serialization format
 
 VERSION
-    2.0.0_13 (2022-02-01)
+    2.0.0_14 (2022-02-02)
 
 SYNOPSIS
         use utf8;
@@ -75,7 +75,6 @@ DESCRIPTION
         | REAL    | 1.380649e-23       | r1.380649e-23,     |
         | INF     | use bignum;  inf() | +,                 |
         | NEGINF  | use bignum; -inf() | -,                 |
-        | INTEGER | 0                  | i0,                |
         | BYTES   | $TWO_BYTE_STR      | b2.��,             |
         | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
         | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
@@ -215,6 +214,18 @@ INTERFACE
 
     *   HASH references become BIFCODE_DICT.
 
+    Integers and floats under "bignum" scope are handled transparently,
+    but do not always produce the same encoding you get without:
+
+        encode_bifcode(100.2); # r100.2e0
+        {
+            use bignum;
+            encode_bifcode(100.2); # r1.002e2
+        }
+
+    The reason is that "reading" Math::BigFloat forces conversion to a
+    standardized format (e.g. scientific, engineering, etc).
+
     This subroutine croaks on unhandled data types.
 
   "decode_bifcode2( $string [, $max_depth ] )"
@@ -233,6 +244,11 @@ INTERFACE
 
     *   BIFCODE_BIFCODE types are fully inflated into Perl structures,
         and not the intermediate *Bifcode2* byte string.
+
+    *   Large numbers encoded under "bignum" or similar scope are not
+        currently detected and get converted back to floats (for
+        originally large integers) or have less precision (for
+        originally large floats).
 
     Croaks on malformed data.
 

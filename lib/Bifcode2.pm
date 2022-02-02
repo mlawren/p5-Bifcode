@@ -12,7 +12,7 @@ use Exporter::Tidy all => [
 
 # ABSTRACT: Serialisation similar to Bencode + undef/UTF8
 
-our $VERSION = '2.0.0_13';
+our $VERSION = '2.0.0_14';
 our $max_depth;
 our @CARP_NOT = (__PACKAGE__);
 
@@ -459,7 +459,7 @@ Bifcode2 - encode and decode Bifcode2 serialization format
 
 =head1 VERSION
 
-2.0.0_13 (2022-02-01)
+2.0.0_14 (2022-02-02)
 
 =head1 SYNOPSIS
 
@@ -546,7 +546,6 @@ visually debugged.
     | REAL    | 1.380649e-23       | r1.380649e-23,     |
     | INF     | use bignum;  inf() | +,                 |
     | NEGINF  | use bignum; -inf() | -,                 |
-    | INTEGER | 0                  | i0,                |
     | BYTES   | $TWO_BYTE_STR      | b2.��,             |
     | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
     | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
@@ -718,6 +717,18 @@ can help with creating such references.
 
 =back
 
+Integers and floats under C<bignum> scope are handled transparently,
+but do not always produce the same encoding you get without:
+
+    encode_bifcode(100.2); # r100.2e0
+    {
+        use bignum;
+        encode_bifcode(100.2); # r1.002e2
+    }
+
+The reason is that "reading" Math::BigFloat forces conversion to a
+standardized format (e.g. scientific, engineering, etc).
+
 This subroutine croaks on unhandled data types.
 
 =head2 C<decode_bifcode2( $string [, $max_depth ] )>
@@ -740,6 +751,10 @@ scalars.
 
 =item * BIFCODE_BIFCODE types are fully inflated into 
 Perl structures, and not the intermediate I<Bifcode2> byte string.
+
+=item * Large numbers encoded under C<bignum> or similar scope are not
+currently detected and get converted back to floats (for originally
+large integers) or have less precision (for originally large floats).
 
 =back
 
