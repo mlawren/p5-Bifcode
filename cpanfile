@@ -2,6 +2,8 @@
 requires 'boolean';
 requires 'Carp';
 requires 'Exporter::Tidy';
+requires 'Math::BigInt'   => '1.999723';
+requires 'Math::BigFloat' => '1.999723';
 requires 'perl', '5.010';
 requires 'strict';
 requires 'utf8';

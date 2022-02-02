@@ -13,7 +13,8 @@
         - None.
 
     Dependencies:
-        - None.
+        - Need at least version 1.999723 of Math::BigInt for the
+          bdstr() and bnstr() methods.
 
     Packaging:
         - None.
