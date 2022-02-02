@@ -440,8 +440,8 @@ Boolean values are represented by "1" and "0".
 
 A UTF8 string is "U" followed by the octet length of the encoded string
 as a base ten number followed by a colon and the encoded string
-followed by ",". For example the Perl string "\x{df}" (ÃÂ)
-corresponds to "U2:\x{c3}\x{9f},".
+followed by ",". For example the Perl string "\x{df}" (ß) corresponds
+to "U2:\x{c3}\x{9f},".
 
 =head2 BIFCODE_BYTES
 

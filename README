@@ -100,7 +100,7 @@ SPECIFICATION
   BIFCODE_UTF8
     A UTF8 string is "U" followed by the octet length of the encoded
     string as a base ten number followed by a colon and the encoded
-    string followed by ",". For example the Perl string "\x{df}" (ÃÂ)
+    string followed by ",". For example the Perl string "\x{df}" (ß)
     corresponds to "U2:\x{c3}\x{9f},".
 
   BIFCODE_BYTES
