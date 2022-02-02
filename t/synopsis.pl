@@ -57,7 +57,6 @@ my $table_src = Term::Table->new(
         ],
 
         #        [ 'RATIONAL', -inf,               encode_bifcode2(-inf) ],
-        [ 'INTEGER', 0, encode_bifcode2(0) ],
         [
             'BYTES', q[$TWO_BYTE_STR],
             encode_bifcode2( \pack( 's<', 255 ) ) =~ s/([.:]).*,/${1}��,/r

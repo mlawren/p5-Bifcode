@@ -546,7 +546,6 @@ visually debugged.
     | REAL    | 1.380649e-23       | r1.380649e-23,     |
     | INF     | use bignum;  inf() | +,                 |
     | NEGINF  | use bignum; -inf() | -,                 |
-    | INTEGER | 0                  | i0,                |
     | BYTES   | $TWO_BYTE_STR      | b2.��,             |
     | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
     | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
