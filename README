@@ -1,5 +1,5 @@
 NAME
-    Bifcode - simple serialization format
+    Bifcode - simple serialization format [deprecated]
 
 VERSION
     2.0.0_13 (yyyy-mm-dd)
@@ -30,9 +30,9 @@ SYNOPSIS
 
 DESCRIPTION
     [ OBSOLETE! This module is kept around for legacy reasons, but all
-    new code should be using Bifcode::V2 or later. ]
+    new code should be using Bifcode2 or later. ]
 
-    Bifcode implements the *BifcodeV1* serialisation format, a mixed
+    Bifcode implements the *Bifcode* serialisation format, a mixed
     binary/text encoding with support for the following data types:
 
     *   Primitive:
@@ -314,6 +314,8 @@ BUGS AND LIMITATIONS
     obvious way to distinguish the two.
 
 SEE ALSO
+    Bifcode2.
+
     This distribution includes the diff-bifcode command-line utility for
     comparing Bifcodes in files.
 

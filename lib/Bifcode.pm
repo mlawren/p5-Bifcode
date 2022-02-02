@@ -316,7 +316,7 @@ __END__
 
 =head1 NAME
 
-Bifcode - simple serialization format
+Bifcode - simple serialization format [deprecated]
 
 =head1 VERSION
 
@@ -350,9 +350,9 @@ Bifcode - simple serialization format
 =head1 DESCRIPTION
 
 [ B<OBSOLETE!> This module is kept around for legacy reasons, but all
-new code should be using L<Bifcode::V2> or later. ]
+new code should be using L<Bifcode2> or later. ]
 
-B<Bifcode> implements the I<BifcodeV1> serialisation format, a mixed
+B<Bifcode> implements the I<Bifcode> serialisation format, a mixed
 binary/text encoding with support for the following data types:
 
 =over
@@ -706,6 +706,8 @@ not yet had the need for BIFCODE_BYTES keys or found a cheap, obvious
 way to distinguish the two.
 
 =head1 SEE ALSO
+
+L<Bifcode2>.
 
 This distribution includes the L<diff-bifcode> command-line utility for
 comparing Bifcodes in files.
