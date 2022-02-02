@@ -1,13 +1,4 @@
-2.0.0_14 (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
+2.0.0_14 (2022-02-02)
 
     Bug Fixes:
         - Document limitations of decoding large numbers.
@@ -15,9 +6,6 @@
     Dependencies:
         - Need at least version 1.999723 of Math::BigInt for the
           bdstr() and bnstr() methods.
-
-    Packaging:
-        - None.
 
 2.0.0_13 (2022-02-01)
 
