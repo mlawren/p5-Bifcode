@@ -4,7 +4,6 @@ use lib 'lib';
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use boolean;
-use bignum;
 use Test::Bifcode;
 use Test2::V0;
 use Bifcode2 'encode_bifcode2', 'force_bifcode2';
@@ -99,6 +98,7 @@ subtest 'REAL' => sub {
 };
 
 subtest 'INF' => sub {
+    use bignum;
     enc_ok( NaN,                       'N,' );
     enc_ok( inf,                       '+,' );
     enc_ok( Math::BigInt->binf(),      '+,' );
@@ -106,6 +106,11 @@ subtest 'INF' => sub {
     enc_ok( -inf,                      '-,' );
     enc_ok( Math::BigInt->binf('-'),   '-,' );
     enc_ok( Math::BigFloat->binf('-'), '-,' );
+    enc_ok( 4,                         'i4,' );
+    enc_ok( '' . 100.2,                'r100.2e0,' );
+    todo 'bignum converts to something else' => sub {
+        enc_ok( 100.2, 'r100.2e0,' );
+    };
 };
 
 subtest 'UTF8' => sub {
