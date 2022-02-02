@@ -10,7 +10,7 @@
         - None.
 
     Bug Fixes:
-        - None.
+        - Document limitations of decoding large numbers.
 
     Dependencies:
         - Need at least version 1.999723 of Math::BigInt for the

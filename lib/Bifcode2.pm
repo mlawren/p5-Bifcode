@@ -717,6 +717,18 @@ can help with creating such references.
 
 =back
 
+Integers and floats under C<bignum> scope are handled transparently,
+but do not always produce the same encoding you get without:
+
+    encode_bifcode(100.2); # r100.2e0
+    {
+        use bignum;
+        encode_bifcode(100.2); # r1.002e2
+    }
+
+The reason is that "reading" Math::BigFloat forces conversion to a
+standardized format (e.g. scientific, engineering, etc).
+
 This subroutine croaks on unhandled data types.
 
 =head2 C<decode_bifcode2( $string [, $max_depth ] )>
@@ -739,6 +751,10 @@ scalars.
 
 =item * BIFCODE_BIFCODE types are fully inflated into 
 Perl structures, and not the intermediate I<Bifcode2> byte string.
+
+=item * Large numbers encoded under C<bignum> or similar scope are not
+currently detected and get converted back to floats (for originally
+large integers) or have less precision (for originally large floats).
 
 =back
 
