@@ -16,7 +16,7 @@
         - None.
 
     Packaging:
-        - None.
+        - Need at least OptArgs2 v2.0.0 for diff-bifcode2 test.
 
 2.0.0_14 (2022-02-02)
 
