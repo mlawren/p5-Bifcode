@@ -69,6 +69,7 @@ my $table_src = Term::Table->new(
         ],
         [ 'ARRAY', q{[ 'one', 'two' ]}, encode_bifcode2( [ 'one', 'two' ] ) ],
         [ 'DICT', q[{ key => 'value'}], encode_bifcode2( { key => 'value' } ) ],
+        [ 'BIFCODE', q{$BIFCODE},       'B8.$BIFCODE,' ],
 
     ],
 );

@@ -553,6 +553,7 @@ visually debugged.
     | UTF8    | 'MIXΣD ƬΣXƬ'       | u14.MIXΣD ƬΣXƬ,    |
     | ARRAY   | [ 'one', 'two' ]   | [u3.one,u3.two,]   |
     | DICT    | { key => 'value'}  | {u3.key:u5.value,} |
+    | BIFCODE | $BIFCODE           | B8.$BIFCODE,       |
     +---------+--------------------+--------------------+
 
 I<Bifcode2> can only be constructed canonically; i.e. there is only one
