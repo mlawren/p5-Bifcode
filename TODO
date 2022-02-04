@@ -1,5 +1,13 @@
-Data types that might be easily added if the need arose:
+Use 0 and 1 for booleans:
+    - to free up t and f for other types
+    - more common mapping for scripting langs like Perl?
+
+Other types that might be considered:
     - tuples: (1,2,2,3)
     - sets: <1,2,3>
     - Complex numbers: ???
-    - fractional numbers: f1/2,
+    - rational numbers: R1/2,
+    - date: dyyyy-mm-dd,
+    - timestamp: dyyyy-mmddThh:mm:ss.sss+hh:mm, # 3339?
+    - timestamp: jddddddd.ddddd±hh:mm, # julian day version?
+    - week: Dyyyy-Www,
