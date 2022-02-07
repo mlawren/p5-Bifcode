@@ -100,10 +100,10 @@ subtest 'REAL' => sub {
 subtest 'INF' => sub {
     use bignum;
     enc_ok( NaN,                       'N,' );
-    enc_ok( inf,                       '+,' );
+    enc_ok( inf(),                     '+,' );
     enc_ok( Math::BigInt->binf(),      '+,' );
     enc_ok( Math::BigFloat->binf(),    '+,' );
-    enc_ok( -inf,                      '-,' );
+    enc_ok( -inf(),                    '-,' );
     enc_ok( Math::BigInt->binf('-'),   '-,' );
     enc_ok( Math::BigFloat->binf('-'), '-,' );
     enc_ok( 4,                         'i4,' );
