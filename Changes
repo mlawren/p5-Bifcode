@@ -16,7 +16,7 @@
         - None.
 
     Packaging:
-        - None.
+        - Add Test2::Requires::Module to cpanfile
 
 2.0.0_12 (2022-01-21)
 
