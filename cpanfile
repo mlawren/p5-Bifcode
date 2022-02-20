@@ -32,6 +32,7 @@ on develop => sub {
 
 on test => sub {
     requires 'Test2::V0';
+    requires 'Test2::Requires::Module';
     suggests 'AnyEvent::Handle';
     suggests 'OptArgs2' => '2.0.0';
     suggests 'Text::Diff';
