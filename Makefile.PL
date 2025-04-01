@@ -20,8 +20,8 @@ WriteMakefile(
         'meta-spec' => { version => 2 },
         resources   => {
             bugtracker =>
-              { web => 'https//github.com/mlawren/p5-Bifcode/issues', },
-            homepage   => 'https//github.com/mlawren/p5-Bifcode',
+              { web => 'https://github.com/mlawren/p5-Bifcode/issues', },
+            homepage   => 'https://github.com/mlawren/p5-Bifcode',
             repository => {
                 type => 'git',
                 url  => 'ssh://git@github.com/mlawren/p5-Bifcode.git',
