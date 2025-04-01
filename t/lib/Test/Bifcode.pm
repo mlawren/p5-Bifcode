@@ -67,7 +67,7 @@ our $DATA2 = '{'
 
 sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
-      unless 2 == @_;
+      unless 2 <= @_;
     my ( $thawed, $frozen, $testname ) = @_;
     is encode_bifcode2($thawed), $frozen, $testname // $frozen;
 }

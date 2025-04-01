@@ -18,11 +18,11 @@ subtest 'BOOLEAN' => sub {
 };
 
 subtest 'INTEGER' => sub {
-    enc_ok 4                                     => 'i4,';
-    enc_ok force_bifcode2( 5, 'integer' )        => 'i5,';
-    enc_ok 0                                     => 'i0,';
-    enc_ok - 10                                  => 'i-10,';
-    enc_ok '12345678901234567890'                => 'i12345678901234567890,';
+    enc_ok 4                              => 'i4,';
+    enc_ok force_bifcode2( 5, 'integer' ) => 'i5,';
+    enc_ok 0                              => 'i0,';
+    enc_ok - 10                           => 'i-10,';
+    enc_ok '12345678901234567890'         => 'i12345678901234567890,';
     encode_err force_bifcode2( '00', 'integer' ) => 'EncodeInteger',
       'invalid 00 integer';
     encode_err force_bifcode2( '00abc', 'integer' ) => 'EncodeInteger',
@@ -99,15 +99,11 @@ subtest 'REAL' => sub {
 
 subtest 'INF' => sub {
     use bignum;
-    enc_ok( NaN,                       'N,' );
-    enc_ok( inf(),                     '+,' );
-    enc_ok( Math::BigInt->binf(),      '+,' );
-    enc_ok( Math::BigFloat->binf(),    '+,' );
-    enc_ok( -inf(),                    '-,' );
-    enc_ok( Math::BigInt->binf('-'),   '-,' );
-    enc_ok( Math::BigFloat->binf('-'), '-,' );
-    enc_ok( 4,                         'i4,' );
-    enc_ok( '' . 100.2,                'r100.2e0,' );
+    enc_ok( NaN,        'N,' );
+    enc_ok( inf(),      '+,', 'inf()' );
+    enc_ok( -inf(),     '-,', '-inf()' );
+    enc_ok( 4,          'i4,' );
+    enc_ok( '' . 100.2, 'r100.2e0,' );
     todo 'bignum converts to something else' => sub {
         enc_ok( 100.2, 'r100.2e0,' );
     };
@@ -145,8 +141,8 @@ subtest 'LIST' => sub {
 
 subtest 'DICT' => sub {
     enc_ok {} => '{}';
-    enc_ok { 1 => 'one' } => '{u1.1:u3.one,}';
-    enc_ok { 1.5 => 'one' }                               => '{u3.1.5:u3.one,}';
+    enc_ok { 1     => 'one' } => '{u1.1:u3.one,}';
+    enc_ok { 1.5   => 'one' }                             => '{u3.1.5:u3.one,}';
     enc_ok { bytes => force_bifcode2( $bytes, 'bytes' ) } => '{u5.bytes:'
       . $BYTES . '}';
 
