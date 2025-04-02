@@ -28,5 +28,6 @@ WriteMakefile(
                 web  => 'https//github.com/mlawren/p5-Bifcode',
             }
         },
+        release_status => 'testing',
     },
 );
