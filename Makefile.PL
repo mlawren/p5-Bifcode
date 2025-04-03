@@ -7,26 +7,30 @@ use ExtUtils::MakeMaker::CPANfile;
 my $diff = eval { require Text::Diff; require OptArgs2 };
 
 WriteMakefile(
-    NAME         => 'Bifcode2',
-    ABSTRACT     => 'simple serialization format (version 2)',
-    AUTHOR       => 'Mark Lawrence <nomad@null.net>',
-    VERSION_FROM => 'lib/Bifcode2.pm',
+    NAME         => 'Bifcode',
+    ABSTRACT     => 'simple serialization format',
+    AUTHOR       => 'Mark Lawrence <mark+perl@rekudos.net>',
+    VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
-    EXE_FILES    => $diff ? ['bin/diff-bifcode2'] : [],
+    EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],
     test         => {
         RECURSIVE_TEST_FILES => 1,
     },
     META_MERGE => {
         'meta-spec' => { version => 2 },
-        resources   => {
+        no_index    => {
+            package => [qw( Bifcode::V1)],
+        },
+        resources => {
             bugtracker =>
-              { web => 'https//github.com/mlawren/p5-Bifcode/issues', },
-            homepage   => 'https//github.com/mlawren/p5-Bifcode',
+              { web => 'https://github.com/mlawren/p5-Bifcode/issues', },
+            homepage   => 'https://github.com/mlawren/p5-Bifcode',
             repository => {
                 type => 'git',
                 url  => 'ssh://git@github.com/mlawren/p5-Bifcode.git',
                 web  => 'https//github.com/mlawren/p5-Bifcode',
             }
         },
+        release_status => 'testing',
     },
 );

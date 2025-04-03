@@ -1,9 +1,10 @@
 ---
-abstract: 'simple serialization format (version 2)'
+abstract: 'simple serialization format'
 author:
-  - 'Mark Lawrence <nomad@null.net>'
+  - 'Mark Lawrence <mark+perl@rekudos.net>'
 build_requires:
   ExtUtils::MakeMaker: '0'
+  Test2::Require::Module: '0'
   Test2::V0: '0'
 configure_requires:
   ExtUtils::MakeMaker::CPANfile: '0.09'
@@ -13,11 +14,13 @@ license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: '1.4'
-name: Bifcode2
+name: Bifcode
 no_index:
   directory:
     - t
     - inc
+  package:
+    - Bifcode::V1
 requires:
   Carp: '0'
   Exporter::Tidy: '0'
@@ -29,6 +32,8 @@ requires:
   utf8: '0'
   warnings: '0'
 resources:
+  bugtracker: https://github.com/mlawren/p5-Bifcode/issues
+  homepage: https://github.com/mlawren/p5-Bifcode
   repository: ssh://git@github.com/mlawren/p5-Bifcode.git
-version: v2.0.0_14
+version: v2.0.15
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

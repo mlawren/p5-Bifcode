@@ -1,7 +1,7 @@
 {
-   "abstract" : "simple serialization format (version 2)",
+   "abstract" : "simple serialization format",
    "author" : [
-      "Mark Lawrence <nomad@null.net>"
+      "Mark Lawrence <mark+perl@rekudos.net>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "ExtUtils::MakeMaker version 7.64, CPAN::Meta::Converter version 2.150010",
@@ -12,11 +12,14 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : 2
    },
-   "name" : "Bifcode2",
+   "name" : "Bifcode",
    "no_index" : {
       "directory" : [
          "t",
          "inc"
+      ],
+      "package" : [
+         "Bifcode::V1"
       ]
    },
    "prereqs" : {
@@ -45,23 +48,27 @@
       },
       "test" : {
          "requires" : {
+            "Test2::Require::Module" : "0",
             "Test2::V0" : "0"
          },
          "suggests" : {
             "AnyEvent::Handle" : "0",
-            "OptArgs2" : "0",
+            "OptArgs2" : "v2.0.0",
             "Text::Diff" : "0"
          }
       }
    },
-   "release_status" : "unstable",
+   "release_status" : "testing",
    "resources" : {
-      "bugtracker" : {},
+      "bugtracker" : {
+         "web" : "https://github.com/mlawren/p5-Bifcode/issues"
+      },
+      "homepage" : "https://github.com/mlawren/p5-Bifcode",
       "repository" : {
          "type" : "git",
          "url" : "ssh://git@github.com/mlawren/p5-Bifcode.git"
       }
    },
-   "version" : "v2.0.0_14",
-   "x_serialization_backend" : "JSON::PP version 4.02"
+   "version" : "v2.0.15",
+   "x_serialization_backend" : "JSON::PP version 4.07"
 }

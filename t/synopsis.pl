@@ -3,7 +3,7 @@ use Test2::V0;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib";
 use boolean;
-use Bifcode2 qw( encode_bifcode2 decode_bifcode2 force_bifcode2 );
+use Bifcode qw( encode_bifcode decode_bifcode force_bifcode );
 use Path::Tiny;
 use Term::Table;
 use Math::BigInt;
@@ -18,56 +18,58 @@ my $struct = q{{
 }
 };
 
-my $ref      = eval $struct;
-my $bifcode2 = encode_bifcode2 $ref;
+my $ref     = eval $struct;
+my $bifcode = encode_bifcode $ref;
 
-note 'my $bifcode2 = encode_bifcode2 ' . $struct;
-note $bifcode2;
+note 'my $bifcode = encode_bifcode ' . $struct;
+note $bifcode;
 
-like( $bifcode2, qr/^{/, 'bifcode2 hash' );
+like( $bifcode, qr/^{/, 'bifcode hash' );
 
-my $bifcode2_file = Path::Tiny->tempfile;
-$bifcode2_file->spew_raw($bifcode2);
+my $bifcode_file = Path::Tiny->tempfile;
+$bifcode_file->spew_raw($bifcode);
 
 my $format      = '15/1 " %2x"' . "\n" . '"    " "%_p"' . "\n" . '"\n"' . "\n";
 my $format_file = Path::Tiny->tempfile;
 $format_file->spew($format);
-open my $fh, '-|', 'hexdump', '-f', $format_file, $bifcode2_file;
+open my $fh, '-|', 'hexdump', '-f', $format_file, $bifcode_file;
 note $_ while <$fh>;
 
 my $table_src = Term::Table->new(
-    header => [ 'Type', 'Perl', 'Bifcode2' ],
+    header => [ 'Type', 'Perl', 'Bifcode' ],
     rows   => [
-        [ 'UNDEF', 'undef',            encode_bifcode2(undef) ],
-        [ 'TRUE',  'boolean::true',    encode_bifcode2(true) ],
-        [ 'FALSE', 'boolean::false',   encode_bifcode2(false) ],
-        [ 'NAN', 'use bignum;  NaN()', encode_bifcode2( Math::BigInt->bnan ) ],
-        [ 'INTEGER', -1,               encode_bifcode2(-1) ],
-        [ 'INTEGER', 0,                encode_bifcode2(0) ],
-        [ 'INTEGER', 1,                encode_bifcode2(1) ],
+        [ 'UNDEF', 'undef',              encode_bifcode(undef) ],
+        [ 'TRUE',  'boolean::true',      encode_bifcode(true) ],
+        [ 'FALSE', 'boolean::false',     encode_bifcode(false) ],
+        [ 'NAN',   'use bignum;  NaN()', encode_bifcode( Math::BigInt->bnan ) ],
+        [ 'INTEGER', -1,                 encode_bifcode(-1) ],
+        [ 'INTEGER', 0,                  encode_bifcode(0) ],
+        [ 'INTEGER', 1,                  encode_bifcode(1) ],
 
-        #    [ 'REAL',    '0.0', encode_bifcode2('0.0') ],
-        [ 'REAL', 3.1415,               encode_bifcode2(3.1415) ],
-        [ 'REAL', 1.380649e-23,         encode_bifcode2(1.380649e-23) ],
-        [ 'INF',  'use bignum;  inf()', encode_bifcode2( Math::BigInt->binf ) ],
+        #    [ 'REAL',    '0.0', encode_bifcode('0.0') ],
+        [ 'REAL', 3.1415,               encode_bifcode(3.1415) ],
+        [ 'REAL', 1.380649e-23,         encode_bifcode(1.380649e-23) ],
+        [ 'INF',  'use bignum;  inf()', encode_bifcode( Math::BigInt->binf ) ],
         [
             'NEGINF',
             q{use bignum; -inf()},
-            encode_bifcode2( Math::BigInt->binf('-') )
+            encode_bifcode( Math::BigInt->binf('-') )
         ],
 
-        #        [ 'RATIONAL', -inf,               encode_bifcode2(-inf) ],
+        #        [ 'RATIONAL', -inf,               encode_bifcode(-inf) ],
         [
             'BYTES', q[$TWO_BYTE_STR],
-            encode_bifcode2( \pack( 's<', 255 ) ) =~ s/([.:]).*,/${1}��,/r
+            encode_bifcode( \pack( 's<', 255 ) ) =~ s/([.:]).*,/${1}��,/r
         ],
+        [ 'UTF8', q{'Plain ASCII'}, encode_bifcode('Plain ASCII') ],
         [
             'UTF8',
             q{'MIXΣD ƬΣXƬ'},
-            encode_bifcode2('MIXΣD ƬΣXƬ') =~ s/([.:])(.*),/${1}MIXΣD ƬΣXƬ,/r
+            encode_bifcode('MIXΣD ƬΣXƬ') =~ s/([.:])(.*),/${1}MIXΣD ƬΣXƬ,/r
         ],
-        [ 'ARRAY', q{[ 'one', 'two' ]}, encode_bifcode2( [ 'one', 'two' ] ) ],
-        [ 'DICT', q[{ key => 'value'}], encode_bifcode2( { key => 'value' } ) ],
+        [ 'ARRAY', q{[ 'one', 'two' ]},  encode_bifcode( [ 'one', 'two' ] ) ],
+        [ 'DICT',  q[{ key => 'value'}], encode_bifcode( { key => 'value' } ) ],
+        [ 'BIFCODE', q{$BIFCODE},        'B8.$BIFCODE,' ],
 
     ],
 );

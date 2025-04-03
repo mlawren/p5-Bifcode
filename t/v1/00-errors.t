@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Bifcode;
+use Bifcode::V1;
 use Test2::V0;
 
-eval { Bifcode::decode_bifcode(undef) };
+eval { Bifcode::V1::decode_bifcode(undef) };
 my $err = $@;
 
 isa_ok $err, 'Bifcode::Error::DecodeUsage';
