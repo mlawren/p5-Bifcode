@@ -1,22 +1,13 @@
-v__NEXT__ (yyyy-mm-dd)
+v2.0.15 (2025-04-03) TRIAL RELEASE
 
     API / Behaviour Changes:
         - Rename Bifcode2 back to just Bifcode.
 
-    New Features:
-        - None.
-
     Enhancements:
         - Avoid heavy use of 'return' statements
 
-    Bug Fixes:
-        - None.
-
-    Dependencies:
-        - None.
-
     Packaging:
-        - Need at least OptArgs2 v2.0.0 for diff-bifcode2 test.
+        - Need at least OptArgs2 v2.0.0 for diff-bifcode test.
         - Add Test2::Require::Module to cpanfile
         - Avoid triggering old bugs in Math::BigInt.
 
