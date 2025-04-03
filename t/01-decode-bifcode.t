@@ -22,10 +22,10 @@ subtest INTEGER => sub {
     decode_err 'i0'          => 'DecodeInteger',      'unterminated integer';
     decode_err 'i,'          => 'DecodeInteger',      'empty integer';
     decode_err 'i341foo382,' => 'DecodeInteger',      'malformed integer';
-    decode_ok 'i4,'          => 4;
-    decode_ok 'i0,'          => 0;
-    decode_ok 'i123456789,'  => 123456789;
-    decode_ok 'i-10,'        => -10;
+    decode_ok 'i4,'         => 4;
+    decode_ok 'i0,'         => 0;
+    decode_ok 'i123456789,' => 123456789;
+    decode_ok 'i-10,'       => -10;
     decode_err 'i-0,'   => 'DecodeInteger',  'negative zero integer';
     decode_err 'i123'   => 'DecodeInteger',  'unterminated integer';
     decode_err 'i6,asd' => 'DecodeTrailing', 'integer with trailing garbage';
@@ -34,15 +34,15 @@ subtest INTEGER => sub {
 };
 
 subtest REAL => sub {
-    decode_err 'r'        => 'DecodeRealTrunc', 'aborted real';
-    decode_err 'r0'       => 'DecodeReal',      'aborted real';
-    decode_err 'r0.'      => 'DecodeReal',      'aborted real';
-    decode_err 'r0.0'     => 'DecodeReal',      'aborted real';
-    decode_err 'r0.0e'    => 'DecodeReal',      'aborted real';
-    decode_err 'r0.e0'    => 'DecodeReal',      'aborted real';
-    decode_err 'r0e0'     => 'DecodeReal',      'aborted real';
-    decode_ok 'r0.0e0,'   => 0.0e0;
-    decode_ok 'r4.1e-2,'  => 4.1e-2;
+    decode_err 'r'     => 'DecodeRealTrunc', 'aborted real';
+    decode_err 'r0'    => 'DecodeReal',      'aborted real';
+    decode_err 'r0.'   => 'DecodeReal',      'aborted real';
+    decode_err 'r0.0'  => 'DecodeReal',      'aborted real';
+    decode_err 'r0.0e' => 'DecodeReal',      'aborted real';
+    decode_err 'r0.e0' => 'DecodeReal',      'aborted real';
+    decode_err 'r0e0'  => 'DecodeReal',      'aborted real';
+    decode_ok 'r0.0e0,'  => 0.0e0;
+    decode_ok 'r4.1e-2,' => 4.1e-2;
     decode_err 'r-0.0e0,' => 'DecodeReal', 'non-zero exponent for 0.0 real';
     decode_err 'r0.0e-1,' => 'DecodeReal', 'non-zero exponent for 0.0 real';
 };
@@ -59,7 +59,7 @@ subtest INF => sub {
 subtest UTF8 => sub {
     decode_err
       'u0.,u0.' => 'DecodeTrailing',
-      'data past end of first correct encode_bifcode2\'d string';
+      'data past end of first correct encode_bifcode\'d string';
     decode_err 'u1.'  => 'DecodeUTF8Trunc', 'string longer than data';
     decode_err 'u1.1' => 'DecodeUTF8Term',  'string missing terminator';
     decode_err
@@ -88,7 +88,7 @@ subtest BYTES => sub {
     decode_err 'bxxx'  => 'DecodeBytes',      'invalid bytes definition';
     decode_err 'b2.1'  => 'DecodeBytesTrunc', 'bytes not long enough';
     decode_err 'b2.1,' => 'DecodeBytesTerm',  'bytes missing terminator';
-    decode_ok $BYTES   => $bytes;
+    decode_ok $BYTES => $bytes;
 };
 
 subtest LIST => sub {
@@ -151,12 +151,12 @@ subtest DICT => sub {
 };
 
 subtest nest_limits => sub {
-    decode_ok [ '[u0.,]', 1 ]  => ['']; # Accept single list when max_depth is 1
+    decode_ok [ '[u0.,]', 1 ] => [''];  # Accept single list when max_depth is 1
     decode_err [ '[u0.,]', 0 ] => 'DecodeDepth',
       'single list when max_depth is 0';
 
     # Accept a nested list when max_depth is 2
-    decode_ok [ '[[u0.,]]', 2 ]  => [ [''] ];
+    decode_ok [ '[[u0.,]]', 2 ] => [ [''] ];
     decode_err [ '[[u0.,]]', 1 ] => 'DecodeDepth',
       'nested list when max_depth is 1';
 
@@ -167,30 +167,30 @@ subtest nest_limits => sub {
       'dict in list when max_depth is 1';
 
     # Accept single dict when max_depth is 1
-    decode_ok [ '{u1.a:u0.,}', 1 ]  => { a => '' };
+    decode_ok [ '{u1.a:u0.,}', 1 ] => { a => '' };
     decode_err [ '{u1.a:u0.,}', 0 ] => 'DecodeDepth',
       'single dict when max_depth is 0';
 
     # Accept a nested dict when max_depth is 2
-    decode_ok [ '{u1.a:{u1.a:u0.,}}', 2 ]  => { a => { a => '' } };
+    decode_ok [ '{u1.a:{u1.a:u0.,}}', 2 ] => { a => { a => '' } };
     decode_err [ '{u1.a:{u1.a:u0.,}}', 1 ] => 'DecodeDepth',
       'nested dict when max_depth is 1';
 
     # Accept dict containing list when max_depth is 2
-    decode_ok [ '{u1.a:[u0.,]}', 2 ]  => { a => [''] };
+    decode_ok [ '{u1.a:[u0.,]}', 2 ] => { a => [''] };
     decode_err [ '{u1.a:[u0.,]}', 1 ] => 'DecodeDepth',
       'list in dict when max_depth is 1';
 
     # Accept dict containing list when max_depth is 2
-    decode_ok [ '{u1.a:u0.,u1.b:[u0.,]}', 2 ]  => { a => '', b => [''] };
+    decode_ok [ '{u1.a:u0.,u1.b:[u0.,]}', 2 ] => { a => '', b => [''] };
     decode_err [ '{u1.a:u0.,u1.b:[u0.,]}', 1 ] => 'DecodeDepth',
       'list in dict when max_depth is 1';
 };
 
-decode_err undef, 'DecodeUsage', 'decode_bifcode2 needs defined';
+decode_err undef, 'DecodeUsage', 'decode_bifcode needs defined';
 decode_err [ '[u0.,]', 0, 'arg3' ] => 'DecodeUsage',
-  'decode_bifcode2 only takes up to 2 args';
-decode_err ''    => 'DecodeTrunc', 'empty data';
+  'decode_bifcode only takes up to 2 args';
+decode_err '' => 'DecodeTrunc', 'empty data';
 decode_err $utf8 => 'DecodeUsage',
   'check for utf8 flag';
 decode_err '0elwjhrlewjh' => 'Decode', 'complete garbage';

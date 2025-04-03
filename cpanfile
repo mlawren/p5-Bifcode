@@ -9,7 +9,7 @@ requires 'strict';
 requires 'utf8';
 requires 'warnings';
 
-feature 'diff-bifcode2' => sub {
+feature 'diff-bifcode' => sub {
     requires 'OptArgs2' => '2.0.0';
     requires 'Text::Diff';
 };
