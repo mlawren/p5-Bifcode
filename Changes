@@ -17,7 +17,7 @@
 
     Packaging:
         - Need at least OptArgs2 v2.0.0 for diff-bifcode2 test.
-        - Add Test2::Requires::Module to cpanfile
+        - Add Test2::Require::Module to cpanfile
         - Avoid triggering old bugs in Math::BigInt.
 
 2.0.0_14 (2022-02-02)
