@@ -18,7 +18,10 @@ WriteMakefile(
     },
     META_MERGE => {
         'meta-spec' => { version => 2 },
-        resources   => {
+        no_index    => {
+            package => [qw( Bifcode::V1)],
+        },
+        resources => {
             bugtracker =>
               { web => 'https://github.com/mlawren/p5-Bifcode/issues', },
             homepage   => 'https://github.com/mlawren/p5-Bifcode',
