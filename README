@@ -397,7 +397,7 @@ SEE ALSO
     Bifcode::V1 implements the original (experimental) encoding.
 
 AUTHOR
-    Mark Lawrence <nomad@null.net>, heavily based on Bencode by
+    Mark Lawrence <mark+perl@rekudos.net>, heavily based on Bencode by
     Aristotle Pagaltzis <pagaltzis@gmx.de>
 
 COPYRIGHT AND LICENSE
@@ -405,7 +405,7 @@ COPYRIGHT AND LICENSE
 
     *   2015 by Aristotle Pagaltzis
 
-    *   2017-2022 by Mark Lawrence.
+    *   2017-2025 by Mark Lawrence.
 
     This is free software; you can redistribute it and/or modify it
     under the same terms as the Perl 5 programming language system

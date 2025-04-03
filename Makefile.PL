@@ -9,7 +9,7 @@ my $diff = eval { require Text::Diff; require OptArgs2 };
 WriteMakefile(
     NAME         => 'Bifcode',
     ABSTRACT     => 'simple serialization format',
-    AUTHOR       => 'Mark Lawrence <nomad@null.net>',
+    AUTHOR       => 'Mark Lawrence <mark+perl@rekudos.net>',
     VERSION_FROM => 'lib/Bifcode.pm',
     LICENSE      => 'perl_5',
     EXE_FILES    => $diff ? ['bin/diff-bifcode'] : [],

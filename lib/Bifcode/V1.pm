@@ -709,8 +709,8 @@ comparing Bifcodes in files.
 
 =head1 AUTHOR
 
-Mark Lawrence <nomad@null.net>, heavily based on Bencode by Aristotle
-Pagaltzis <pagaltzis@gmx.de>
+Mark Lawrence <mark+perl@rekudos.net>, heavily based on Bencode by
+Aristotle Pagaltzis <pagaltzis@gmx.de>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -720,7 +720,7 @@ This software is copyright (c):
 
 =item * 2015 by Aristotle Pagaltzis
 
-=item * 2017-2022 by Mark Lawrence.
+=item * 2017-2025 by Mark Lawrence.
 
 =back
 

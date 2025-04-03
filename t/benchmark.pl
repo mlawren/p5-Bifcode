@@ -43,7 +43,7 @@ my $xdata = [
     {
         '_'                     => 'begin_change',
         'mtime'                 => '1438693456000',
-        'author_contact'        => 'nomad@null.net',
+        'author_contact'        => 'mark+perl@rekudos.net',
         'mtimetz'               => 7200000,
         'author_contact_method' => 'email',
         'author'                => 'Mark Lawrence',
@@ -64,7 +64,7 @@ my $xdata = [
         'bill'          => 1,
         'identity_uuid' => 'f1b417064a8a4e0ee92cb6270be87d3b460d677d',
         '_uuid'         => 'acf522ee6a4fcb28746fad2774a5b7d9b905ef75',
-        'mvalue'        => 'nomad@null.net',
+        'mvalue'        => 'mark+perl@rekudos.net',
         'method'        => 'email',
         '_'             => 'new_identity_contact_method'
     },
