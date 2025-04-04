@@ -2,7 +2,7 @@ NAME
     Bifcode - encode and decode Bifcode serialization format
 
 VERSION
-    v2.0.16 (2025-04-04)
+    v0.0.0 (yyyy-mm-dd)
 
 SYNOPSIS
         use utf8;
