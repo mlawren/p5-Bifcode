@@ -19,7 +19,7 @@ v__NEXT__ (yyyy-mm-dd)
         - None.
 
     Packaging:
-        - None.
+        - Fix broken v1 tests when Text::Diff not installed
 
 v2.0.15 (2025-04-03) TRIAL RELEASE
 

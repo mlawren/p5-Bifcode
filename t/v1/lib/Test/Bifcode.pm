@@ -67,10 +67,8 @@ sub enc_ok {
     croak 'usage: enc_ok($1,$2)'
       unless 2 == @_;
     my ( $thawed, $frozen ) = @_;
-    my $diff = diff_bifcode( encode_bifcode($thawed), $frozen );
-    length($diff)
-      ? ok 0, "encode $frozen:\n$diff"
-      : ok 1, "encode $frozen";
+    is encode_bifcode($thawed), $frozen,
+      "encode:$frozen -> " . encode_bifcode($thawed);
 }
 
 sub enc_error_ok {
