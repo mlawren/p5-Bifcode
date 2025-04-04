@@ -1,10 +1,8 @@
 use strict;
 use warnings;
-use lib 'lib';
-use FindBin qw($RealBin);
-use lib "$RealBin/lib";
+use lib 't/lib';
 use boolean;
-use Test::Bifcode;
+use Test::Bifcode::V1;
 use Test2::V0;
 
 subtest UNDEF => sub {

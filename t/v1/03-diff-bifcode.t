@@ -1,12 +1,10 @@
 use strict;
 use warnings;
-use lib 'lib';
-use FindBin qw($RealBin);
-use lib "$RealBin/lib";
-use Test::Bifcode;
+use lib 't/lib';
+use Bifcode::V1 'encode_bifcode', 'diff_bifcode';
+use Test::Bifcode::V1;
 use Test2::V0;
 use Test2::Require::Module 'Text::Diff';
-use Bifcode::V1 'encode_bifcode', 'diff_bifcode';
 
 eval { diff_bifcode() };
 isa_ok $@, ['Bifcode::Error::DiffUsage'], 'diff_bifcode not enough arguments';

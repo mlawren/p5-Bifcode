@@ -1,4 +1,4 @@
-package Test::Bifcode;
+package Test::Bifcode::V1;
 use bytes;
 use strict;
 use warnings;
