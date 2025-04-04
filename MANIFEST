@@ -15,12 +15,12 @@ t/04-anyevent.t
 t/benchmark.pl
 t/compare-v1.pl
 t/lib/Test/Bifcode.pm
+t/lib/Test/Bifcode/V1.pm
 t/synopsis.pl
 t/v1/00-errors.t
 t/v1/01-decode-bifcode.t
 t/v1/02-encode-bifcode.t
 t/v1/03-diff-bifcode.t
-t/v1/lib/Test/Bifcode.pm
 t/v1/synopsis.pl
 TODO
 META.yml                                 Module YAML meta-data (added by MakeMaker)

@@ -1,3 +1,8 @@
+v2.0.16 (2025-04-04) TRIAL RELEASE
+
+    Packaging:
+        - Fix broken v1 tests when Text::Diff not installed
+
 v2.0.15 (2025-04-03) TRIAL RELEASE
 
     API / Behaviour Changes:
