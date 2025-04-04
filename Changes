@@ -1,22 +1,4 @@
-v__NEXT__ (yyyy-mm-dd)
-
-    API / Behaviour Changes:
-        - None.
-
-    New Features:
-        - None.
-
-    Enhancements:
-        - None.
-
-    Bug Fixes:
-        - None.
-
-    Code Maintenance
-        - None.
-
-    Dependencies:
-        - None.
+v2.0.16 (2025-04-04) TRIAL RELEASE
 
     Packaging:
         - Fix broken v1 tests when Text::Diff not installed
